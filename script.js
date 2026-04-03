@@ -21,14 +21,15 @@ async function abschicken() {
   let telefon = document.getElementById("telefon").value;
   let adresse = document.getElementById("adresse").value;
   let hinweis = document.getElementById("hinweis").value;
+  let button = document.getElementById("bestellButton");
 
   if (name === "" || telefon === "" || adresse === "") {
-    alert("Bitte Name, Telefonnummer und Adresse eingeben!");
+    zeigeMeldung("Bitte Name, Telefonnummer und Adresse eingeben!", "error");
     return;
   }
 
   if (Object.keys(warenkorbDaten).length === 0) {
-    alert("Bitte zuerst etwas bestellen!");
+    zeigeMeldung("Bitte zuerst etwas bestellen!", "error");
     return;
   }
 
@@ -42,6 +43,10 @@ async function abschicken() {
       });
     }
   });
+
+  button.disabled = true;
+  button.textContent = "Wird gesendet...";
+  await new Promise(resolve => setTimeout(resolve, 2000));
 
   try {
     let response = await fetch("http://127.0.0.1:8000/bestellen", {
@@ -71,11 +76,14 @@ async function abschicken() {
       document.getElementById("adresse").value = "";
       document.getElementById("hinweis").value = "";
     } else {
-      zeigeMeldung(data.message, "error");
+      zeigeMeldung(data.message || "Fehler bei der Bestellung.", "error");
     }
   } catch (error) {
-    alert("Backend nicht erreichbar oder Serverfehler.");
+    zeigeMeldung("Backend nicht erreichbar oder Serverfehler.", "error");
     console.error(error);
+  } finally {
+    button.disabled = false;
+    button.textContent = "Bestellung abschicken";
   }
 }
 
