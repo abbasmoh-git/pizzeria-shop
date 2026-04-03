@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pizzeria Pinocchio Olfen</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="hero">
+    <div class="overlay">
+      <h1>Pizzeria Pinocchio Olfen 🍕</h1>
+      <p>Frisch. Schnell. Direkt bei uns bestellen.</p>
+    </div>
+  </header>
+
+  <main class="container">
+    <section>
+      <h2>Speisekarte</h2>
+
+      <div class="menu-grid">
+        <div class="karte">
+          <h3>Margherita</h3>
+          <p class="preis">8,50 €</p>
+          <button onclick="bestellen('Margherita', 8.5)">Bestellen</button>
+        </div>
+
+        <div class="karte">
+          <h3>Salami</h3>
+          <p class="preis">9,50 €</p>
+          <button onclick="bestellen('Salami', 9.5)">Bestellen</button>
+        </div>
+
+        <div class="karte">
+          <h3>Funghi</h3>
+          <p class="preis">9,00 €</p>
+          <button onclick="bestellen('Funghi', 9.0)">Bestellen</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="box">
+      <h2>Warenkorb</h2>
+      <ul id="warenkorb"></ul>
+      <p class="gesamt"><strong>Gesamt: <span id="summe">0.00</span> €</strong></p>
+    </section>
+
+   <section class="box">
+      <h2>Bestellung</h2>
+
+      <label for="name">Name</label>
+      <input type="text" id="name" placeholder="Dein Name">
+
+      <label for="telefon">Telefon</label>
+      <input type="text" id="telefon" placeholder="Deine Telefonnummer">
+
+      <label for="adresse">Adresse</label>
+      <input type="text" id="adresse" placeholder="Straße und Hausnummer">
+
+      <label for="hinweis">Hinweis</label>
+      <input type="text" id="hinweis" placeholder="z. B. ohne Zwiebeln">
+
+      <button class="submit-btn" onclick="abschicken()">Bestellung abschicken</button>
+  </section>
+
+    <section class="box kontakt">
+      <h2>Kontakt</h2>
+      <p>Telefon: 02595 7688</p>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
