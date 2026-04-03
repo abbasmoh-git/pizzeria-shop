@@ -161,3 +161,20 @@ input {
 .kontakt p {
   font-size: 18px;
 }
+
+.meldung {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #2ecc71;
+  color: white;
+  padding: 15px 20px;
+  border-radius: 10px;
+  font-size: 16px;
+  display: none;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.meldung.fehler {
+  background: #e74c3c;
+}

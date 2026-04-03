@@ -62,7 +62,7 @@ async function abschicken() {
     let data = await response.json();
 
     if (data.status === "ok") {
-      alert("Bestellung erfolgreich gesendet!");
+      zeigeMeldung("🍕 Bestellung erfolgreich!");
 
       warenkorbDaten = {};
       neuRendern();
@@ -71,7 +71,7 @@ async function abschicken() {
       document.getElementById("adresse").value = "";
       document.getElementById("hinweis").value = "";
     } else {
-      alert(data.message || "Fehler bei der Bestellung.");
+      zeigeMeldung(data.message, "error");
     }
   } catch (error) {
     alert("Backend nicht erreichbar oder Serverfehler.");
@@ -124,4 +124,20 @@ function minus(name) {
   }
 
   neuRendern();
+}
+function zeigeMeldung(text, typ = "ok") {
+  let box = document.getElementById("meldung");
+
+  box.textContent = text;
+  box.style.display = "block";
+
+  if (typ === "error") {
+    box.classList.add("fehler");
+  } else {
+    box.classList.remove("fehler");
+  }
+
+  setTimeout(() => {
+    box.style.display = "none";
+  }, 3000);
 }
