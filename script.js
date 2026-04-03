@@ -22,6 +22,8 @@ async function abschicken() {
   let adresse = document.getElementById("adresse").value;
   let hinweis = document.getElementById("hinweis").value;
   let button = document.getElementById("bestellButton");
+  let buttonText = document.getElementById("buttonText");
+  let buttonSpinner = document.getElementById("buttonSpinner");
 
   if (name === "" || telefon === "" || adresse === "") {
     zeigeMeldung("Bitte Name, Telefonnummer und Adresse eingeben!", "error");
@@ -45,7 +47,8 @@ async function abschicken() {
   });
 
   button.disabled = true;
-  button.textContent = "Wird gesendet...";
+  buttonText.textContent = "Wird gesendet...";
+  buttonSpinner.style.display = "inline-block";
   await new Promise(resolve => setTimeout(resolve, 2000));
 
   try {
@@ -83,7 +86,8 @@ async function abschicken() {
     console.error(error);
   } finally {
     button.disabled = false;
-    button.textContent = "Bestellung abschicken";
+    buttonText.textContent = "Bestellung abschicken";
+    buttonSpinner.style.display = "none";
   }
 }
 
@@ -115,10 +119,6 @@ function neuRendern() {
   document.getElementById("summe").textContent = gesamt.toFixed(2);
 }
 
-function entfernen(index) {
-  warenkorbDaten.splice(index, 1);
-  neuRendern();
-}
 function plus(name) {
   warenkorbDaten[name].menge += 1;
   neuRendern();
