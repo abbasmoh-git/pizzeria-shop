@@ -125,9 +125,7 @@ body {
    HERO
 =========================== */
 .hero {
-  background:
-    linear-gradient(135deg, rgba(150,20,10,0.88), rgba(200,40,20,0.75)),
-    url('https://images.unsplash.com/photo-1513104890138-7c749659a591?w=1600&q=80') center/cover no-repeat;
+  background: linear-gradient(135deg, #a01a0a, #c0392b, #e74c3c);
   min-height: 560px;
   display: flex;
   align-items: center;
@@ -330,48 +328,24 @@ body {
 }
 
 /* Vorspeisen */
-.vorspeise-bild-1 {
-  background: url('https://images.unsplash.com/photo-1572695157366-5e585ab2b69f?w=600&q=80') center/cover;
-}
-.vorspeise-bild-2 {
-  background: url('https://images.unsplash.com/photo-1608897013039-887f21d8c804?w=600&q=80') center/cover;
-}
-.vorspeise-bild-3 {
-  background: url('https://images.unsplash.com/photo-1573140247632-f8fd74997d5c?w=600&q=80') center/cover;
-}
+.vorspeise-bild-1 { background: linear-gradient(135deg, #f5e6d3, #e8d5b7); }
+.vorspeise-bild-2 { background: linear-gradient(135deg, #fde8d8, #f5c9a8); }
+.vorspeise-bild-3 { background: linear-gradient(135deg, #fef3e2, #fde0b0); }
 
 /* Pizza */
-.pizza-bild-1 {
-  background: url('https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=600&q=80') center/cover;
-}
-.pizza-bild-2 {
-  background: url('https://images.unsplash.com/photo-1628840042765-356cda07504e?w=600&q=80') center/cover;
-}
-.pizza-bild-3 {
-  background: url('https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=600&q=80') center/cover;
-}
+.pizza-bild-1 { background: linear-gradient(135deg, #fdecea, #f9c4be); }
+.pizza-bild-2 { background: linear-gradient(135deg, #fde0dc, #f5a89e); }
+.pizza-bild-3 { background: linear-gradient(135deg, #feeae6, #fbbcb4); }
 
 /* Nudeln */
-.nudel-bild-1 {
-  background: url('https://images.unsplash.com/photo-1555949258-eb67b1ef0ceb?w=600&q=80') center/cover;
-}
-.nudel-bild-2 {
-  background: url('https://images.unsplash.com/photo-1612874742237-6526221588e3?w=600&q=80') center/cover;
-}
-.nudel-bild-3 {
-  background: url('https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=600&q=80') center/cover;
-}
+.nudel-bild-1 { background: linear-gradient(135deg, #fdf4e3, #f9e0b0); }
+.nudel-bild-2 { background: linear-gradient(135deg, #fef9e7, #faeabf); }
+.nudel-bild-3 { background: linear-gradient(135deg, #fdf0d5, #f5d98a); }
 
 /* Salate */
-.salat-bild-1 {
-  background: url('https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&q=80') center/cover;
-}
-.salat-bild-2 {
-  background: url('https://images.unsplash.com/photo-1600891964599-f61ba0e24092?w=600&q=80') center/cover;
-}
-.salat-bild-3 {
-  background: url('https://images.unsplash.com/photo-1540420773420-3366772f4999?w=600&q=80') center/cover;
-}
+.salat-bild-1 { background: linear-gradient(135deg, #e8f5e9, #c8e6c9); }
+.salat-bild-2 { background: linear-gradient(135deg, #f1f8e9, #dcedc8); }
+.salat-bild-3 { background: linear-gradient(135deg, #e0f2f1, #b2dfdb); }
 
 .karte-body {
   padding: 18px 20px 20px;
