@@ -852,3 +852,63 @@ body {
     padding: 32px 16px 48px;
   }
 }
+
+.groessen-legende {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: #999;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.groessen-legende span {
+  flex: 1;
+  text-align: center;
+}
+
+.groessen-buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.groesse-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: #fef2f2;
+  border: 1.5px solid #fbbcb4;
+  border-radius: 12px;
+  padding: 10px 6px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.15s;
+}
+
+.groesse-btn:hover {
+  background: #c0392b;
+  border-color: #c0392b;
+}
+
+.groesse-btn:hover .groesse-label,
+.groesse-btn:hover .groesse-preis {
+  color: white;
+}
+
+.groesse-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.groesse-preis {
+  font-size: 15px;
+  font-weight: 700;
+  color: #c0392b;
+}
