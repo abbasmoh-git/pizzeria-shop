@@ -922,3 +922,104 @@ body {
 .pizza-bild-placeholder {
   background: linear-gradient(135deg, #fdecea, #f9c4be);
 }
+
+/* ===========================
+   LISTEN-DESIGN (Speisekarte)
+=========================== */
+.menu-liste {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 40px;
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid #f0ece6;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+}
+
+.menu-zeile {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 16px 24px;
+  border-bottom: 1px solid #f5f0eb;
+  transition: background 0.15s;
+}
+
+.menu-zeile:last-child {
+  border-bottom: none;
+}
+
+.menu-zeile:hover {
+  background: #faf8f6;
+}
+
+.menu-zeile-info {
+  flex: 1;
+}
+
+.menu-zeile-info h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 3px;
+  font-family: 'Inter', sans-serif;
+}
+
+.menu-zeile-info p {
+  font-size: 13px;
+  color: #999;
+  margin: 0;
+}
+
+.menu-zeile-buttons {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.groesse-zeile-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: #fef2f2;
+  border: 1.5px solid #fbbcb4;
+  border-radius: 10px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  min-width: 68px;
+}
+
+.groesse-zeile-btn:hover {
+  background: #c0392b;
+  border-color: #c0392b;
+}
+
+.groesse-zeile-btn:hover .groesse-zeile-label,
+.groesse-zeile-btn:hover .groesse-zeile-preis {
+  color: white;
+}
+
+.groesse-zeile-btn--disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.groesse-zeile-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #aaa;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.groesse-zeile-preis {
+  font-size: 14px;
+  font-weight: 700;
+  color: #c0392b;
+}
