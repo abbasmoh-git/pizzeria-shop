@@ -912,3 +912,13 @@ body {
   font-weight: 700;
   color: #c0392b;
 }
+
+.groesse-btn--disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.pizza-bild-placeholder {
+  background: linear-gradient(135deg, #fdecea, #f9c4be);
+}
