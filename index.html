@@ -3,74 +3,370 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pizzeria Pinocchio Olfen</title>
+  <title>Pizzeria Pinocchio – Olfen</title>
   <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
+
+  <!-- NAVIGATION -->
+  <nav class="navbar">
+    <div class="nav-inner">
+      <div class="nav-logo">🍕 Pinocchio</div>
+      <ul class="nav-links">
+        <li><a href="#speisekarte">Speisekarte</a></li>
+        <li><a href="#lieferung">Lieferung</a></li>
+        <li><a href="#kontakt">Kontakt</a></li>
+        <li><a href="#bestellen-section" class="nav-btn">Jetzt bestellen</a></li>
+      </ul>
+      <button class="burger" onclick="toggleMenu()">&#9776;</button>
+    </div>
+    <ul class="nav-mobile" id="navMobile">
+      <li><a href="#speisekarte" onclick="toggleMenu()">Speisekarte</a></li>
+      <li><a href="#lieferung" onclick="toggleMenu()">Lieferung</a></li>
+      <li><a href="#kontakt" onclick="toggleMenu()">Kontakt</a></li>
+      <li><a href="#bestellen-section" onclick="toggleMenu()">Jetzt bestellen</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
   <header class="hero">
-    <div class="overlay">
-      <h1>Pizzeria Pinocchio Olfen 🍕</h1>
-      <p>Frisch. Schnell. Direkt bei uns bestellen.</p>
+    <div class="hero-overlay">
+      <div class="hero-content">
+        <p class="hero-sub">Willkommen bei</p>
+        <h1>Pizzeria Pinocchio</h1>
+        <p class="hero-ort">📍 Olfen</p>
+        <p class="hero-tagline">Frisch gebacken. Mit Liebe gemacht. Direkt zu dir.</p>
+        <div class="hero-badges">
+          <span class="badge">🕐 Täglich 12 – 21 Uhr</span>
+          <span class="badge">🛵 Lieferung & Abholung</span>
+        </div>
+        <a href="#speisekarte" class="hero-btn">Zur Speisekarte</a>
+      </div>
     </div>
   </header>
 
+  <!-- INFO BANNER -->
+  <div class="info-banner">
+    <div class="info-item">
+      <span class="info-icon">🕐</span>
+      <div>
+        <strong>Öffnungszeiten</strong>
+        <p>Täglich 12:00 – 21:00 Uhr</p>
+      </div>
+    </div>
+    <div class="info-divider"></div>
+    <div class="info-item">
+      <span class="info-icon">🛵</span>
+      <div>
+        <strong>Liefergebiet</strong>
+        <p>Innerorts & Außerorts</p>
+      </div>
+    </div>
+    <div class="info-divider"></div>
+    <div class="info-item">
+      <span class="info-icon">📞</span>
+      <div>
+        <strong>Telefon</strong>
+        <p>02595 7688</p>
+      </div>
+    </div>
+  </div>
+
   <main class="container">
-    <section>
-      <h2>Speisekarte</h2>
 
+    <!-- SPEISEKARTE -->
+    <section id="speisekarte">
+      <div class="section-header">
+        <h2>Unsere Speisekarte</h2>
+        <p class="section-sub">Alles frisch zubereitet – jeden Tag</p>
+      </div>
+
+      <!-- VORSPEISEN -->
+      <div class="kategorie-titel">🥗 Vorspeisen</div>
       <div class="menu-grid">
+
         <div class="karte">
-          <h3>Margherita</h3>
-          <p class="preis">8,50 €</p>
-          <button onclick="bestellen('Margherita', 8.5)">Bestellen</button>
+          <div class="karte-bild vorspeise-bild-1"></div>
+          <div class="karte-body">
+            <h3>Bruschetta</h3>
+            <p class="karte-desc">Geröstetes Brot mit Tomaten, Knoblauch und Basilikum</p>
+            <div class="karte-footer">
+              <span class="preis">4,50 €</span>
+              <button onclick="bestellen('Bruschetta', 4.5)">+ Bestellen</button>
+            </div>
+          </div>
         </div>
 
         <div class="karte">
-          <h3>Salami</h3>
-          <p class="preis">9,50 €</p>
-          <button onclick="bestellen('Salami', 9.5)">Bestellen</button>
+          <div class="karte-bild vorspeise-bild-2"></div>
+          <div class="karte-body">
+            <h3>Mozzarella Caprese</h3>
+            <p class="karte-desc">Büffelmozzarella, Tomaten, Basilikum, Olivenöl</p>
+            <div class="karte-footer">
+              <span class="preis">6,50 €</span>
+              <button onclick="bestellen('Mozzarella Caprese', 6.5)">+ Bestellen</button>
+            </div>
+          </div>
         </div>
 
         <div class="karte">
-          <h3>Funghi</h3>
-          <p class="preis">9,00 €</p>
-          <button onclick="bestellen('Funghi', 9.0)">Bestellen</button>
+          <div class="karte-bild vorspeise-bild-3"></div>
+          <div class="karte-body">
+            <h3>Knoblauchbrot</h3>
+            <p class="karte-desc">Frisches Brot mit Knoblauchbutter überbacken</p>
+            <div class="karte-footer">
+              <span class="preis">3,50 €</span>
+              <button onclick="bestellen('Knoblauchbrot', 3.5)">+ Bestellen</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- PIZZEN -->
+      <div class="kategorie-titel">🍕 Pizzen</div>
+      <div class="menu-grid" id="menuGrid">
+
+        <div class="karte">
+          <div class="karte-bild pizza-bild-1"></div>
+          <div class="karte-body">
+            <h3>Margherita</h3>
+            <p class="karte-desc">Tomatensauce, Mozzarella, Basilikum</p>
+            <div class="karte-footer">
+              <span class="preis">8,50 €</span>
+              <button onclick="bestellen('Margherita', 8.5)">+ Bestellen</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="karte">
+          <div class="karte-bild pizza-bild-2"></div>
+          <div class="karte-body">
+            <h3>Salami</h3>
+            <p class="karte-desc">Tomatensauce, Mozzarella, Salami</p>
+            <div class="karte-footer">
+              <span class="preis">9,50 €</span>
+              <button onclick="bestellen('Salami', 9.5)">+ Bestellen</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="karte">
+          <div class="karte-bild pizza-bild-3"></div>
+          <div class="karte-body">
+            <h3>Funghi</h3>
+            <p class="karte-desc">Tomatensauce, Mozzarella, Champignons</p>
+            <div class="karte-footer">
+              <span class="preis">9,00 €</span>
+              <button onclick="bestellen('Funghi', 9.0)">+ Bestellen</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- NUDELN -->
+      <div class="kategorie-titel">🍝 Nudeln</div>
+      <div class="menu-grid">
+
+        <div class="karte">
+          <div class="karte-bild nudel-bild-1"></div>
+          <div class="karte-body">
+            <h3>Spaghetti Bolognese</h3>
+            <p class="karte-desc">Spaghetti mit hausgemachter Fleischsauce</p>
+            <div class="karte-footer">
+              <span class="preis">9,50 €</span>
+              <button onclick="bestellen('Spaghetti Bolognese', 9.5)">+ Bestellen</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="karte">
+          <div class="karte-bild nudel-bild-2"></div>
+          <div class="karte-body">
+            <h3>Spaghetti Carbonara</h3>
+            <p class="karte-desc">Spaghetti mit Sahnesauce, Speck und Parmesan</p>
+            <div class="karte-footer">
+              <span class="preis">10,00 €</span>
+              <button onclick="bestellen('Spaghetti Carbonara', 10.0)">+ Bestellen</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="karte">
+          <div class="karte-bild nudel-bild-3"></div>
+          <div class="karte-body">
+            <h3>Penne Arrabiata</h3>
+            <p class="karte-desc">Penne mit scharfer Tomatensauce und Knoblauch</p>
+            <div class="karte-footer">
+              <span class="preis">9,00 €</span>
+              <button onclick="bestellen('Penne Arrabiata', 9.0)">+ Bestellen</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- SALATE -->
+      <div class="kategorie-titel">🥬 Salate</div>
+      <div class="menu-grid">
+
+        <div class="karte">
+          <div class="karte-bild salat-bild-1"></div>
+          <div class="karte-body">
+            <h3>Gemischter Salat</h3>
+            <p class="karte-desc">Frischer Blattsalat mit saisonalem Gemüse</p>
+            <div class="karte-footer">
+              <span class="preis">6,50 €</span>
+              <button onclick="bestellen('Gemischter Salat', 6.5)">+ Bestellen</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="karte">
+          <div class="karte-bild salat-bild-2"></div>
+          <div class="karte-body">
+            <h3>Salat Caprese</h3>
+            <p class="karte-desc">Tomaten, Mozzarella, Basilikum, Olivenöl</p>
+            <div class="karte-footer">
+              <span class="preis">8,00 €</span>
+              <button onclick="bestellen('Salat Caprese', 8.0)">+ Bestellen</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="karte">
+          <div class="karte-bild salat-bild-3"></div>
+          <div class="karte-body">
+            <h3>Tonno Salat</h3>
+            <p class="karte-desc">Gemischter Salat mit Thunfisch und roten Zwiebeln</p>
+            <div class="karte-footer">
+              <span class="preis">9,00 €</span>
+              <button onclick="bestellen('Tonno Salat', 9.0)">+ Bestellen</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- WARENKORB + BESTELLUNG nebeneinander -->
+    <div id="bestellen-section" class="bestell-layout">
+
+      <!-- WARENKORB -->
+      <section class="box warenkorb-box">
+        <h2>🛒 Warenkorb</h2>
+        <ul id="warenkorb">
+          <li class="warenkorb-leer" id="warenkorbLeer">Noch nichts im Warenkorb.</li>
+        </ul>
+        <div class="gesamt-zeile">
+          <span>Gesamtbetrag</span>
+          <strong><span id="summe">0,00</span> €</strong>
+        </div>
+      </section>
+
+      <!-- BESTELLFORMULAR -->
+      <section class="box formular-box">
+        <h2>📋 Deine Bestellung</h2>
+
+        <div class="form-group">
+          <label for="name">Name *</label>
+          <input type="text" id="name" placeholder="Vor- und Nachname">
+        </div>
+
+        <div class="form-group">
+          <label for="telefon">Telefon *</label>
+          <input type="tel" id="telefon" placeholder="z. B. 02595 12345">
+        </div>
+
+        <div class="form-group">
+          <label for="adresse">Adresse *</label>
+          <input type="text" id="adresse" placeholder="Straße, Hausnummer, PLZ">
+        </div>
+
+        <div class="form-group">
+          <label for="hinweis">Hinweis (optional)</label>
+          <input type="text" id="hinweis" placeholder="z. B. ohne Zwiebeln, klingeln bei...">
+        </div>
+
+        <button id="bestellButton" class="submit-btn" onclick="abschicken()">
+          <span id="buttonText">Bestellung abschicken</span>
+          <span id="buttonSpinner" class="spinner"></span>
+        </button>
+      </section>
+
+    </div>
+
+    <!-- LIEFERINFOS -->
+    <section id="lieferung" class="box lieferung-box">
+      <h2>🛵 Lieferinformationen</h2>
+      <div class="lieferung-grid">
+        <div class="lieferung-card innerorts">
+          <div class="lieferung-icon">🏠</div>
+          <h3>Innerorts</h3>
+          <p class="lieferkosten">1,00 €</p>
+          <p class="liefertext">Lieferkosten</p>
+          <div class="mindest">Mindestbestellwert: <strong>15,00 €</strong></div>
+        </div>
+        <div class="lieferung-card ausserorts">
+          <div class="lieferung-icon">🚗</div>
+          <h3>Außerorts</h3>
+          <p class="lieferkosten">2,90 €</p>
+          <p class="liefertext">Lieferkosten</p>
+          <div class="mindest">Mindestbestellwert: <strong>25,00 – 30,00 €</strong></div>
+        </div>
+      </div>
+      <p class="lieferung-hinweis">* Der genaue Mindestbestellwert außerorts kann je nach Liefergebiet variieren. Ruf uns gerne an: <strong>02595 7688</strong></p>
+    </section>
+
+    <!-- KONTAKT -->
+    <section id="kontakt" class="box kontakt-box">
+      <h2>📍 Kontakt & Standort</h2>
+      <div class="kontakt-grid">
+        <div class="kontakt-info">
+          <div class="kontakt-zeile">
+            <span class="kontakt-icon">📞</span>
+            <div>
+              <strong>Telefon</strong>
+              <p>02595 7688</p>
+            </div>
+          </div>
+          <div class="kontakt-zeile">
+            <span class="kontakt-icon">📍</span>
+            <div>
+              <strong>Adresse</strong>
+              <p>Pizzeria Pinocchio, Olfen</p>
+            </div>
+          </div>
+          <div class="kontakt-zeile">
+            <span class="kontakt-icon">🕐</span>
+            <div>
+              <strong>Öffnungszeiten</strong>
+              <p>Täglich 12:00 – 21:00 Uhr</p>
+            </div>
+          </div>
+        </div>
+        <div class="kontakt-map">
+          <iframe
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d9916.3!2d7.378!3d51.699!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47b8e0!2sPizzeria%20Pinocchio%20Olfen!5e0!3m2!1sde!2sde!4v1"
+            width="100%" height="220" style="border:0; border-radius:12px;" allowfullscreen="" loading="lazy">
+          </iframe>
         </div>
       </div>
     </section>
 
-    <section class="box">
-      <h2>Warenkorb</h2>
-      <ul id="warenkorb"></ul>
-      <p class="gesamt"><strong>Gesamt: <span id="summe">0.00</span> €</strong></p>
-    </section>
-
-   <section class="box">
-      <h2>Bestellung</h2>
-
-      <label for="name">Name</label>
-      <input type="text" id="name" placeholder="Dein Name">
-
-      <label for="telefon">Telefon</label>
-      <input type="text" id="telefon" placeholder="Deine Telefonnummer">
-
-      <label for="adresse">Adresse</label>
-      <input type="text" id="adresse" placeholder="Straße und Hausnummer">
-
-      <label for="hinweis">Hinweis</label>
-      <input type="text" id="hinweis" placeholder="z. B. ohne Zwiebeln">
-
-    <button id="bestellButton" class="submit-btn" onclick="abschicken()">
-    <span id="buttonText">Bestellung abschicken</span>
-    <span id="buttonSpinner" class="spinner"></span>
-    </button>
-  </section>
-
-    <section class="box kontakt">
-      <h2>Kontakt</h2>
-      <p>Telefon: 02595 7688</p>
-    </section>
   </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <p class="footer-logo">🍕 Pizzeria Pinocchio</p>
+      <p>Olfen &nbsp;|&nbsp; Tel: 02595 7688 &nbsp;|&nbsp; Täglich 12 – 21 Uhr</p>
+      <p class="footer-copy">© 2025 Pizzeria Pinocchio. Alle Rechte vorbehalten.</p>
+    </div>
+  </footer>
 
   <div id="meldung" class="meldung"></div>
   <script src="script.js"></script>

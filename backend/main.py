@@ -30,9 +30,22 @@ def read_root():
     return {"message": "Backend läuft!"}
 
 PREISE = {
+    # Vorspeisen
+    "Bruschetta": 4.5,
+    "Mozzarella Caprese": 6.5,
+    "Knoblauchbrot": 3.5,
+    # Pizzen
     "Margherita": 8.5,
     "Salami": 9.5,
-    "Funghi": 9.0
+    "Funghi": 9.0,
+    # Nudeln
+    "Spaghetti Bolognese": 9.5,
+    "Spaghetti Carbonara": 10.0,
+    "Penne Arrabiata": 9.0,
+    # Salate
+    "Gemischter Salat": 6.5,
+    "Salat Caprese": 8.0,
+    "Tonno Salat": 9.0,
 }
 
 @app.post("/bestellen")

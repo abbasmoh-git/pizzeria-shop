@@ -1,6 +1,11 @@
 let gesamt = 0;
 let warenkorbDaten = {};
 
+function toggleMenu() {
+  let nav = document.getElementById("navMobile");
+  nav.classList.toggle("open");
+}
+
 function bestellen(name, preis) {
   if(warenkorbDaten[name]){
     warenkorbDaten[name].menge += 1;
@@ -97,14 +102,22 @@ function neuRendern() {
 
   gesamt = 0;
 
-   Object.values(warenkorbDaten).forEach((item) => {
+  if (Object.keys(warenkorbDaten).length === 0) {
+    let leer = document.createElement("li");
+    leer.className = "warenkorb-leer";
+    leer.textContent = "Noch nichts im Warenkorb.";
+    warenkorb.appendChild(leer);
+    document.getElementById("summe").textContent = "0,00";
+    return;
+  }
+
+  Object.values(warenkorbDaten).forEach((item) => {
     let li = document.createElement("li");
 
-   li.innerHTML = `
+    li.innerHTML = `
   <div class="warenkorb-links">
-    ${item.name} - ${(item.preis * item.menge).toFixed(2)} €
+    ${item.name} × ${item.menge} &nbsp;— ${(item.preis * item.menge).toFixed(2).replace('.', ',')} €
   </div>
-
   <div class="mengen-buttons">
     <button class="menge-btn" onclick="minus('${item.name}')">−</button>
     <span class="menge-zahl">${item.menge}</span>
@@ -116,7 +129,7 @@ function neuRendern() {
     gesamt += item.preis * item.menge;
   });
 
-  document.getElementById("summe").textContent = gesamt.toFixed(2);
+  document.getElementById("summe").textContent = gesamt.toFixed(2).replace('.', ',');
 }
 
 function plus(name) {
