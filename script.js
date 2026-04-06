@@ -1,34 +1,204 @@
 let gesamt = 0;
 let warenkorbDaten = {};
+let pendingItem = null;
 
 function toggleMenu() {
   let nav = document.getElementById("navMobile");
   nav.classList.toggle("open");
 }
 
+// Erkennt Kategorie anhand des übergeordneten Akkordeons
+function erkenneKategorie(btn) {
+  const akkordeon = btn ? btn.closest('.akkordeon') : null;
+  if (!akkordeon) return 'voll';
+  const kopf = akkordeon.querySelector('.akkordeon-kopf');
+  if (!kopf) return 'voll';
+  const text = kopf.textContent.toLowerCase();
+  if (text.includes('getränk') || text.includes('cola') || text.includes('wasser')) return 'getränk';
+  if (text.includes('salat')) return 'salat';
+  if (text.includes('grill') || text.includes('pfannen') || text.includes('geschnetzelt')) return 'begrenzt';
+  return 'voll';
+}
+
+// Zeigt eine Modal-Sektion, blendet die anderen aus
+function zeigeSektion(sektionId) {
+  document.querySelectorAll('.extras-sektion').forEach(s => s.classList.remove('aktiv'));
+  const el = document.getElementById(sektionId);
+  if (el) el.classList.add('aktiv');
+}
+
+// Toggle für Pizzabrötchen-Unterauswahl
+function togglePbAuswahl(auswahlId, checkbox) {
+  const el = document.getElementById(auswahlId);
+  if (!el) return;
+  el.classList.toggle('sichtbar', checkbox.checked);
+}
+
+// Toggle für Extra-Dressing-Auswahl
+function toggleDressingExtra(checkbox) {
+  const el = document.getElementById('extraDressingAuswahl');
+  if (!el) return;
+  el.classList.toggle('sichtbar', checkbox.checked);
+}
+
 function bestellen(name, preis, btn) {
-  if(warenkorbDaten[name]){
-    warenkorbDaten[name].menge += 1;
+  // Ungefülltes Pizzabrötchen → nur Soße/Butter-Auswahl
+  if (name === 'Pizzabrötchen') {
+    pendingItem = { name, preis, btn, kategorie: 'brötchen' };
+    const modal = document.getElementById("extrasModal");
+    const erstesBrötchen = modal.querySelector('input[name="brötchenSauce"]');
+    if (erstesBrötchen) erstesBrötchen.checked = true;
+    document.getElementById("modalSub").textContent = "Auswahl für";
+    document.getElementById("modalGerichtName").textContent = name;
+    zeigeSektion('extrasSektion-brötchen');
+    modal.classList.add("aktiv");
+    return;
   }
-  else{
-    warenkorbDaten[name] = {
-      name : name,
-      preis : preis,
-      menge : 1
-    };
+
+  const kategorie = erkenneKategorie(btn);
+
+  if (kategorie === 'getränk') {
+    bestellenDirekt(name, preis, btn);
+    return;
+  }
+
+  pendingItem = { name, preis, btn, kategorie };
+
+  const modal = document.getElementById("extrasModal");
+  // Reset aller Inputs
+  modal.querySelectorAll("input[type=checkbox]").forEach(cb => { cb.checked = false; });
+  modal.querySelectorAll(".pb-auswahl").forEach(el => el.classList.remove('sichtbar'));
+  // Dressing auf ersten Wert zurücksetzen
+  const ersterDressing = modal.querySelector('input[name="dressing"]');
+  if (ersterDressing) ersterDressing.checked = true;
+  // PB-Radio auf ersten zurücksetzen
+  modal.querySelectorAll('input[name^="pbSauce"]').forEach((r, i) => { r.checked = (i % 2 === 0); });
+  // Extra-Dressing-Typ auf ersten zurücksetzen
+  const ersterExtraDressingTyp = modal.querySelector('input[name="extraDressingTyp"]');
+  if (ersterExtraDressingTyp) ersterExtraDressingTyp.checked = true;
+
+  // Passende Sektion anzeigen
+  if (kategorie === 'salat') {
+    document.getElementById("modalSub").textContent = "Dressing wählen für";
+    zeigeSektion('extrasSektion-dressing');
+  } else if (kategorie === 'brötchen') {
+    document.getElementById("modalSub").textContent = "Auswahl für";
+    zeigeSektion('extrasSektion-brötchen');
+    // Brötchen-Radio zurücksetzen
+    const erstesBrötchen = modal.querySelector('input[name="brötchenSauce"]');
+    if (erstesBrötchen) erstesBrötchen.checked = true;
+  } else if (kategorie === 'begrenzt') {
+    document.getElementById("modalSub").textContent = "Extras hinzufügen für";
+    zeigeSektion('extrasSektion-begrenzt');
+  } else {
+    document.getElementById("modalSub").textContent = "Extras hinzufügen für";
+    zeigeSektion('extrasSektion-voll');
+  }
+
+  document.getElementById("modalGerichtName").textContent = name;
+  modal.classList.add("aktiv");
+}
+
+function bestellenDirekt(name, preis, btn) {
+  if (warenkorbDaten[name]) {
+    warenkorbDaten[name].menge += 1;
+  } else {
+    warenkorbDaten[name] = { name, preis, menge: 1 };
+  }
+  neuRendern();
+  blinkBtn(btn);
+}
+
+function extrasBestaetigen() {
+  if (!pendingItem) return;
+
+  const { name, preis, btn, kategorie } = pendingItem;
+  const modal = document.getElementById("extrasModal");
+
+  // === Pizzabrötchen: Sauce in Artikelname aufnehmen ===
+  if (kategorie === 'brötchen') {
+    const sauceRadio = modal.querySelector('input[name="brötchenSauce"]:checked');
+    const sauce = sauceRadio ? sauceRadio.value : 'Soße';
+    const fullName = `${name} mit ${sauce}`;
+    if (warenkorbDaten[fullName]) { warenkorbDaten[fullName].menge += 1; }
+    else { warenkorbDaten[fullName] = { name: fullName, preis, menge: 1 }; }
+    neuRendern();
+    blinkBtn(btn);
+    modal.classList.remove("aktiv");
+    pendingItem = null;
+    return;
+  }
+
+  // === Salat: Dressing als Note speichern ===
+  if (kategorie === 'salat') {
+    const dressingRadio = modal.querySelector('input[name="dressing"]:checked');
+    const dressing = dressingRadio ? dressingRadio.value : 'Joghurt';
+    const key = name;
+    if (warenkorbDaten[key]) {
+      warenkorbDaten[key].menge += 1;
+    } else {
+      warenkorbDaten[key] = { name, preis, menge: 1, note: `Dressing: ${dressing}` };
+    }
+    // Extra Dressing – mit Typ
+    const extraDressingCheck = modal.querySelector('#extraDressingCheck');
+    if (extraDressingCheck && extraDressingCheck.checked) {
+      const typRadio = modal.querySelector('input[name="extraDressingTyp"]:checked');
+      const typ = typRadio ? typRadio.value : 'Joghurt';
+      const ekKey = `Extra: Extra Dressing ${typ}`;
+      if (warenkorbDaten[ekKey]) { warenkorbDaten[ekKey].menge += 1; }
+      else { warenkorbDaten[ekKey] = { name: `Extra: Extra Dressing ${typ}`, preis: 0.5, menge: 1 }; }
+    }
+
+  } else {
+    // === Andere Kategorien: Extras einsammeln ===
+    const sektionId = kategorie === 'begrenzt' ? 'extrasSektion-begrenzt' : 'extrasSektion-voll';
+    const pbSauceName = kategorie === 'begrenzt' ? 'pbSauceBegrenzt' : 'pbSauceVoll';
+
+    // Hauptartikel
+    if (warenkorbDaten[name]) { warenkorbDaten[name].menge += 1; }
+    else { warenkorbDaten[name] = { name, preis, menge: 1 }; }
+
+    // Extras einlesen
+    const sektion = document.getElementById(sektionId);
+    sektion.querySelectorAll("input[type=checkbox]:checked").forEach(cb => {
+      let extrasName = cb.value;
+      const extrasPreis = parseFloat(cb.dataset.preis);
+
+      // Pizzabrötchen: Sauce dazunehmen
+      if (extrasName === 'Pizzabrötchen') {
+        const sauceRadio = modal.querySelector(`input[name="${pbSauceName}"]:checked`);
+        const sauce = sauceRadio ? sauceRadio.value : 'Knoblauchsauce';
+        extrasName = `Pizzabrötchen mit ${sauce}`;
+      }
+
+      const ekKey = `Extra: ${extrasName}`;
+      if (warenkorbDaten[ekKey]) { warenkorbDaten[ekKey].menge += 1; }
+      else { warenkorbDaten[ekKey] = { name: `Extra: ${extrasName}`, preis: extrasPreis, menge: 1 }; }
+    });
   }
 
   neuRendern();
+  blinkBtn(btn);
+  modal.classList.remove("aktiv");
+  pendingItem = null;
+}
 
-  if (btn) {
-    btn.classList.add("hinzugefuegt");
-    const originalHTML = btn.innerHTML;
-    btn.innerHTML = btn.innerHTML.replace(/[\d,]+ €/, "✓");
-    setTimeout(() => {
-      btn.innerHTML = originalHTML;
-      btn.classList.remove("hinzugefuegt");
-    }, 800);
+function schliesseExtras(event) {
+  if (!event || event.target === document.getElementById("extrasModal") || event.currentTarget.classList.contains("modal-schliessen")) {
+    document.getElementById("extrasModal").classList.remove("aktiv");
+    pendingItem = null;
   }
+}
+
+function blinkBtn(btn) {
+  if (!btn) return;
+  btn.classList.add("hinzugefuegt");
+  const originalHTML = btn.innerHTML;
+  btn.innerHTML = btn.innerHTML.replace(/[\d,]+ €/, "✓");
+  setTimeout(() => {
+    btn.innerHTML = originalHTML;
+    btn.classList.remove("hinzugefuegt");
+  }, 800);
 }
 
 async function abschicken() {
@@ -127,6 +297,7 @@ function neuRendern() {
     li.innerHTML = `
   <div class="warenkorb-links">
     ${item.name} × ${item.menge} &nbsp;— ${(item.preis * item.menge).toFixed(2).replace('.', ',')} €
+    ${item.note ? `<br><small class="warenkorb-note">${item.note}</small>` : ''}
   </div>
   <div class="mengen-buttons">
     <button class="menge-btn" onclick="minus('${item.name}')">−</button>
