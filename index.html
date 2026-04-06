@@ -3721,7 +3721,7 @@
             <span class="kontakt-icon">📍</span>
             <div>
               <strong>Adresse</strong>
-              <p>Pizzeria Pinocchio, Olfen</p>
+              <p>Marktplatz 6, 59399 Olfen</p>
             </div>
           </div>
           <div class="kontakt-zeile">
@@ -3734,7 +3734,7 @@
         </div>
         <div class="kontakt-map">
           <iframe
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d9916.3!2d7.378!3d51.699!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47b8e0!2sPizzeria%20Pinocchio%20Olfen!5e0!3m2!1sde!2sde!4v1"
+            src="https://maps.google.com/maps?q=Marktplatz+6,+59399+Olfen&output=embed"
             width="100%" height="220" style="border:0; border-radius:12px;" allowfullscreen="" loading="lazy">
           </iframe>
         </div>
@@ -3753,6 +3753,120 @@
   </footer>
 
   <div id="meldung" class="meldung"></div>
-  <script src="script.js"></script>
+  
+  <!-- EXTRAS MODAL -->
+  <div id="extrasModal" class="modal-overlay" onclick="schliesseExtras(event)">
+    <div class="modal-box">
+      <div class="modal-kopf">
+        <div>
+          <p class="modal-sub" id="modalSub">Extras hinzufügen für</p>
+          <h3 id="modalGerichtName"></h3>
+        </div>
+        <button class="modal-schliessen" onclick="schliesseExtras()">✕</button>
+      </div>
+
+      <!-- SEKTION: DRESSING (nur Salate) -->
+      <div id="extrasSektion-dressing" class="extras-sektion">
+        <p class="sektion-label">Dressing wählen</p>
+        <div class="dressing-grid">
+          <label class="dressing-item"><input type="radio" name="dressing" value="Joghurt" checked> Joghurt</label>
+          <label class="dressing-item"><input type="radio" name="dressing" value="Cocktail"> Cocktail</label>
+          <label class="dressing-item"><input type="radio" name="dressing" value="Balsamico-Essig"> Balsamico-Essig</label>
+          <label class="dressing-item"><input type="radio" name="dressing" value="ohne Dressing"> ohne Dressing</label>
+        </div>
+        <div class="extras-grid" style="margin-top:14px">
+          <div class="pb-wrapper" style="grid-column:1/-1">
+            <label class="extra-item"><input type="checkbox" id="extraDressingCheck" value="Extra Dressing" data-preis="0.50" onchange="toggleDressingExtra(this)"> Extra Dressing <span>+0,50 €</span></label>
+            <div class="pb-auswahl" id="extraDressingAuswahl">
+              <label class="pb-option"><input type="radio" name="extraDressingTyp" value="Joghurt" checked> Joghurt</label>
+              <label class="pb-option"><input type="radio" name="extraDressingTyp" value="Cocktail"> Cocktail</label>
+              <label class="pb-option"><input type="radio" name="extraDressingTyp" value="Balsamico-Essig"> Balsamico-Essig</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SEKTION: PIZZABRÖTCHEN (nur Butter / Soße) -->
+      <div id="extrasSektion-brötchen" class="extras-sektion">
+        <p class="sektion-label">Womit möchtest du sie?</p>
+        <div class="dressing-grid">
+          <label class="dressing-item"><input type="radio" name="brötchenSauce" value="Soße" checked> Soße</label>
+          <label class="dressing-item"><input type="radio" name="brötchenSauce" value="Butter"> Butter</label>
+        </div>
+      </div>
+
+      <!-- SEKTION: BEGRENZTE EXTRAS (Grill / Pfanne / Geschnetzeltes) -->
+      <div id="extrasSektion-begrenzt" class="extras-sektion">
+        <p class="sektion-label">Extras hinzufügen</p>
+        <div class="extras-grid">
+          <label class="extra-item"><input type="checkbox" value="Palatine Fritti" data-preis="3.50"> Palatine Fritti <span>+3,50 €</span></label>
+          <div class="pb-wrapper">
+            <label class="extra-item"><input type="checkbox" id="pbBegrenzt" value="Pizzabrötchen" data-preis="3.50" onchange="togglePbAuswahl('pbAuswahlBegrenzt', this)"> Pizzabrötchen <span>+3,50 €</span></label>
+            <div class="pb-auswahl" id="pbAuswahlBegrenzt">
+              <label class="pb-option"><input type="radio" name="pbSauceBegrenzt" value="Soße" checked> Soße</label>
+              <label class="pb-option"><input type="radio" name="pbSauceBegrenzt" value="Butter"> Butter</label>
+            </div>
+          </div>
+          <label class="extra-item"><input type="checkbox" value="Mayonnaise" data-preis="0.50"> Mayonnaise <span>+0,50 €</span></label>
+          <label class="extra-item"><input type="checkbox" value="Ketchup" data-preis="0.50"> Ketchup <span>+0,50 €</span></label>
+        </div>
+      </div>
+
+      <!-- SEKTION: VOLLE EXTRAS (Pizza, Pasta, Al Forno, etc.) -->
+      <div id="extrasSektion-voll" class="extras-sektion">
+        <p class="sektion-label">Extras hinzufügen</p>
+        <div class="extras-grid">
+          <label class="extra-item"><input type="checkbox" value="Ananas" data-preis="1.00"> Ananas <span>+1,00 €</span></label>
+          <label class="extra-item"><input type="checkbox" value="Artischocken" data-preis="1.00"> Artischocken <span>+1,00 €</span></label>
+          <label class="extra-item"><input type="checkbox" value="Banane" data-preis="1.00"> Banane <span>+1,00 €</span></label>
+          <label class="extra-item"><input type="checkbox" value="Blattspinat" data-preis="1.00"> Blattspinat <span>+1,00 €</span></label>
+          <label class="extra-item"><input type="checkbox" value="Broccoli" data-preis="1.00"> Broccoli <span>+1,00 €</span></label>
+          <label class="extra-item"><input type="checkbox" value="Champignons" data-preis="1.00"> Champignons <span>+1,00 €</span></label>
+          <label class="extra-item"><input type="checkbox" value="Dönerfleisch" data-preis="1.00"> Dönerfleisch <span>+1,00 €</span></label>
+          <label class="extra-item"><input type="checkbox" value="Ei" data-preis="1.00"> Ei <span>+1,00 €</span></label>
+          <label class="extra-item"><input type="checkbox" value="Extra Fleischsauce" data-preis="1.00"> Extra Fleischsauce <span>+1,00 €</span></label>
+          <label class="extra-item"><input type="checkbox" value="Extra Käse" data-preis="1.00"> Extra Käse <span>+1,00 €</span></label>
+          <label class="extra-item"><input type="checkbox" value="Extra Spaghetti" data-preis="1.00"> Extra Spaghetti <span>+1,00 €</span></label>
+          <label class="extra-item"><input type="checkbox" value="Gorgonzola" data-preis="1.00"> Gorgonzola <span>+1,00 €</span></label>
+          <label class="extra-item"><input type="checkbox" value="Hähnchenbrust" data-preis="1.00"> Hähnchenbrust <span>+1,00 €</span></label>
+          <label class="extra-item"><input type="checkbox" value="Kapern" data-preis="1.00"> Kapern <span>+1,00 €</span></label>
+          <label class="extra-item"><input type="checkbox" value="Ketchup" data-preis="0.50"> Ketchup <span>+0,50 €</span></label>
+          <label class="extra-item"><input type="checkbox" value="Knoblauch" data-preis="1.00"> Knoblauch <span>+1,00 €</span></label>
+          <label class="extra-item"><input type="checkbox" value="Krabben" data-preis="1.00"> Krabben <span>+1,00 €</span></label>
+          <label class="extra-item"><input type="checkbox" value="Lachs" data-preis="1.00"> Lachs <span>+1,00 €</span></label>
+          <label class="extra-item"><input type="checkbox" value="Mais" data-preis="1.00"> Mais <span>+1,00 €</span></label>
+          <label class="extra-item"><input type="checkbox" value="Mayonnaise" data-preis="0.50"> Mayonnaise <span>+0,50 €</span></label>
+          <label class="extra-item"><input type="checkbox" value="Meeresfrüchte" data-preis="1.00"> Meeresfrüchte <span>+1,00 €</span></label>
+          <label class="extra-item"><input type="checkbox" value="mit extra dünnem Teig" data-preis="1.00"> mit extra dünnem Teig <span>+1,00 €</span></label>
+          <label class="extra-item"><input type="checkbox" value="Mozzarella" data-preis="1.00"> Mozzarella <span>+1,00 €</span></label>
+          <label class="extra-item"><input type="checkbox" value="Muscheln" data-preis="1.00"> Muscheln <span>+1,00 €</span></label>
+          <label class="extra-item"><input type="checkbox" value="Oliven" data-preis="1.00"> Oliven <span>+1,00 €</span></label>
+          <label class="extra-item"><input type="checkbox" value="Paprika" data-preis="1.00"> Paprika <span>+1,00 €</span></label>
+          <label class="extra-item"><input type="checkbox" value="Peperoni" data-preis="1.00"> Peperoni <span>+1,00 €</span></label>
+          <div class="pb-wrapper">
+            <label class="extra-item"><input type="checkbox" id="pbVoll" value="Pizzabrötchen" data-preis="3.50" onchange="togglePbAuswahl('pbAuswahlVoll', this)"> Pizzabrötchen <span>+3,50 €</span></label>
+            <div class="pb-auswahl" id="pbAuswahlVoll">
+              <label class="pb-option"><input type="radio" name="pbSauceVoll" value="Soße" checked> Soße</label>
+              <label class="pb-option"><input type="radio" name="pbSauceVoll" value="Butter"> Butter</label>
+            </div>
+          </div>
+          <label class="extra-item"><input type="checkbox" value="Salami" data-preis="1.00"> Salami <span>+1,00 €</span></label>
+          <label class="extra-item"><input type="checkbox" value="Sardellen" data-preis="1.00"> Sardellen <span>+1,00 €</span></label>
+          <label class="extra-item"><input type="checkbox" value="Schafskäse" data-preis="1.00"> Schafskäse <span>+1,00 €</span></label>
+          <label class="extra-item"><input type="checkbox" value="Schinken" data-preis="1.00"> Schinken <span>+1,00 €</span></label>
+          <label class="extra-item"><input type="checkbox" value="Spargel" data-preis="1.00"> Spargel <span>+1,00 €</span></label>
+          <label class="extra-item"><input type="checkbox" value="Spinat" data-preis="1.00"> Spinat <span>+1,00 €</span></label>
+          <label class="extra-item"><input type="checkbox" value="Thunfisch" data-preis="1.00"> Thunfisch <span>+1,00 €</span></label>
+          <label class="extra-item"><input type="checkbox" value="Tomaten (frisch)" data-preis="1.00"> Tomaten (frisch) <span>+1,00 €</span></label>
+          <label class="extra-item"><input type="checkbox" value="Zwiebeln" data-preis="1.00"> Zwiebeln <span>+1,00 €</span></label>
+        </div>
+      </div>
+
+      <button class="modal-bestaetigen" onclick="extrasBestaetigen()">Zum Warenkorb hinzufügen</button>
+    </div>
+  </div>
+
+<script src="script.js"></script>
 </body>
 </html>
+  
