@@ -162,3 +162,8 @@ function zeigeMeldung(text, typ = "ok") {
     box.style.display = "none";
   }, 3000);
 }
+function toggleAkkordeon(kopf) {
+  const inhalt = kopf.nextElementSibling;
+  kopf.classList.toggle('offen');
+  inhalt.classList.toggle('offen');
+}

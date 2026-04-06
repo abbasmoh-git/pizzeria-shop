@@ -82,28 +82,247 @@
         <p class="section-sub">Alles frisch zubereitet – jeden Tag</p>
       </div>
 
-      <div class="kategorie-titel">Vorspeisen</div>
-      <div class="menu-grid placeholder-grid">
-        <div class="placeholder-karte">Gerichte folgen bald...</div>
-      </div>
+      <details class="akkordeon">
+        <summary class="akkordeon-kopf">
+          <span>Vorspeisen</span>
+          <span class="akkordeon-pfeil">▶</span>
+        </summary>
+        <div class="akkordeon-inhalt">
+          <div class="menu-liste">
 
-      <div class="kategorie-titel">Pizzabrötchen</div>
-      <div class="menu-grid placeholder-grid">
-        <div class="placeholder-karte">Gerichte folgen bald...</div>
-      </div>
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Pizzabrot</h3>
+            <p>mit Tomatensauce, Olivenöl und Knoblauch</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Pizzabrot', 3.9)">
+                <span class="groesse-zeile-preis">3,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Bruschetta</h3>
+            <p>geröstetes Weißbrot mit Tomaten, Zwiebeln, Knoblauch und Petersilie</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Bruschetta', 6.9)">
+                <span class="groesse-zeile-preis">6,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Überbackener Schafskäse</h3>
+            <p>dazu Preiselbeeren und Salat</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Überbackener Schafskäse', 6.9)">
+                <span class="groesse-zeile-preis">6,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Überbackener Camembert</h3>
+            <p>dazu Preiselbeeren und Salat</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Überbackener Camembert', 6.9)">
+                <span class="groesse-zeile-preis">6,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Bruschetta con Scampi e Rucola</h3>
+            <p>3 Bruschetta mit Scampi und Rucola</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Bruschetta con Scampi e Rucola', 11.9)">
+                <span class="groesse-zeile-preis">11,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Antipasti Scampi Spezial</h3>
+            <p>10 Scampi mit Knoblauch, Weißweinsauce und Rucola</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Antipasti Scampi Spezial', 11.9)">
+                <span class="groesse-zeile-preis">11,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Krabbenpfännchen</h3>
+            <p>mit Rucola-Salat, frischen Tomaten und Kräutern in Weißweinsauce</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Krabbenpfännchen', 11.9)">
+                <span class="groesse-zeile-preis">11,90 €</span>
+              </button>
+          </div>
+        </div>
+
+          </div>
+        </div>
+      </details>
+
+      <details class="akkordeon">
+        <summary class="akkordeon-kopf">
+          <span>Pizzabrötchen</span>
+          <span class="akkordeon-pfeil">▶</span>
+        </summary>
+        <div class="akkordeon-inhalt">
+
+          <div class="pasta-sub-titel">Pizzabrötchen</div>
+          <div class="menu-liste">
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Pizzabrötchen</h3>
+            <p>mit Knoblauchsauce oder Kräuterbutter</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Pizzabrötchen', 3.5)">
+                <span class="groesse-zeile-preis">3,50 €</span>
+              </button>
+          </div>
+        </div>
+
+          </div>
+
+          <div class="pasta-sub-titel">Gefüllte Pizzabrötchen</div>
+          <div class="menu-liste">
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Pizzabrötchen Käse gefüllt</h3>
+            <p>mit Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Pizzabrötchen Käse gefüllt', 6.5)">
+                <span class="groesse-zeile-preis">6,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Pizzabrötchen Tonno gefüllt</h3>
+            <p>mit Thunfisch und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Pizzabrötchen Tonno gefüllt', 7.5)">
+                <span class="groesse-zeile-preis">7,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Pizzabrötchen Schinken gefüllt</h3>
+            <p>mit Schinken und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Pizzabrötchen Schinken gefüllt', 7.5)">
+                <span class="groesse-zeile-preis">7,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Pizzabrötchen Salami gefüllt</h3>
+            <p>mit Salami und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Pizzabrötchen Salami gefüllt', 7.5)">
+                <span class="groesse-zeile-preis">7,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Pizzabrötchen Döner gefüllt</h3>
+            <p>mit Dönerfleisch, Sauce Hollandaise und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Pizzabrötchen Döner gefüllt', 7.9)">
+                <span class="groesse-zeile-preis">7,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Pizzabrötchen Rucola gefüllt</h3>
+            <p>mit Rucola und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Pizzabrötchen Rucola gefüllt', 7.5)">
+                <span class="groesse-zeile-preis">7,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Pizzabrötchen Spinat gefüllt</h3>
+            <p>mit Spinat und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Pizzabrötchen Spinat gefüllt', 7.5)">
+                <span class="groesse-zeile-preis">7,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Pizzabrötchen Sucuk gefüllt</h3>
+            <p>mit Sucuk und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Pizzabrötchen Sucuk gefüllt', 7.9)">
+                <span class="groesse-zeile-preis">7,90 €</span>
+              </button>
+          </div>
+        </div>
+
+          </div>
+
+        </div>
+      </details>
 
       <div class="kategorie-titel">Taschen</div>
       <div class="menu-grid placeholder-grid">
         <div class="placeholder-karte">Gerichte folgen bald...</div>
       </div>
 
-      <div class="kategorie-titel">Pizza</div>
-      <div class="groessen-legende">
-        <span>Klein Ø 20 cm</span>
-        <span>Normal Ø 26 cm</span>
-        <span>Groß Ø 30 cm</span>
-      </div>
-      <div class="menu-liste">
+      <details class="akkordeon">
+        <summary class="akkordeon-kopf">
+          <span>Pizza</span>
+          <span class="akkordeon-pfeil">▶</span>
+        </summary>
+        <div class="akkordeon-inhalt">
+          <div class="groessen-legende">
+            <span>Klein Ø 20 cm</span>
+            <span>Normal Ø 26 cm</span>
+            <span>Groß Ø 30 cm</span>
+          </div>
+          <div class="menu-liste">
 
         <div class="menu-zeile">
           <div class="menu-zeile-info">
@@ -1197,52 +1416,1963 @@
           </div>
         </div>
 
-      </div>
+          </div>
+        </div>
+      </details>
 
-            <div class="kategorie-titel">Spezial-Pizza</div>
-      <div class="menu-grid placeholder-grid">
-        <div class="placeholder-karte">Gerichte folgen bald...</div>
-      </div>
+      <details class="akkordeon">
+        <summary class="akkordeon-kopf">
+          <span>Spezial-Pizza</span>
+          <span class="akkordeon-pfeil">▶</span>
+        </summary>
+        <div class="akkordeon-inhalt">
+          <div class="groessen-legende">
+            <span>Normal Ø 26 cm</span>
+            <span>Maxi Ø 30 cm</span>
+          </div>
+          <div class="menu-liste">
 
-      <div class="kategorie-titel">Feinschmecker-Pizza</div>
-      <div class="menu-grid placeholder-grid">
-        <div class="placeholder-karte">Gerichte folgen bald...</div>
-      </div>
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Pizza Patate</h3>
+            <p>mit Kartoffeln, Zwiebeln und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Pizza Patate (Normal)', 13.9)">
+                <span class="groesse-zeile-label">Normal</span>
+                <span class="groesse-zeile-preis">13,90 €</span>
+              </button>
+              <button class="groesse-zeile-btn" onclick="bestellen('Pizza Patate (Maxi)', 14.9)">
+                <span class="groesse-zeile-label">Maxi</span>
+                <span class="groesse-zeile-preis">14,90 €</span>
+              </button>
+          </div>
+        </div>
 
-      <div class="kategorie-titel">Rollos</div>
-      <div class="menu-grid placeholder-grid">
-        <div class="placeholder-karte">Gerichte folgen bald...</div>
-      </div>
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Pizza Mimo</h3>
+            <p>mit Schinken, Spargel, Ei und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Pizza Mimo (Normal)', 13.9)">
+                <span class="groesse-zeile-label">Normal</span>
+                <span class="groesse-zeile-preis">13,90 €</span>
+              </button>
+              <button class="groesse-zeile-btn" onclick="bestellen('Pizza Mimo (Maxi)', 14.9)">
+                <span class="groesse-zeile-label">Maxi</span>
+                <span class="groesse-zeile-preis">14,90 €</span>
+              </button>
+          </div>
+        </div>
 
-      <div class="kategorie-titel">Salate</div>
-      <div class="menu-grid placeholder-grid">
-        <div class="placeholder-karte">Gerichte folgen bald...</div>
-      </div>
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Pizza Lula</h3>
+            <p>mit Dönerfleisch, Peperoni und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Pizza Lula (Normal)', 13.9)">
+                <span class="groesse-zeile-label">Normal</span>
+                <span class="groesse-zeile-preis">13,90 €</span>
+              </button>
+              <button class="groesse-zeile-btn" onclick="bestellen('Pizza Lula (Maxi)', 14.9)">
+                <span class="groesse-zeile-label">Maxi</span>
+                <span class="groesse-zeile-preis">14,90 €</span>
+              </button>
+          </div>
+        </div>
 
-      <div class="kategorie-titel">Pasta</div>
-      <div class="menu-grid placeholder-grid">
-        <div class="placeholder-karte">Gerichte folgen bald...</div>
-      </div>
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Pizza New Dehli</h3>
+            <p>mit Zwiebeln, Hähnchenbruststreifen und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Pizza New Dehli (Normal)', 13.9)">
+                <span class="groesse-zeile-label">Normal</span>
+                <span class="groesse-zeile-preis">13,90 €</span>
+              </button>
+              <button class="groesse-zeile-btn" onclick="bestellen('Pizza New Dehli (Maxi)', 14.9)">
+                <span class="groesse-zeile-label">Maxi</span>
+                <span class="groesse-zeile-preis">14,90 €</span>
+              </button>
+          </div>
+        </div>
 
-      <div class="kategorie-titel">Al Forno</div>
-      <div class="menu-grid placeholder-grid">
-        <div class="placeholder-karte">Gerichte folgen bald...</div>
-      </div>
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Pizza Scampi Spezial</h3>
+            <p>mit Krabben, Käse und Knoblauch</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Pizza Scampi Spezial (Normal)', 13.9)">
+                <span class="groesse-zeile-label">Normal</span>
+                <span class="groesse-zeile-preis">13,90 €</span>
+              </button>
+              <button class="groesse-zeile-btn" onclick="bestellen('Pizza Scampi Spezial (Maxi)', 14.9)">
+                <span class="groesse-zeile-label">Maxi</span>
+                <span class="groesse-zeile-preis">14,90 €</span>
+              </button>
+          </div>
+        </div>
 
-      <div class="kategorie-titel">Geschnetzeltes</div>
-      <div class="menu-grid placeholder-grid">
-        <div class="placeholder-karte">Gerichte folgen bald...</div>
-      </div>
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Pizza Jamaica</h3>
+            <p>mit Schinken, Ananas, Hähnchenbruststreifen und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Pizza Jamaica (Normal)', 13.9)">
+                <span class="groesse-zeile-label">Normal</span>
+                <span class="groesse-zeile-preis">13,90 €</span>
+              </button>
+              <button class="groesse-zeile-btn" onclick="bestellen('Pizza Jamaica (Maxi)', 14.9)">
+                <span class="groesse-zeile-label">Maxi</span>
+                <span class="groesse-zeile-preis">14,90 €</span>
+              </button>
+          </div>
+        </div>
 
-      <div class="kategorie-titel">Pfannengerichte</div>
-      <div class="menu-grid placeholder-grid">
-        <div class="placeholder-karte">Gerichte folgen bald...</div>
-      </div>
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Pizza Gepetto</h3>
+            <p>mit Schinken, Spinat und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Pizza Gepetto (Normal)', 13.9)">
+                <span class="groesse-zeile-label">Normal</span>
+                <span class="groesse-zeile-preis">13,90 €</span>
+              </button>
+              <button class="groesse-zeile-btn" onclick="bestellen('Pizza Gepetto (Maxi)', 14.9)">
+                <span class="groesse-zeile-label">Maxi</span>
+                <span class="groesse-zeile-preis">14,90 €</span>
+              </button>
+          </div>
+        </div>
 
-      <div class="kategorie-titel">Grillgerichte</div>
-      <div class="menu-grid placeholder-grid">
-        <div class="placeholder-karte">Gerichte folgen bald...</div>
-      </div>
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Pizza Venezia gefüllt</h3>
+            <p>mit Dönerfleisch, Paprika, Champignons, Tomatensauce und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Pizza Venezia gefüllt (Normal)', 13.9)">
+                <span class="groesse-zeile-label">Normal</span>
+                <span class="groesse-zeile-preis">13,90 €</span>
+              </button>
+              <button class="groesse-zeile-btn" onclick="bestellen('Pizza Venezia gefüllt (Maxi)', 14.9)">
+                <span class="groesse-zeile-label">Maxi</span>
+                <span class="groesse-zeile-preis">14,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Pizza Robertino</h3>
+            <p>mit Thunfisch, Zwiebeln und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Pizza Robertino (Normal)', 13.9)">
+                <span class="groesse-zeile-label">Normal</span>
+                <span class="groesse-zeile-preis">13,90 €</span>
+              </button>
+              <button class="groesse-zeile-btn" onclick="bestellen('Pizza Robertino (Maxi)', 14.9)">
+                <span class="groesse-zeile-label">Maxi</span>
+                <span class="groesse-zeile-preis">14,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Pizza Rimini</h3>
+            <p>mit Zwiebeln, frischen Tomaten, Dönerfleisch und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Pizza Rimini (Normal)', 13.9)">
+                <span class="groesse-zeile-label">Normal</span>
+                <span class="groesse-zeile-preis">13,90 €</span>
+              </button>
+              <button class="groesse-zeile-btn" onclick="bestellen('Pizza Rimini (Maxi)', 14.9)">
+                <span class="groesse-zeile-label">Maxi</span>
+                <span class="groesse-zeile-preis">14,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Pizza Sucuk Hollandaise</h3>
+            <p>mit Sucuk, Zwiebeln, Sauce Hollandaise und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Pizza Sucuk Hollandaise (Normal)', 13.9)">
+                <span class="groesse-zeile-label">Normal</span>
+                <span class="groesse-zeile-preis">13,90 €</span>
+              </button>
+              <button class="groesse-zeile-btn" onclick="bestellen('Pizza Sucuk Hollandaise (Maxi)', 14.9)">
+                <span class="groesse-zeile-label">Maxi</span>
+                <span class="groesse-zeile-preis">14,90 €</span>
+              </button>
+          </div>
+        </div>
+
+          </div>
+        </div>
+      </details>
+
+      <details class="akkordeon">
+        <summary class="akkordeon-kopf">
+          <span>Feinschmecker-Pizza</span>
+          <span class="akkordeon-pfeil">▶</span>
+        </summary>
+        <div class="akkordeon-inhalt">
+          <div class="groessen-legende">
+            <span>Normal Ø 26 cm</span>
+            <span>Groß Ø 30 cm</span>
+          </div>
+          <div class="menu-liste">
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Steinpilz-Pizza</h3>
+            <p>mit Steinpilzen, Rucola und Parmesankäse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Steinpilz-Pizza (Normal)', 13.9)">
+                <span class="groesse-zeile-label">Normal</span>
+                <span class="groesse-zeile-preis">13,90 €</span>
+              </button>
+              <button class="groesse-zeile-btn" onclick="bestellen('Steinpilz-Pizza (Groß)', 14.9)">
+                <span class="groesse-zeile-label">Groß</span>
+                <span class="groesse-zeile-preis">14,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Lachs-Pizza</h3>
+            <p>mit geräuchertem Lachs, Rucola und Parmesankäse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Lachs-Pizza (Normal)', 13.9)">
+                <span class="groesse-zeile-label">Normal</span>
+                <span class="groesse-zeile-preis">13,90 €</span>
+              </button>
+              <button class="groesse-zeile-btn" onclick="bestellen('Lachs-Pizza (Groß)', 14.9)">
+                <span class="groesse-zeile-label">Groß</span>
+                <span class="groesse-zeile-preis">14,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Parmaschinken-Pizza</h3>
+            <p>mit Parmaschinken, Rucola und Parmesankäse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Parmaschinken-Pizza (Normal)', 13.9)">
+                <span class="groesse-zeile-label">Normal</span>
+                <span class="groesse-zeile-preis">13,90 €</span>
+              </button>
+              <button class="groesse-zeile-btn" onclick="bestellen('Parmaschinken-Pizza (Groß)', 14.9)">
+                <span class="groesse-zeile-label">Groß</span>
+                <span class="groesse-zeile-preis">14,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Pfifferling-Pizza</h3>
+            <p>mit gebratenen Pfifferlingen, Zwiebeln, Rucola und Parmesankäse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Pfifferling-Pizza (Normal)', 13.9)">
+                <span class="groesse-zeile-label">Normal</span>
+                <span class="groesse-zeile-preis">13,90 €</span>
+              </button>
+              <button class="groesse-zeile-btn" onclick="bestellen('Pfifferling-Pizza (Groß)', 14.9)">
+                <span class="groesse-zeile-label">Groß</span>
+                <span class="groesse-zeile-preis">14,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Steak-Pizza</h3>
+            <p>mit Rindersteakstreifen, Cherrytomaten und Rucola</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Steak-Pizza (Normal)', 13.9)">
+                <span class="groesse-zeile-label">Normal</span>
+                <span class="groesse-zeile-preis">13,90 €</span>
+              </button>
+              <button class="groesse-zeile-btn" onclick="bestellen('Steak-Pizza (Groß)', 14.9)">
+                <span class="groesse-zeile-label">Groß</span>
+                <span class="groesse-zeile-preis">14,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Cheeseburger-Pizza leicht scharf</h3>
+            <p>mit Rinderhackfleisch, frischen Tomaten, eingelegten Gurken, Zwiebeln und Burgersauce</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Cheeseburger-Pizza leicht scharf (Normal)', 13.9)">
+                <span class="groesse-zeile-label">Normal</span>
+                <span class="groesse-zeile-preis">13,90 €</span>
+              </button>
+              <button class="groesse-zeile-btn" onclick="bestellen('Cheeseburger-Pizza leicht scharf (Groß)', 14.9)">
+                <span class="groesse-zeile-label">Groß</span>
+                <span class="groesse-zeile-preis">14,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Lunch-Pizza leicht scharf</h3>
+            <p>mit Rinderhackfleisch und Mais</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Lunch-Pizza leicht scharf (Normal)', 13.9)">
+                <span class="groesse-zeile-label">Normal</span>
+                <span class="groesse-zeile-preis">13,90 €</span>
+              </button>
+              <button class="groesse-zeile-btn" onclick="bestellen('Lunch-Pizza leicht scharf (Groß)', 14.9)">
+                <span class="groesse-zeile-label">Groß</span>
+                <span class="groesse-zeile-preis">14,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Sucuk-Pizza 1</h3>
+            <p>mit würziger Sucuk, Hirtenkäse und Oliven</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Sucuk-Pizza 1 (Normal)', 13.9)">
+                <span class="groesse-zeile-label">Normal</span>
+                <span class="groesse-zeile-preis">13,90 €</span>
+              </button>
+              <button class="groesse-zeile-btn" onclick="bestellen('Sucuk-Pizza 1 (Groß)', 14.9)">
+                <span class="groesse-zeile-label">Groß</span>
+                <span class="groesse-zeile-preis">14,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Sucuk-Pizza 2</h3>
+            <p>mit frischen Tomaten, Ei und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Sucuk-Pizza 2 (Normal)', 13.9)">
+                <span class="groesse-zeile-label">Normal</span>
+                <span class="groesse-zeile-preis">13,90 €</span>
+              </button>
+              <button class="groesse-zeile-btn" onclick="bestellen('Sucuk-Pizza 2 (Groß)', 14.9)">
+                <span class="groesse-zeile-label">Groß</span>
+                <span class="groesse-zeile-preis">14,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Vegetarische Pizza</h3>
+            <p>mit gegrilltem Gemüse der Saison</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Vegetarische Pizza (Normal)', 13.9)">
+                <span class="groesse-zeile-label">Normal</span>
+                <span class="groesse-zeile-preis">13,90 €</span>
+              </button>
+              <button class="groesse-zeile-btn" onclick="bestellen('Vegetarische Pizza (Groß)', 14.9)">
+                <span class="groesse-zeile-label">Groß</span>
+                <span class="groesse-zeile-preis">14,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Caprese-Pizza</h3>
+            <p>mit frischen Tomaten, Mozzarella-Kugeln und Basilikum-Pesto</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Caprese-Pizza (Normal)', 13.9)">
+                <span class="groesse-zeile-label">Normal</span>
+                <span class="groesse-zeile-preis">13,90 €</span>
+              </button>
+              <button class="groesse-zeile-btn" onclick="bestellen('Caprese-Pizza (Groß)', 14.9)">
+                <span class="groesse-zeile-label">Groß</span>
+                <span class="groesse-zeile-preis">14,90 €</span>
+              </button>
+          </div>
+        </div>
+
+          </div>
+        </div>
+      </details>
+
+      <details class="akkordeon">
+        <summary class="akkordeon-kopf">
+          <span>Rollos</span>
+          <span class="akkordeon-pfeil">▶</span>
+        </summary>
+        <div class="akkordeon-inhalt">
+          <div class="menu-liste">
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Rollo Phönix gefüllt</h3>
+            <p>mit Schinken, Ananas und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Rollo Phönix gefüllt', 13.5)">
+                <span class="groesse-zeile-preis">13,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Rollo Dallas gefüllt</h3>
+            <p>mit Schinken, Champignons und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Rollo Dallas gefüllt', 13.5)">
+                <span class="groesse-zeile-preis">13,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Rollo alla Pino gefüllt</h3>
+            <p>mit Salami, Ei, Zwiebeln, Knoblauch und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Rollo alla Pino gefüllt', 13.5)">
+                <span class="groesse-zeile-preis">13,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Rollo Atlanta gefüllt</h3>
+            <p>mit Thunfisch, Schinken, Zwiebeln und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Rollo Atlanta gefüllt', 14.5)">
+                <span class="groesse-zeile-preis">14,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Rollo alla Chili gefüllt</h3>
+            <p>mit frischen Tomaten, Paprika, Schinken, Hähnchenbrustfilet, Chilisauce und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Rollo alla Chili gefüllt', 14.5)">
+                <span class="groesse-zeile-preis">14,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Rollo alla Mexicana gefüllt</h3>
+            <p>mit Thunfisch, Mais, Zwiebeln, Knoblauch, Chilisauce und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Rollo alla Mexicana gefüllt', 14.5)">
+                <span class="groesse-zeile-preis">14,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Rollo alla Hawaii gefüllt</h3>
+            <p>mit Schinken, Ananas, Banane, Currysauce und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Rollo alla Hawaii gefüllt', 14.5)">
+                <span class="groesse-zeile-preis">14,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Rollo alla Popeye gefüllt</h3>
+            <p>mit Schinken, Blattspinat, Zwiebeln, Knoblauch, Schafskäse, Chilisauce und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Rollo alla Popeye gefüllt', 14.5)">
+                <span class="groesse-zeile-preis">14,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Rollo con Pollo gefüllt</h3>
+            <p>mit Hähnchenbrustfilet, Artischocken, Peperoni, Mais und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Rollo con Pollo gefüllt', 14.5)">
+                <span class="groesse-zeile-preis">14,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Rollo alla Marinara gefüllt</h3>
+            <p>mit Sardellen, Thunfisch, Meeresfrüchten, Zwiebeln, Knoblauch und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Rollo alla Marinara gefüllt', 14.5)">
+                <span class="groesse-zeile-preis">14,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Rollo alla Peppino Spezial gefüllt</h3>
+            <p>mit Salat, Artischocken, Peperoni, Tomaten, Ei, Schafskäse und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Rollo alla Peppino Spezial gefüllt', 14.5)">
+                <span class="groesse-zeile-preis">14,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Rollo Mimo gefüllt</h3>
+            <p>mit Sauce Hollandaise, Schinken, Spargel, Ei und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Rollo Mimo gefüllt', 14.5)">
+                <span class="groesse-zeile-preis">14,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Rollo Lula gefüllt</h3>
+            <p>mit Sauce Hollandaise, Dönerfleisch, Zwiebeln und Peperoni</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Rollo Lula gefüllt', 14.5)">
+                <span class="groesse-zeile-preis">14,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Rollo Florida gefüllt</h3>
+            <p>mit Sauce Hollandaise, Spinat, Krabben, Knoblauch und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Rollo Florida gefüllt', 14.5)">
+                <span class="groesse-zeile-preis">14,50 €</span>
+              </button>
+          </div>
+        </div>
+
+          </div>
+        </div>
+      </details>
+
+      <details class="akkordeon">
+        <summary class="akkordeon-kopf">
+          <span>Salate</span>
+          <span class="akkordeon-pfeil">▶</span>
+        </summary>
+        <div class="akkordeon-inhalt">
+          <div class="groessen-legende">
+            <span>Klein</span>
+            <span>Normal</span>
+          </div>
+          <div class="menu-liste">
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Salat Mista</h3>
+            <p>Salat mit Tomaten und Gurken</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Salat Mista (Klein)', 5.0)">
+                <span class="groesse-zeile-label">Klein</span>
+                <span class="groesse-zeile-preis">5,00 €</span>
+              </button>
+              <button class="groesse-zeile-btn" onclick="bestellen('Salat Mista (Normal)', 8.5)">
+                <span class="groesse-zeile-label">Normal</span>
+                <span class="groesse-zeile-preis">8,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Gemischter Salat</h3>
+            <p>Salat mit Tomaten, Gurken, Mais, Zwiebeln, Oliven und Peperoni</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn groesse-zeile-btn--disabled" disabled>
+                <span class="groesse-zeile-label">Klein</span>
+                <span class="groesse-zeile-preis">–</span>
+              </button>
+              <button class="groesse-zeile-btn" onclick="bestellen('Gemischter Salat (Normal)', 10.0)">
+                <span class="groesse-zeile-label">Normal</span>
+                <span class="groesse-zeile-preis">10,00 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Salat Pomodoro Cipolla</h3>
+            <p>mit Tomaten und Zwiebeln</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Salat Pomodoro Cipolla (Klein)', 5.0)">
+                <span class="groesse-zeile-label">Klein</span>
+                <span class="groesse-zeile-preis">5,00 €</span>
+              </button>
+              <button class="groesse-zeile-btn" onclick="bestellen('Salat Pomodoro Cipolla (Normal)', 8.5)">
+                <span class="groesse-zeile-label">Normal</span>
+                <span class="groesse-zeile-preis">8,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Salat Milano</h3>
+            <p>Salat mit Tomaten, Gurken, Schafskäse, Paprika und Zwiebeln</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn groesse-zeile-btn--disabled" disabled>
+                <span class="groesse-zeile-label">Klein</span>
+                <span class="groesse-zeile-preis">–</span>
+              </button>
+              <button class="groesse-zeile-btn" onclick="bestellen('Salat Milano (Normal)', 10.9)">
+                <span class="groesse-zeile-label">Normal</span>
+                <span class="groesse-zeile-preis">10,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Salat Cipolla</h3>
+            <p>Salat mit Gurken und Zwiebeln</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Salat Cipolla (Klein)', 5.0)">
+                <span class="groesse-zeile-label">Klein</span>
+                <span class="groesse-zeile-preis">5,00 €</span>
+              </button>
+              <button class="groesse-zeile-btn" onclick="bestellen('Salat Cipolla (Normal)', 9.5)">
+                <span class="groesse-zeile-label">Normal</span>
+                <span class="groesse-zeile-preis">9,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Salat Pomodoro Mozzarella</h3>
+            <p>Tomaten mit Mozzarella</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn groesse-zeile-btn--disabled" disabled>
+                <span class="groesse-zeile-label">Klein</span>
+                <span class="groesse-zeile-preis">–</span>
+              </button>
+              <button class="groesse-zeile-btn" onclick="bestellen('Salat Pomodoro Mozzarella (Normal)', 10.9)">
+                <span class="groesse-zeile-label">Normal</span>
+                <span class="groesse-zeile-preis">10,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Salat Primavera</h3>
+            <p>Salat mit Tomaten, Gurken, Schinken, Salami, Thunfisch und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn groesse-zeile-btn--disabled" disabled>
+                <span class="groesse-zeile-label">Klein</span>
+                <span class="groesse-zeile-preis">–</span>
+              </button>
+              <button class="groesse-zeile-btn" onclick="bestellen('Salat Primavera (Normal)', 11.9)">
+                <span class="groesse-zeile-label">Normal</span>
+                <span class="groesse-zeile-preis">11,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Salat Siciliana</h3>
+            <p>Salat mit Tomaten, Gurken, Paprika, Peperoni, Zwiebeln, Thunfisch und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn groesse-zeile-btn--disabled" disabled>
+                <span class="groesse-zeile-label">Klein</span>
+                <span class="groesse-zeile-preis">–</span>
+              </button>
+              <button class="groesse-zeile-btn" onclick="bestellen('Salat Siciliana (Normal)', 11.9)">
+                <span class="groesse-zeile-label">Normal</span>
+                <span class="groesse-zeile-preis">11,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Salat Roma</h3>
+            <p>Salat mit Tomaten, Gurken, Artischocken, Schinken, Thunfisch und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn groesse-zeile-btn--disabled" disabled>
+                <span class="groesse-zeile-label">Klein</span>
+                <span class="groesse-zeile-preis">–</span>
+              </button>
+              <button class="groesse-zeile-btn" onclick="bestellen('Salat Roma (Normal)', 11.9)">
+                <span class="groesse-zeile-label">Normal</span>
+                <span class="groesse-zeile-preis">11,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Salat Hawaii</h3>
+            <p>Salat mit Tomaten, Gurken, Schinken, Ananas, Spargel, Mais und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn groesse-zeile-btn--disabled" disabled>
+                <span class="groesse-zeile-label">Klein</span>
+                <span class="groesse-zeile-preis">–</span>
+              </button>
+              <button class="groesse-zeile-btn" onclick="bestellen('Salat Hawaii (Normal)', 11.9)">
+                <span class="groesse-zeile-label">Normal</span>
+                <span class="groesse-zeile-preis">11,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Salat della Casa</h3>
+            <p>Salat mit Tomaten, Gurken, Thunfisch, Käse, Zwiebeln und Ei</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn groesse-zeile-btn--disabled" disabled>
+                <span class="groesse-zeile-label">Klein</span>
+                <span class="groesse-zeile-preis">–</span>
+              </button>
+              <button class="groesse-zeile-btn" onclick="bestellen('Salat della Casa (Normal)', 11.9)">
+                <span class="groesse-zeile-label">Normal</span>
+                <span class="groesse-zeile-preis">11,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Salat Italia</h3>
+            <p>Salat mit Tomaten, Gurken, Artischocken, Käse, Thunfisch, Paprika, Zwiebeln und Oliven</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn groesse-zeile-btn--disabled" disabled>
+                <span class="groesse-zeile-label">Klein</span>
+                <span class="groesse-zeile-preis">–</span>
+              </button>
+              <button class="groesse-zeile-btn" onclick="bestellen('Salat Italia (Normal)', 11.9)">
+                <span class="groesse-zeile-label">Normal</span>
+                <span class="groesse-zeile-preis">11,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Salat Frutti di Mare</h3>
+            <p>Salat mit Tomaten, Gurken, Thunfisch, Krabben, Muscheln, Zwiebeln, Paprika und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn groesse-zeile-btn--disabled" disabled>
+                <span class="groesse-zeile-label">Klein</span>
+                <span class="groesse-zeile-preis">–</span>
+              </button>
+              <button class="groesse-zeile-btn" onclick="bestellen('Salat Frutti di Mare (Normal)', 13.9)">
+                <span class="groesse-zeile-label">Normal</span>
+                <span class="groesse-zeile-preis">13,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Pinocchio-Lachssalat</h3>
+            <p>mit Rucola, Tomaten und gebratenen Lachsstreifen</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn groesse-zeile-btn--disabled" disabled>
+                <span class="groesse-zeile-label">Klein</span>
+                <span class="groesse-zeile-preis">–</span>
+              </button>
+              <button class="groesse-zeile-btn" onclick="bestellen('Pinocchio-Lachssalat (Normal)', 13.9)">
+                <span class="groesse-zeile-label">Normal</span>
+                <span class="groesse-zeile-preis">13,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Salat Pollo</h3>
+            <p>Salat mit Tomaten, Gurken, Hähnchenbrust, Mais, Peperoni, Zwiebeln und Ei</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn groesse-zeile-btn--disabled" disabled>
+                <span class="groesse-zeile-label">Klein</span>
+                <span class="groesse-zeile-preis">–</span>
+              </button>
+              <button class="groesse-zeile-btn" onclick="bestellen('Salat Pollo (Normal)', 13.9)">
+                <span class="groesse-zeile-label">Normal</span>
+                <span class="groesse-zeile-preis">13,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Garnelen-Salat</h3>
+            <p>Salat mit Tomaten, Gurken, Mais, Zwiebeln, Peperoni, Oliven und gegrillten Garnelen</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn groesse-zeile-btn--disabled" disabled>
+                <span class="groesse-zeile-label">Klein</span>
+                <span class="groesse-zeile-preis">–</span>
+              </button>
+              <button class="groesse-zeile-btn" onclick="bestellen('Garnelen-Salat (Normal)', 13.9)">
+                <span class="groesse-zeile-label">Normal</span>
+                <span class="groesse-zeile-preis">13,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Rucola-Salat</h3>
+            <p>Rucola-Salat mit Mozzarella und frischen Tomaten</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn groesse-zeile-btn--disabled" disabled>
+                <span class="groesse-zeile-label">Klein</span>
+                <span class="groesse-zeile-preis">–</span>
+              </button>
+              <button class="groesse-zeile-btn" onclick="bestellen('Rucola-Salat (Normal)', 12.9)">
+                <span class="groesse-zeile-label">Normal</span>
+                <span class="groesse-zeile-preis">12,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Salat Mimo</h3>
+            <p>Salat mit Tomaten, Gurken, Zwiebeln, Paprika, Oliven und Dönerfleisch</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn groesse-zeile-btn--disabled" disabled>
+                <span class="groesse-zeile-label">Klein</span>
+                <span class="groesse-zeile-preis">–</span>
+              </button>
+              <button class="groesse-zeile-btn" onclick="bestellen('Salat Mimo (Normal)', 13.9)">
+                <span class="groesse-zeile-label">Normal</span>
+                <span class="groesse-zeile-preis">13,90 €</span>
+              </button>
+          </div>
+        </div>
+
+          </div>
+        </div>
+      </details>
+
+      <details class="akkordeon">
+        <summary class="akkordeon-kopf">
+          <span>Pasta</span>
+          <span class="akkordeon-pfeil">▶</span>
+        </summary>
+        <div class="akkordeon-inhalt">
+
+          <div class="pasta-sub-titel">Spaghetti</div>
+          <div class="menu-liste">
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Spaghetti Bolognese</h3>
+            <p>mit Fleischsauce</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Spaghetti Bolognese', 9.0)">
+                <span class="groesse-zeile-preis">9,00 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Spaghetti alla Panna</h3>
+            <p>mit Schinken und Sahnesauce</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Spaghetti alla Panna', 9.5)">
+                <span class="groesse-zeile-preis">9,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Spaghetti alla Napoletana</h3>
+            <p>mit Tomatensauce</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Spaghetti alla Napoletana', 8.9)">
+                <span class="groesse-zeile-preis">8,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Spaghetti Salmone</h3>
+            <p>mit Lachs, Broccoli und Sahnesauce</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Spaghetti Salmone', 12.5)">
+                <span class="groesse-zeile-preis">12,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Spaghetti Pesto</h3>
+            <p>mit Basilikum und Pesto</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Spaghetti Pesto', 11.5)">
+                <span class="groesse-zeile-preis">11,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Spaghetti Carbonara</h3>
+            <p>mit Schinken, Ei und Sahnesauce</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Spaghetti Carbonara', 10.5)">
+                <span class="groesse-zeile-preis">10,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Spaghetti della Casa</h3>
+            <p>mit Schinken, Champignons, Erbsen und Tomatensauce</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Spaghetti della Casa', 11.5)">
+                <span class="groesse-zeile-preis">11,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Spaghetti ai Frutti di Mare</h3>
+            <p>mit Meeresfrüchten, Knoblauch und Tomatensauce</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Spaghetti ai Frutti di Mare', 12.5)">
+                <span class="groesse-zeile-preis">12,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Spaghetti alla Vegetaria</h3>
+            <p>mit Broccoli, Erbsen und Sahnesauce</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Spaghetti alla Vegetaria', 11.5)">
+                <span class="groesse-zeile-preis">11,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Spaghetti Scampi</h3>
+            <p>mit Scampi, frischen Tomaten, Basilikum und Knoblauch</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Spaghetti Scampi', 14.5)">
+                <span class="groesse-zeile-preis">14,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Spaghetti Tonno</h3>
+            <p>mit Thunfisch, Knoblauch und Tomatensauce</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Spaghetti Tonno', 12.5)">
+                <span class="groesse-zeile-preis">12,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Spaghetti della Chef scharf</h3>
+            <p>mit Gambas, getrockneten Tomaten und Knoblauch in einer scharfen Sauce</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Spaghetti della Chef scharf', 14.5)">
+                <span class="groesse-zeile-preis">14,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Spaghetti alla Italia</h3>
+            <p>mit Oliven, Sardellen, Kapern, Basilikum und Knoblauch</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Spaghetti alla Italia', 11.5)">
+                <span class="groesse-zeile-preis">11,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Spaghetti Aglio Olio e Peperoncino</h3>
+            <p>mit Knoblauch, Peperoni und Olivenöl</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Spaghetti Aglio Olio e Peperoncino', 11.5)">
+                <span class="groesse-zeile-preis">11,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Spaghetti Caprese</h3>
+            <p>mit frischen Tomaten, Knoblauch, Basilikum und Mozzarella</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Spaghetti Caprese', 12.5)">
+                <span class="groesse-zeile-preis">12,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Spaghetti Vulcano scharf</h3>
+            <p>gebratene Spaghetti mit Oliven, Peperoni und Knoblauch in Tomatensauce</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Spaghetti Vulcano scharf', 11.5)">
+                <span class="groesse-zeile-preis">11,50 €</span>
+              </button>
+          </div>
+        </div>
+
+          </div>
+
+          <div class="pasta-sub-titel">Rigatoni</div>
+          <div class="menu-liste">
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Rigatoni Bolognese</h3>
+            <p>mit Fleischsauce</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Rigatoni Bolognese', 9.0)">
+                <span class="groesse-zeile-preis">9,00 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Rigatoni alla Napoletana</h3>
+            <p>mit Tomatensauce</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Rigatoni alla Napoletana', 9.0)">
+                <span class="groesse-zeile-preis">9,00 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Rigatoni Carbonara</h3>
+            <p>mit Schinken, Ei und Sahnesauce</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Rigatoni Carbonara', 10.5)">
+                <span class="groesse-zeile-preis">10,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Rigatoni alla Vegetaria</h3>
+            <p>mit Broccoli, Erbsen und Sahnesauce</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Rigatoni alla Vegetaria', 11.5)">
+                <span class="groesse-zeile-preis">11,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Rigatoni Italia</h3>
+            <p>mit Schinken, frischen Champignons, Erbsen und Tomatensauce</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Rigatoni Italia', 11.5)">
+                <span class="groesse-zeile-preis">11,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Rigatoni alla Panna</h3>
+            <p>mit Schinken und Sahnesauce</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Rigatoni alla Panna', 9.5)">
+                <span class="groesse-zeile-preis">9,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Rigatoni nach Art des Hauses</h3>
+            <p>mit Schinken, frischen Champignons, Zwiebeln, Sahne und Spezial-Tomatensauce</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Rigatoni nach Art des Hauses', 12.5)">
+                <span class="groesse-zeile-preis">12,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Rigatoni Cortoccio</h3>
+            <p>mit Fleischspitzen, Champignons und Tomatensauce</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Rigatoni Cortoccio', 12.5)">
+                <span class="groesse-zeile-preis">12,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Makkaroni dello Chef</h3>
+            <p>mit frischen Tomaten und Krabben in Sahnesauce</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Makkaroni dello Chef', 12.5)">
+                <span class="groesse-zeile-preis">12,50 €</span>
+              </button>
+          </div>
+        </div>
+
+          </div>
+
+          <div class="pasta-sub-titel">Tortellini</div>
+          <div class="menu-liste">
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Tortellini Bolognese</h3>
+            <p>mit Fleischsauce</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Tortellini Bolognese', 10.5)">
+                <span class="groesse-zeile-preis">10,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Tortellini alla Panna</h3>
+            <p>mit Schinken und Sahnesauce</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Tortellini alla Panna', 10.5)">
+                <span class="groesse-zeile-preis">10,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Tortellini Carbonara</h3>
+            <p>mit Schinken, Ei und Sahnesauce</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Tortellini Carbonara', 11.5)">
+                <span class="groesse-zeile-preis">11,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Tortellini alla Pinocchio</h3>
+            <p>mit Schinken, Champignons, Erbsen und Tomatensauce</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Tortellini alla Pinocchio', 11.5)">
+                <span class="groesse-zeile-preis">11,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Tortellini Boscaiola</h3>
+            <p>mit Broccoli, Erbsen und Sahnesauce</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Tortellini Boscaiola', 11.5)">
+                <span class="groesse-zeile-preis">11,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Tortellini con Salmone</h3>
+            <p>mit Lachs, Broccoli und Sahnesauce</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Tortellini con Salmone', 13.5)">
+                <span class="groesse-zeile-preis">13,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Tortellini nach Art des Hauses</h3>
+            <p>mit Schinken, frischen Champignons, Zwiebeln, Sahne und Tomatensauce</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Tortellini nach Art des Hauses', 12.5)">
+                <span class="groesse-zeile-preis">12,50 €</span>
+              </button>
+          </div>
+        </div>
+
+          </div>
+
+          <div class="pasta-sub-titel">Tagliatelle</div>
+          <div class="menu-liste">
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Tagliatelle Corteccio</h3>
+            <p>mit Fleischspitzen, Champignons und Sahnesauce</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Tagliatelle Corteccio', 12.5)">
+                <span class="groesse-zeile-preis">12,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Tagliatelle Italia</h3>
+            <p>mit Spinat, Gorgonzola und Sahne-Tomatensauce</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Tagliatelle Italia', 12.5)">
+                <span class="groesse-zeile-preis">12,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Tagliatelle Napoli</h3>
+            <p>mit Tomatensauce</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Tagliatelle Napoli', 10.5)">
+                <span class="groesse-zeile-preis">10,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Tagliatelle Bolognese</h3>
+            <p>mit Fleischsauce</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Tagliatelle Bolognese', 10.5)">
+                <span class="groesse-zeile-preis">10,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Tagliatelle Gamberetti</h3>
+            <p>mit Krabben, Knoblauch und Sahnesauce</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Tagliatelle Gamberetti', 12.9)">
+                <span class="groesse-zeile-preis">12,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Tagliatelle Romana</h3>
+            <p>mit Erbsen, Champignons, Schinken und Tomaten-Sahnesauce</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Tagliatelle Romana', 11.5)">
+                <span class="groesse-zeile-preis">11,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Tagliatelle Funghi</h3>
+            <p>mit Champignons und Sahnesauce</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Tagliatelle Funghi', 10.5)">
+                <span class="groesse-zeile-preis">10,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Tagliatelle Salmone</h3>
+            <p>mit Lachs, Broccoli und Sahnesauce</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Tagliatelle Salmone', 13.5)">
+                <span class="groesse-zeile-preis">13,50 €</span>
+              </button>
+          </div>
+        </div>
+
+          </div>
+
+        </div>
+      </details>
+
+      <details class="akkordeon">
+        <summary class="akkordeon-kopf">
+          <span>Al Forno</span>
+          <span class="akkordeon-pfeil">▶</span>
+        </summary>
+        <div class="akkordeon-inhalt">
+          <div class="menu-liste">
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Lasagne</h3>
+            <p>mit Fleischsauce, Schinken und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Lasagne', 11.5)">
+                <span class="groesse-zeile-preis">11,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Lasagne Spezial</h3>
+            <p>mit Broccoli, Erbsen, Spezialsahne, Fleischsauce, Schinken und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Lasagne Spezial', 13.5)">
+                <span class="groesse-zeile-preis">13,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Tris di Pasta</h3>
+            <p>Lasagne, Rigatoni und Tortellini mit Fleischsauce, Schinken und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Tris di Pasta', 13.5)">
+                <span class="groesse-zeile-preis">13,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Tortellini al Forno</h3>
+            <p>mit Fleischsauce und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Tortellini al Forno', 13.5)">
+                <span class="groesse-zeile-preis">13,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Tortellini alla Panna</h3>
+            <p>mit Schinken, Broccoli, Sahnesauce und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Tortellini alla Panna', 13.5)">
+                <span class="groesse-zeile-preis">13,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Tortellini Italia</h3>
+            <p>mit Schinken, Erbsen, Champignons, Spezialsahne, Tomatensauce und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Tortellini Italia', 13.5)">
+                <span class="groesse-zeile-preis">13,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Tortellini Maximo</h3>
+            <p>Tortellini, Makkaroni, Spaghetti und Schinken in Sahnesauce</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Tortellini Maximo', 13.5)">
+                <span class="groesse-zeile-preis">13,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Rigatoni Carbonara</h3>
+            <p>mit Schinken, Ei, Sahnesauce und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Rigatoni Carbonara', 11.9)">
+                <span class="groesse-zeile-preis">11,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Rigatoni ai Funghi</h3>
+            <p>mit Schinken, Broccoli, Champignons, Sahnesauce und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Rigatoni ai Funghi', 13.5)">
+                <span class="groesse-zeile-preis">13,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Rigatoni ai Quattro Formaggi</h3>
+            <p>mit Sahnesauce und 4 Käsesorten</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Rigatoni ai Quattro Formaggi', 13.5)">
+                <span class="groesse-zeile-preis">13,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Rigatoni al Forno</h3>
+            <p>mit Fleischsauce und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Rigatoni al Forno', 11.9)">
+                <span class="groesse-zeile-preis">11,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Rigatoni Italia</h3>
+            <p>mit Tomaten, Schinken, Champignons, Spezial-Sahnesauce und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Rigatoni Italia', 13.5)">
+                <span class="groesse-zeile-preis">13,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Spaghetti al Forno</h3>
+            <p>mit Fleischsauce und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Spaghetti al Forno', 11.9)">
+                <span class="groesse-zeile-preis">11,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Spaghetti Carbonara</h3>
+            <p>mit Schinken, Ei, Sahnesauce und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Spaghetti Carbonara', 13.5)">
+                <span class="groesse-zeile-preis">13,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Spaghetti Italia</h3>
+            <p>mit Schinken, Erbsen, Champignons, Spezialsahne, Tomatensauce und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Spaghetti Italia', 13.5)">
+                <span class="groesse-zeile-preis">13,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Tagliatelle Rustica</h3>
+            <p>Bandnudeln mit Hähnchenbrust, Champignons, Tomatensauce und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Tagliatelle Rustica', 13.5)">
+                <span class="groesse-zeile-preis">13,50 €</span>
+              </button>
+          </div>
+        </div>
+
+          </div>
+        </div>
+      </details>
+
+      <details class="akkordeon">
+        <summary class="akkordeon-kopf">
+          <span>Geschnetzeltes</span>
+          <span class="akkordeon-pfeil">▶</span>
+        </summary>
+        <div class="akkordeon-inhalt">
+          <div class="menu-liste">
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Putengeschnetzeltes mit Pilzen</h3>
+            <p>Putengeschnetzeltes mit Makkaroni und frischen Pilzen in Sahnesauce</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Putengeschnetzeltes mit Pilzen', 13.9)">
+                <span class="groesse-zeile-preis">13,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Putengeschnetzeltes Currysauce</h3>
+            <p>Putengeschnetzeltes mit Makkaroni in Currysauce</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Putengeschnetzeltes Currysauce', 13.9)">
+                <span class="groesse-zeile-preis">13,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Putengeschnetzeltes mit Pilzen, Tomaten...</h3>
+            <p>Putengeschnetzeltes mit Makkaroni, frischen Pilzen und frischen Tomaten in Sahnesauce</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Putengeschnetzeltes mit Pilzen, Tomaten...', 13.9)">
+                <span class="groesse-zeile-preis">13,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Pollo Picante scharf</h3>
+            <p>Putengeschnetzeltes mit Zwiebeln, dazu Patatine Fritte und ein gemischter Salat</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Pollo Picante scharf', 17.9)">
+                <span class="groesse-zeile-preis">17,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Petti di Pollo</h3>
+            <p>Putengeschnetzeltes mit Champignons, Erbsen und bunten Nudeln in Rahmsauce, dazu Salat</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Petti di Pollo', 17.9)">
+                <span class="groesse-zeile-preis">17,90 €</span>
+              </button>
+          </div>
+        </div>
+
+          </div>
+        </div>
+      </details>
+
+      <details class="akkordeon">
+        <summary class="akkordeon-kopf">
+          <span>Pfannengerichte</span>
+          <span class="akkordeon-pfeil">▶</span>
+        </summary>
+        <div class="akkordeon-inhalt">
+          <div class="menu-liste">
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Broccoli Roma</h3>
+            <p>mit Broccoli, Spargel, Tomatensauce und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Broccoli Roma', 12.9)">
+                <span class="groesse-zeile-preis">12,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Rafaello-Pfanne</h3>
+            <p>mit Bandnudeln, Champignons und Spinat in Curry-Sahnesauce</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Rafaello-Pfanne', 14.9)">
+                <span class="groesse-zeile-preis">14,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Pilzpfanne Spezial</h3>
+            <p>mit Champignons, Broccoli, Zwiebeln, Putenfleisch, Sahnesauce und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Pilzpfanne Spezial', 14.9)">
+                <span class="groesse-zeile-preis">14,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Puten-Pfanne</h3>
+            <p>mit Putengeschnetzeltem, Champignons, Zwiebeln, Spezialsauce des Hauses und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Puten-Pfanne', 14.9)">
+                <span class="groesse-zeile-preis">14,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Döner-Pfanne</h3>
+            <p>mit Dönerfleisch, Sauce Hollandaise, Champignons und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Döner-Pfanne', 14.9)">
+                <span class="groesse-zeile-preis">14,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Lula-Pfanne extra scharf</h3>
+            <p>mit Champignons, Zwiebeln, Peperoni, Putenfleisch und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Lula-Pfanne extra scharf', 14.9)">
+                <span class="groesse-zeile-preis">14,90 €</span>
+              </button>
+          </div>
+        </div>
+
+          </div>
+        </div>
+      </details>
+
+      <details class="akkordeon">
+        <summary class="akkordeon-kopf">
+          <span>Grillgerichte</span>
+          <span class="akkordeon-pfeil">▶</span>
+        </summary>
+        <div class="akkordeon-inhalt">
+
+          <div class="pasta-sub-titel">Schweinefilets</div>
+          <div class="menu-liste">
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Schweinefilet Toscana</h3>
+            <p>Schweinefilet mit gerösteten Zwiebeln, Champignons und Kräuterbutter, dazu Patatine Fritte oder ein gemischter Salat</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Schweinefilet Toscana', 17.9)">
+                <span class="groesse-zeile-preis">17,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Schweinefilet Funghi</h3>
+            <p>Schweinefilet mit Champignons und Sahnesauce, dazu Patatine Fritte oder ein gemischter Salat</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Schweinefilet Funghi', 17.9)">
+                <span class="groesse-zeile-preis">17,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Schweinefilet Gorgonzola</h3>
+            <p>Schweinefilet mit Gorgonzola und Cognac-Sahnesauce, dazu Patatine Fritte oder ein gemischter Salat</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Schweinefilet Gorgonzola', 17.9)">
+                <span class="groesse-zeile-preis">17,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Filetto di Maiale</h3>
+            <p>Schweinefilet in Rotweinsauce, dazu Patatine Fritte oder ein gemischter Salat</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Filetto di Maiale', 17.9)">
+                <span class="groesse-zeile-preis">17,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Schweinefilet Diavolo</h3>
+            <p>Schweinefilet mit Peperoni, Zwiebeln, Champignons, Paprika und Tomatensauce, dazu Patatine Fritte oder ein gemischter Salat</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Schweinefilet Diavolo', 17.9)">
+                <span class="groesse-zeile-preis">17,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Schweinefilet Canterella</h3>
+            <p>mit Pfifferlingen und Cognac-Sahnesauce, dazu Patatine Fritte oder ein gemischter Salat</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Schweinefilet Canterella', 17.9)">
+                <span class="groesse-zeile-preis">17,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Schweinefilet al Pepe</h3>
+            <p>Schweinefilets mit grüner Pfeffersauce, dazu Patatine Fritte oder ein gemischter Salat</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Schweinefilet al Pepe', 17.9)">
+                <span class="groesse-zeile-preis">17,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Filetto ai 4 Formaggi</h3>
+            <p>Schweinefilets mit 4 verschiedenen Käsesorten, dazu Patatine Fritte oder ein gemischter Salat</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Filetto ai 4 Formaggi', 17.9)">
+                <span class="groesse-zeile-preis">17,90 €</span>
+              </button>
+          </div>
+        </div>
+
+          </div>
+
+          <div class="pasta-sub-titel">Geflügel</div>
+          <div class="menu-liste">
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Pollo alla Griglia</h3>
+            <p>Hähnchenfilet mit Gemüse und Kräuterbutter, dazu Patatine Fritte und ein gemischter Salat</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Pollo alla Griglia', 17.9)">
+                <span class="groesse-zeile-preis">17,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Pollo all' Aglio</h3>
+            <p>Hähnchenfilet mit Knoblauchsauce, dazu Patatine Fritte und ein gemischter Salat</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Pollo all' Aglio', 17.9)">
+                <span class="groesse-zeile-preis">17,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Pollo al Pepe</h3>
+            <p>Hähnchenfilet mit grünem Pfeffer und Sahnesauce, dazu Patatine Fritte und ein gemischter Salat</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Pollo al Pepe', 17.9)">
+                <span class="groesse-zeile-preis">17,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Pollo della Casa</h3>
+            <p>Hähnchenfilet mit Zwiebeln, Champignons und Currysauce, dazu Patatine Fritte und ein gemischter Salat</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Pollo della Casa', 17.9)">
+                <span class="groesse-zeile-preis">17,90 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Hähnchenfilet</h3>
+            <p>Hähnchenfilet mit Bandnudeln in Zitronensauce oder Marsalasauce</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Hähnchenfilet', 17.9)">
+                <span class="groesse-zeile-preis">17,90 €</span>
+              </button>
+          </div>
+        </div>
+
+          </div>
+
+        </div>
+      </details>
 
       <div class="kategorie-titel">Desserts</div>
       <div class="menu-grid placeholder-grid">

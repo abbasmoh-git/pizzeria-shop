@@ -1023,3 +1023,67 @@ body {
   font-weight: 700;
   color: #c0392b;
 }
+
+/* ===========================
+   AKKORDEON
+=========================== */
+.akkordeon {
+  margin-bottom: 16px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid #f0ece6;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+  background: white;
+}
+
+.akkordeon-kopf {
+  width: 100%;
+  background: white;
+  border: none;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #1a1a1a;
+  cursor: pointer;
+  transition: background 0.2s;
+  list-style: none;
+}
+
+.akkordeon-kopf::-webkit-details-marker {
+  display: none;
+}
+
+.akkordeon-kopf:hover {
+  background: #faf8f6;
+}
+
+.akkordeon-pfeil {
+  font-size: 14px;
+  color: #c0392b;
+  transition: transform 0.3s ease;
+  flex-shrink: 0;
+}
+
+.akkordeon[open] .akkordeon-pfeil {
+  transform: rotate(90deg);
+}
+
+.akkordeon-inhalt {
+  padding: 0 24px 24px;
+  background: white;
+}
+
+.pasta-sub-titel {
+  font-size: 16px;
+  font-weight: 700;
+  color: #c0392b;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 20px 0 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #fde8e8;
+}
