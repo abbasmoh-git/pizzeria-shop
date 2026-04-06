@@ -6,7 +6,7 @@ function toggleMenu() {
   nav.classList.toggle("open");
 }
 
-function bestellen(name, preis) {
+function bestellen(name, preis, btn) {
   if(warenkorbDaten[name]){
     warenkorbDaten[name].menge += 1;
   }
@@ -19,6 +19,16 @@ function bestellen(name, preis) {
   }
 
   neuRendern();
+
+  if (btn) {
+    btn.classList.add("hinzugefuegt");
+    const originalHTML = btn.innerHTML;
+    btn.innerHTML = btn.innerHTML.replace(/[\d,]+ €/, "✓");
+    setTimeout(() => {
+      btn.innerHTML = originalHTML;
+      btn.classList.remove("hinzugefuegt");
+    }, 800);
+  }
 }
 
 async function abschicken() {

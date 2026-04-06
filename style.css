@@ -1087,3 +1087,19 @@ body {
   padding-bottom: 6px;
   border-bottom: 1px solid #fde8e8;
 }
+
+/* Warenkorb-Feedback-Effekt */
+.groesse-zeile-btn.hinzugefuegt,
+.groesse-btn.hinzugefuegt {
+  background: #27ae60 !important;
+  border-color: #27ae60 !important;
+  transform: scale(1.08);
+  transition: all 0.15s ease;
+}
+
+.groesse-zeile-btn.hinzugefuegt .groesse-zeile-label,
+.groesse-zeile-btn.hinzugefuegt .groesse-zeile-preis,
+.groesse-btn.hinzugefuegt .groesse-label,
+.groesse-btn.hinzugefuegt .groesse-preis {
+  color: white !important;
+}
