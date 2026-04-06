@@ -306,10 +306,65 @@
         </div>
       </details>
 
-      <div class="kategorie-titel">Taschen</div>
-      <div class="menu-grid placeholder-grid">
-        <div class="placeholder-karte">Gerichte folgen bald...</div>
-      </div>
+      <details class="akkordeon">
+        <summary class="akkordeon-kopf">
+          <span>Taschen</span>
+          <span class="akkordeon-pfeil">▶</span>
+        </summary>
+        <div class="akkordeon-inhalt">
+          <div class="menu-liste">
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Käse-Tasche</h3>
+            <p>mit Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Käse-Tasche', 6.5)">
+                <span class="groesse-zeile-preis">6,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Spinat-Tasche</h3>
+            <p>mit Spinat und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Spinat-Tasche', 7.5)">
+                <span class="groesse-zeile-preis">7,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Tonno-Tasche</h3>
+            <p>mit Thunfisch und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Tonno-Tasche', 7.5)">
+                <span class="groesse-zeile-preis">7,50 €</span>
+              </button>
+          </div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info">
+            <h3>Gefüllte Tasche</h3>
+            <p>mit Dönerfleisch, Zwiebeln, Sauce Hollandaise und Käse</p>
+          </div>
+          <div class="menu-zeile-buttons">
+              <button class="groesse-zeile-btn" onclick="bestellen('Gefüllte Tasche', 7.9)">
+                <span class="groesse-zeile-preis">7,90 €</span>
+              </button>
+          </div>
+        </div>
+
+          </div>
+        </div>
+      </details>
 
       <details class="akkordeon">
         <summary class="akkordeon-kopf">
@@ -3508,4 +3563,6 @@
   </footer>
 
   <div id="meldung" class="meldung"></div>
-  <script src="script.js"></script
+  <script src="script.js"></script>
+</body>
+</html>
