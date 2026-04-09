@@ -2,22 +2,82 @@ let gesamt = 0;
 let warenkorbDaten = {};
 let pendingItem = null;
 
+// ===== EXTRAS KONFIGURATION =====
+const TIERISCHE_EXTRAS = new Set([
+  'Dönerfleisch','Garnelen','Gorgonzola','Hähnchenbrust','Lachs',
+  'Meeresfrüchte','Mozzarella','Muscheln','Scampi'
+]);
+
+const PASTA_EXTRAS_SET = new Set(['Gorgonzola','Mozzarella','Schafskäse','Extra Käse']);
+
+// Preis-Tier-Konfiguration
+const TIER_PREISE = {
+  klein:   { tierisch: 2.0, normal: 1.0, key: 'Extra [Klein]: ',   noBroetchen: true },
+  normal:  { tierisch: 2.5, normal: 1.5, key: 'Extra: ',           noBroetchen: false },
+  maxi:    { tierisch: 3.5, normal: 2.0, key: 'Extra [Maxi]: ',    noBroetchen: false },
+  pasta:   { tierisch: 2.5, normal: 1.5, key: 'Extra: ',           noBroetchen: true, onlyPasta: true },
+  familie: { tierisch: 3.5, normal: 2.0, key: 'Extra [Familie]: ', noBroetchen: false },
+  party:   { tierisch: 4.5, normal: 3.0, key: 'Extra [Party]: ',   noBroetchen: false },
+};
+
 function toggleMenu() {
   let nav = document.getElementById("navMobile");
   nav.classList.toggle("open");
 }
 
-// Erkennt Kategorie anhand des übergeordneten Akkordeons
-function erkenneKategorie(btn) {
+// Erkennt Tier/Kategorie anhand von Artikelname + Akkordeon-Kontext
+function erkenneKategorie(name, btn) {
+  const nameLower = name.toLowerCase();
   const akkordeon = btn ? btn.closest('.akkordeon') : null;
-  if (!akkordeon) return 'voll';
-  const kopf = akkordeon.querySelector('.akkordeon-kopf');
-  if (!kopf) return 'voll';
-  const text = kopf.textContent.toLowerCase();
-  if (text.includes('getränk') || text.includes('cola') || text.includes('wasser')) return 'getränk';
-  if (text.includes('salat')) return 'salat';
-  if (text.includes('grill') || text.includes('pfannen') || text.includes('geschnetzelt')) return 'begrenzt';
-  return 'voll';
+  const kopfText = akkordeon ? (akkordeon.querySelector('.akkordeon-kopf')?.textContent || '').toLowerCase() : '';
+
+  if (kopfText.includes('getränk') || kopfText.includes('dessert')) return 'getränk';
+  if (kopfText.includes('salat') && !kopfText.includes('famili') && !kopfText.includes('party')) return 'salat';
+  if (kopfText.includes('vorspeise')) return 'keine';
+  if (kopfText.includes('grill') || kopfText.includes('pfannen') || kopfText.includes('geschnetzelt')) return 'begrenzt';
+  if (kopfText.includes('spaghetti') || kopfText.includes('rigatoni') || kopfText.includes('tagliatelle')) return 'pasta';
+  if (nameLower.includes('nudelplatte')) return 'pasta';
+  if (nameLower.includes('salatplatte')) return 'salat';
+  if (nameLower.includes('familienpizza')) return 'familie';
+  if (nameLower.includes('partypizza')) return 'party';
+
+  if (nameLower.includes('(maxi)')) return 'maxi';
+  if (nameLower.includes('(klein)')) return 'klein';
+  if (kopfText.includes('taschen')) return 'klein';
+  if (nameLower.includes('gefüllt')) return 'klein';
+
+  return 'normal';
+}
+
+// Aktualisiert Preise + Sichtbarkeit in extrasSektion-voll je nach Tier
+function aktualisiereExtrasModal(tier) {
+  const sektion = document.getElementById('extrasSektion-voll');
+  if (!sektion) return;
+  const config = TIER_PREISE[tier];
+  if (!config) return;
+
+  sektion.querySelectorAll('input[type=checkbox]').forEach(cb => {
+    const extraName = cb.value;
+    const container = cb.closest('.pb-wrapper') || cb.closest('label.extra-item');
+    if (!container) return;
+
+    let sichtbar = true;
+    if (config.onlyPasta && !PASTA_EXTRAS_SET.has(extraName)) sichtbar = false;
+    if (config.noBroetchen && extraName === 'Pizzabrötchen') sichtbar = false;
+
+    container.style.display = sichtbar ? '' : 'none';
+    if (!sichtbar) { cb.checked = false; return; }
+
+    const isTierisch = TIERISCHE_EXTRAS.has(extraName);
+    const newPreis = isTierisch ? config.tierisch : config.normal;
+    cb.dataset.preis = newPreis.toFixed(2);
+
+    const label = cb.closest('label.extra-item');
+    if (label) {
+      const span = label.querySelector('span');
+      if (span) span.textContent = `+${newPreis.toFixed(2).replace('.', ',')} €`;
+    }
+  });
 }
 
 // Zeigt eine Modal-Sektion, blendet die anderen aus
@@ -55,9 +115,9 @@ function bestellen(name, preis, btn) {
     return;
   }
 
-  const kategorie = erkenneKategorie(btn);
+  const kategorie = erkenneKategorie(name, btn);
 
-  if (kategorie === 'getränk') {
+  if (kategorie === 'getränk' || kategorie === 'keine') {
     bestellenDirekt(name, preis, btn);
     return;
   }
@@ -68,12 +128,11 @@ function bestellen(name, preis, btn) {
   // Reset aller Inputs
   modal.querySelectorAll("input[type=checkbox]").forEach(cb => { cb.checked = false; });
   modal.querySelectorAll(".pb-auswahl").forEach(el => el.classList.remove('sichtbar'));
-  // Dressing auf ersten Wert zurücksetzen
   const ersterDressing = modal.querySelector('input[name="dressing"]');
   if (ersterDressing) ersterDressing.checked = true;
-  // PB-Radio auf ersten zurücksetzen
   modal.querySelectorAll('input[name^="pbSauce"]').forEach((r, i) => { r.checked = (i % 2 === 0); });
-  // Extra-Dressing-Typ auf ersten zurücksetzen
+  const ersteBeilage = modal.querySelector('input[name="beilage"]');
+  if (ersteBeilage) ersteBeilage.checked = true;
   const ersterExtraDressingTyp = modal.querySelector('input[name="extraDressingTyp"]');
   if (ersterExtraDressingTyp) ersterExtraDressingTyp.checked = true;
 
@@ -81,18 +140,14 @@ function bestellen(name, preis, btn) {
   if (kategorie === 'salat') {
     document.getElementById("modalSub").textContent = "Dressing wählen für";
     zeigeSektion('extrasSektion-dressing');
-  } else if (kategorie === 'brötchen') {
-    document.getElementById("modalSub").textContent = "Auswahl für";
-    zeigeSektion('extrasSektion-brötchen');
-    // Brötchen-Radio zurücksetzen
-    const erstesBrötchen = modal.querySelector('input[name="brötchenSauce"]');
-    if (erstesBrötchen) erstesBrötchen.checked = true;
   } else if (kategorie === 'begrenzt') {
     document.getElementById("modalSub").textContent = "Extras hinzufügen für";
     zeigeSektion('extrasSektion-begrenzt');
   } else {
+    // klein, normal, maxi, pasta → volle Extraliste mit tier-spezifischen Preisen
     document.getElementById("modalSub").textContent = "Extras hinzufügen für";
     zeigeSektion('extrasSektion-voll');
+    aktualisiereExtrasModal(kategorie);
   }
 
   document.getElementById("modalGerichtName").textContent = name;
@@ -153,10 +208,23 @@ function extrasBestaetigen() {
     // === Andere Kategorien: Extras einsammeln ===
     const sektionId = kategorie === 'begrenzt' ? 'extrasSektion-begrenzt' : 'extrasSektion-voll';
     const pbSauceName = kategorie === 'begrenzt' ? 'pbSauceBegrenzt' : 'pbSauceVoll';
+    const tierConfig = TIER_PREISE[kategorie];
+    const tierKey = tierConfig ? tierConfig.key : 'Extra: ';
 
     // Hauptartikel
     if (warenkorbDaten[name]) { warenkorbDaten[name].menge += 1; }
     else { warenkorbDaten[name] = { name, preis, menge: 1 }; }
+
+    // Beilage-Auswahl (Grill/Pfanne)
+    if (kategorie === 'begrenzt') {
+      const beilageRadio = modal.querySelector('input[name="beilage"]:checked');
+      if (beilageRadio && beilageRadio.dataset.preis) {
+        const beilagePreis = parseFloat(beilageRadio.dataset.preis);
+        const beilageKey = 'Extra: Pommes + Gemischter Salat';
+        if (warenkorbDaten[beilageKey]) { warenkorbDaten[beilageKey].menge += 1; }
+        else { warenkorbDaten[beilageKey] = { name: 'Extra: Pommes + Gemischter Salat', preis: beilagePreis, menge: 1 }; }
+      }
+    }
 
     // Extras einlesen
     const sektion = document.getElementById(sektionId);
@@ -164,14 +232,19 @@ function extrasBestaetigen() {
       let extrasName = cb.value;
       const extrasPreis = parseFloat(cb.dataset.preis);
 
-      // Pizzabrötchen: Sauce dazunehmen
+      // Pizzabrötchen: fixer Preis, kein Tier-Prefix
       if (extrasName === 'Pizzabrötchen') {
         const sauceRadio = modal.querySelector(`input[name="${pbSauceName}"]:checked`);
-        const sauce = sauceRadio ? sauceRadio.value : 'Knoblauchsauce';
+        const sauce = sauceRadio ? sauceRadio.value : 'Soße';
         extrasName = `Pizzabrötchen mit ${sauce}`;
+        const ekKey = `Extra: ${extrasName}`;
+        if (warenkorbDaten[ekKey]) { warenkorbDaten[ekKey].menge += 1; }
+        else { warenkorbDaten[ekKey] = { name: `Extra: ${extrasName}`, preis: extrasPreis, menge: 1 }; }
+        return;
       }
 
-      const ekKey = `Extra: ${extrasName}`;
+      // Alle anderen Extras mit Tier-Key für Backend-Validierung
+      const ekKey = `${tierKey}${extrasName}`;
       if (warenkorbDaten[ekKey]) { warenkorbDaten[ekKey].menge += 1; }
       else { warenkorbDaten[ekKey] = { name: `Extra: ${extrasName}`, preis: extrasPreis, menge: 1 }; }
     });
@@ -294,9 +367,10 @@ function neuRendern() {
   Object.values(warenkorbDaten).forEach((item) => {
     let li = document.createElement("li");
 
+    const anzeigeName = item.displayName || item.name;
     li.innerHTML = `
   <div class="warenkorb-links">
-    ${item.name} × ${item.menge} &nbsp;— ${(item.preis * item.menge).toFixed(2).replace('.', ',')} €
+    ${anzeigeName} × ${item.menge} &nbsp;— ${(item.preis * item.menge).toFixed(2).replace('.', ',')} €
     ${item.note ? `<br><small class="warenkorb-note">${item.note}</small>` : ''}
   </div>
   <div class="mengen-buttons">
