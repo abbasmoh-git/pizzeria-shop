@@ -1,7 +1,12 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
+import os
+import stripe
+from dotenv import load_dotenv
+
+load_dotenv()  # Liest die .env Datei im gleichen Ordner
 
 app = FastAPI()
 
@@ -13,6 +18,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ===== STRIPE KONFIGURATION =====
+# Trage hier deinen Stripe Secret Key ein (aus https://dashboard.stripe.com/apikeys)
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "whsec_HIER_WEBHOOK_SECRET_EINTRAGEN")
+# URL deiner Webseite (für Weiterleitung nach Zahlung)
+SITE_URL = os.getenv("SITE_URL", "http://localhost:5500")
+
 class Artikel(BaseModel):
     name: str
     preis: float
@@ -21,9 +33,10 @@ class Bestellung(BaseModel):
     name: str
     telefon: str
     adresse: str
-    hinweis: str
+    hinweis: Optional[str] = ""
     artikel: List[Artikel]
     gesamt: float
+    zahlung: Optional[str] = "bar"
 
 @app.get("/")
 def read_root():
@@ -592,5 +605,108 @@ def bestellen(bestellung: Bestellung):
         print("-", artikel.name, "-", PREISE[artikel.name], "€")
 
     print("Gesamt:", berechnete_summe, "€")
+
+    return {"status": "ok"}
+
+
+# ===== STRIPE: CHECKOUT SESSION ERSTELLEN =====
+@app.post("/checkout-session")
+def checkout_session(bestellung: Bestellung):
+    # Preise zuerst validieren (genau wie bei /bestellen)
+    berechnete_summe = 0
+    for artikel in bestellung.artikel:
+        if artikel.name not in PREISE:
+            return {"status": "error", "message": "Unbekannter Artikel!"}
+        berechnete_summe += PREISE[artikel.name]
+    berechnete_summe = round(berechnete_summe, 2)
+
+    if round(bestellung.gesamt, 2) != berechnete_summe:
+        return {"status": "error", "message": "Preis stimmt nicht!"}
+
+    # Artikelliste als lesbaren Text für Stripe-Beschreibung
+    artikel_text = ", ".join(
+        f"{a.name}" for a in bestellung.artikel
+    )
+
+    # Zahlungsmethoden je nach Auswahl
+    if bestellung.zahlung == "paypal":
+        payment_methods = ["paypal"]
+    elif bestellung.zahlung == "kreditkarte":
+        payment_methods = ["card"]
+    else:
+        payment_methods = ["card", "paypal"]
+
+    try:
+        session = stripe.checkout.Session.create(
+            payment_method_types=payment_methods,
+            line_items=[{
+                "price_data": {
+                    "currency": "eur",
+                    "product_data": {
+                        "name": "Bestellung Pizzeria Pinocchio",
+                        "description": artikel_text[:500],  # max 500 Zeichen
+                    },
+                    "unit_amount": int(round(berechnete_summe * 100)),  # in Cent
+                },
+                "quantity": 1,
+            }],
+            mode="payment",
+            success_url=f"{SITE_URL}/success.html?session_id={{CHECKOUT_SESSION_ID}}",
+            cancel_url=f"{SITE_URL}/#bestellen",
+            metadata={
+                "kunde_name": bestellung.name,
+                "telefon": bestellung.telefon,
+                "adresse": bestellung.adresse,
+                "hinweis": bestellung.hinweis or "",
+                "artikel": artikel_text[:500],
+                "gesamt": str(berechnete_summe),
+            }
+        )
+        print("━" * 40)
+        print(f"💳 NEUE ONLINE-BESTELLUNG ({bestellung.zahlung.upper()})")
+        print(f"Name:     {bestellung.name}")
+        print(f"Telefon:  {bestellung.telefon}")
+        print(f"Adresse:  {bestellung.adresse}")
+        if bestellung.hinweis:
+            print(f"Hinweis:  {bestellung.hinweis}")
+        print("Artikel:")
+        for artikel in bestellung.artikel:
+            print(f"  - {artikel.name}  {PREISE[artikel.name]:.2f} €")
+        print(f"Gesamt:   {berechnete_summe:.2f} €")
+        print("━" * 40)
+        return {"url": session.url}
+
+    except stripe.error.AuthenticationError:
+        return {"status": "error", "message": "Stripe API-Key fehlt oder ungültig."}
+    except Exception as e:
+        print("Stripe Fehler:", e)
+        return {"status": "error", "message": "Fehler beim Erstellen der Zahlung."}
+
+
+# ===== STRIPE: WEBHOOK (Zahlung bestätigt) =====
+@app.post("/webhook")
+async def stripe_webhook(request: Request):
+    payload = await request.body()
+    sig_header = request.headers.get("stripe-signature")
+
+    try:
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, STRIPE_WEBHOOK_SECRET
+        )
+    except stripe.error.SignatureVerificationError:
+        return {"status": "error", "message": "Ungültige Webhook-Signatur"}
+
+    if event["type"] == "checkout.session.completed":
+        session = event["data"]["object"]
+        meta = session.get("metadata", {})
+
+        print("✅ Zahlung eingegangen!")
+        print("Name:", meta.get("kunde_name"))
+        print("Telefon:", meta.get("telefon"))
+        print("Adresse:", meta.get("adresse"))
+        print("Hinweis:", meta.get("hinweis"))
+        print("Artikel:", meta.get("artikel"))
+        print("Gesamt:", meta.get("gesamt"), "€")
+        print("Zahlungs-ID:", session.get("id"))
 
     return {"status": "ok"}

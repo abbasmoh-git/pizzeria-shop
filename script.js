@@ -263,10 +263,11 @@ function blinkBtn(btn) {
 }
 
 async function abschicken() {
-  let name = document.getElementById("name").value;
-  let telefon = document.getElementById("telefon").value;
-  let adresse = document.getElementById("adresse").value;
-  let hinweis = document.getElementById("hinweis").value;
+  let name = document.getElementById("name").value.trim();
+  let telefon = document.getElementById("telefon").value.trim();
+  let adresse = document.getElementById("adresse").value.trim();
+  let hinweis = document.getElementById("hinweis").value.trim();
+  let zahlung = document.querySelector('input[name="zahlung"]:checked')?.value || 'bar';
   let button = document.getElementById("bestellButton");
   let buttonText = document.getElementById("buttonText");
   let buttonSpinner = document.getElementById("buttonSpinner");
@@ -282,42 +283,65 @@ async function abschicken() {
   }
 
   let artikelListe = [];
-
   Object.values(warenkorbDaten).forEach(item => {
     for (let i = 0; i < item.menge; i++) {
-      artikelListe.push({
-        name: item.name,
-        preis: item.preis
-      });
+      artikelListe.push({ name: item.name, preis: item.preis });
     }
   });
 
+  const bestellungsDaten = {
+    name, telefon, adresse, hinweis,
+    artikel: artikelListe,
+    gesamt: gesamt,
+    zahlung: zahlung
+  };
+
   button.disabled = true;
-  buttonText.textContent = "Wird gesendet...";
   buttonSpinner.style.display = "inline-block";
+
+  // === Online-Zahlung (PayPal / Kreditkarte) ===
+  if (zahlung === 'paypal' || zahlung === 'kreditkarte') {
+    buttonText.textContent = "Weiterleitung zur Zahlung...";
+    try {
+      let response = await fetch("http://127.0.0.1:8000/checkout-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(bestellungsDaten)
+      });
+      let data = await response.json();
+      if (data.url) {
+        window.location.href = data.url;  // → zu Stripe weiterleiten
+      } else {
+        zeigeMeldung(data.message || "Fehler beim Erstellen der Zahlung.", "error");
+        button.disabled = false;
+        buttonText.textContent = "Bestellung abschicken";
+        buttonSpinner.style.display = "none";
+      }
+    } catch (error) {
+      zeigeMeldung("Backend nicht erreichbar oder Serverfehler.", "error");
+      console.error(error);
+      button.disabled = false;
+      buttonText.textContent = "Bestellung abschicken";
+      buttonSpinner.style.display = "none";
+    }
+    return;
+  }
+
+  // === Barzahlung ===
+  buttonText.textContent = "Wird gesendet...";
   await new Promise(resolve => setTimeout(resolve, 2000));
 
   try {
     let response = await fetch("http://127.0.0.1:8000/bestellen", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        name: name,
-        telefon: telefon,
-        adresse: adresse,
-        hinweis: hinweis,
-        artikel: artikelListe,
-        gesamt: gesamt
-      })
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(bestellungsDaten)
     });
 
     let data = await response.json();
 
     if (data.status === "ok") {
       zeigeMeldung("🍕 Bestellung erfolgreich!");
-
       warenkorbDaten = {};
       neuRendern();
       document.getElementById("name").value = "";
