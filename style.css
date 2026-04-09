@@ -273,6 +273,58 @@ body {
   margin-bottom: 36px;
 }
 
+/* Speise-Suche */
+.speise-suche-wrapper {
+  margin-bottom: 28px;
+}
+.speise-suche-box {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border: 2px solid #ddd;
+  border-radius: 50px;
+  padding: 10px 18px;
+  gap: 10px;
+  transition: border-color 0.2s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.speise-suche-box:focus-within {
+  border-color: #c0392b;
+}
+.speise-suche-icon {
+  font-size: 17px;
+  opacity: 0.5;
+}
+.speise-suche-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 16px;
+  background: transparent;
+  font-family: inherit;
+  color: #222;
+}
+.speise-suche-input::placeholder {
+  color: #aaa;
+}
+.speise-suche-clear {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 15px;
+  color: #aaa;
+  padding: 0 2px;
+  line-height: 1;
+  display: none;
+}
+.speise-suche-clear:hover { color: #c0392b; }
+.suche-kein-ergebnis {
+  text-align: center;
+  color: #999;
+  font-size: 15px;
+  padding: 16px 0 4px;
+}
+
 .section-header h2 {
   font-family: 'Playfair Display', serif;
   font-size: 38px;

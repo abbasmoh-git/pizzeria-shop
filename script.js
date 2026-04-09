@@ -33,7 +33,7 @@ function erkenneKategorie(name, btn) {
 
   if (kopfText.includes('getränk') || kopfText.includes('dessert')) return 'getränk';
   if (kopfText.includes('salat') && !kopfText.includes('famili') && !kopfText.includes('party')) return 'salat';
-  if (kopfText.includes('vorspeise')) return 'keine';
+  if (kopfText.includes('vorspeise') || kopfText.includes('beilagen')) return 'keine';
   if (kopfText.includes('grill') || kopfText.includes('pfannen') || kopfText.includes('geschnetzelt')) return 'begrenzt';
   if (kopfText.includes('spaghetti') || kopfText.includes('rigatoni') || kopfText.includes('tagliatelle')) return 'pasta';
   if (nameLower.includes('nudelplatte')) return 'pasta';
@@ -207,7 +207,6 @@ function extrasBestaetigen() {
   } else {
     // === Andere Kategorien: Extras einsammeln ===
     const sektionId = kategorie === 'begrenzt' ? 'extrasSektion-begrenzt' : 'extrasSektion-voll';
-    const pbSauceName = kategorie === 'begrenzt' ? 'pbSauceBegrenzt' : 'pbSauceVoll';
     const tierConfig = TIER_PREISE[kategorie];
     const tierKey = tierConfig ? tierConfig.key : 'Extra: ';
 
@@ -231,17 +230,6 @@ function extrasBestaetigen() {
     sektion.querySelectorAll("input[type=checkbox]:checked").forEach(cb => {
       let extrasName = cb.value;
       const extrasPreis = parseFloat(cb.dataset.preis);
-
-      // Pizzabrötchen: fixer Preis, kein Tier-Prefix
-      if (extrasName === 'Pizzabrötchen') {
-        const sauceRadio = modal.querySelector(`input[name="${pbSauceName}"]:checked`);
-        const sauce = sauceRadio ? sauceRadio.value : 'Soße';
-        extrasName = `Pizzabrötchen mit ${sauce}`;
-        const ekKey = `Extra: ${extrasName}`;
-        if (warenkorbDaten[ekKey]) { warenkorbDaten[ekKey].menge += 1; }
-        else { warenkorbDaten[ekKey] = { name: `Extra: ${extrasName}`, preis: extrasPreis, menge: 1 }; }
-        return;
-      }
 
       // Alle anderen Extras mit Tier-Key für Backend-Validierung
       const ekKey = `${tierKey}${extrasName}`;
@@ -422,3 +410,80 @@ function toggleAkkordeon(kopf) {
   kopf.classList.toggle('offen');
   inhalt.classList.toggle('offen');
 }
+
+// ===== SPEISE-SUCHE =====
+function speiseSuchen(query) {
+  const clearBtn = document.getElementById('speiseSucheClear');
+  const keinErgebnis = document.getElementById('sucheKeinErgebnis');
+  const q = query.trim().toLowerCase();
+
+  clearBtn.style.display = q ? 'block' : 'none';
+
+  // Alle Akkordeons holen
+  const akkordeons = document.querySelectorAll('.akkordeon');
+  let irgendwasGefunden = false;
+
+  if (!q) {
+    // Suche leer: alles zurücksetzen
+    akkordeons.forEach(ak => {
+      ak.style.display = '';
+      ak.querySelectorAll('.menu-zeile').forEach(z => z.style.display = '');
+      ak.querySelectorAll('.pasta-sub-titel').forEach(t => t.style.display = '');
+      // Akkordeon wieder schließen
+      ak.removeAttribute('open');
+    });
+    keinErgebnis.style.display = 'none';
+    return;
+  }
+
+  akkordeons.forEach(ak => {
+    const zeilen = ak.querySelectorAll('.menu-zeile');
+    let treffer = 0;
+
+    zeilen.forEach(zeile => {
+      const h3 = zeile.querySelector('h3');
+      const p  = zeile.querySelector('p');
+      const text = ((h3 ? h3.textContent : '') + ' ' + (p ? p.textContent : '')).toLowerCase();
+      if (text.includes(q)) {
+        zeile.style.display = '';
+        treffer++;
+      } else {
+        zeile.style.display = 'none';
+      }
+    });
+
+    if (treffer > 0) {
+      ak.style.display = '';
+      ak.setAttribute('open', '');  // Akkordeon aufklappen
+      // Sub-Titel: zeige nur die, bei denen danach noch sichtbare Zeilen kommen
+      const subTitel = ak.querySelectorAll('.pasta-sub-titel');
+      subTitel.forEach(titel => {
+        // Nächstes menu-liste nach diesem Titel
+        let sibling = titel.nextElementSibling;
+        let hatSichtbareZeile = false;
+        while (sibling && !sibling.classList.contains('pasta-sub-titel')) {
+          if (sibling.classList.contains('menu-liste')) {
+            sibling.querySelectorAll('.menu-zeile').forEach(z => {
+              if (z.style.display !== 'none') hatSichtbareZeile = true;
+            });
+          }
+          sibling = sibling.nextElementSibling;
+        }
+        titel.style.display = hatSichtbareZeile ? '' : 'none';
+      });
+      irgendwasGefunden = true;
+    } else {
+      ak.style.display = 'none';
+    }
+  });
+
+  keinErgebnis.style.display = irgendwasGefunden ? 'none' : 'block';
+}
+
+function speiseSucheLeeren() {
+  const input = document.getElementById('speiseSuche');
+  input.value = '';
+  speiseSuchen('');
+  input.focus();
+}
+

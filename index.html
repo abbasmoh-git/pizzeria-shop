@@ -82,6 +82,15 @@
         <p class="section-sub">Alles frisch zubereitet – jeden Tag</p>
       </div>
 
+      <div class="speise-suche-wrapper">
+        <div class="speise-suche-box">
+          <span class="speise-suche-icon">🔍</span>
+          <input type="text" id="speiseSuche" class="speise-suche-input" placeholder="Speise suchen…" autocomplete="off" oninput="speiseSuchen(this.value)">
+          <button class="speise-suche-clear" id="speiseSucheClear" onclick="speiseSucheLeeren()" title="Suche leeren">✕</button>
+        </div>
+        <div id="sucheKeinErgebnis" class="suche-kein-ergebnis" style="display:none">Keine Speise gefunden.</div>
+      </div>
+
       <details class="akkordeon">
         <summary class="akkordeon-kopf">
           <span>Vorspeisen</span>
@@ -3578,6 +3587,44 @@
 
       <details class="akkordeon">
         <summary class="akkordeon-kopf">
+          <span>Weitere Beilagen</span>
+          <span class="akkordeon-pfeil">▶</span>
+        </summary>
+        <div class="akkordeon-inhalt">
+          <p class="kategorie-beschreibung">Kleine Extras zum Bestellen</p>
+          <div class="menu-liste">
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info"><h3>Butter</h3></div>
+          <div class="menu-zeile-buttons"><button class="groesse-zeile-btn" onclick="bestellen('Butter', 1.0, this)"><span class="groesse-zeile-preis">1,00 €</span></button></div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info"><h3>Soße</h3></div>
+          <div class="menu-zeile-buttons"><button class="groesse-zeile-btn" onclick="bestellen('Soße', 1.5, this)"><span class="groesse-zeile-preis">1,50 €</span></button></div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info"><h3>Oliven</h3></div>
+          <div class="menu-zeile-buttons"><button class="groesse-zeile-btn" onclick="bestellen('Oliven', 3.9, this)"><span class="groesse-zeile-preis">3,90 €</span></button></div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info"><h3>Peperoni</h3></div>
+          <div class="menu-zeile-buttons"><button class="groesse-zeile-btn" onclick="bestellen('Peperoni', 3.9, this)"><span class="groesse-zeile-preis">3,90 €</span></button></div>
+        </div>
+
+        <div class="menu-zeile">
+          <div class="menu-zeile-info"><h3>Schafskäse</h3></div>
+          <div class="menu-zeile-buttons"><button class="groesse-zeile-btn" onclick="bestellen('Schafskäse', 3.9, this)"><span class="groesse-zeile-preis">3,90 €</span></button></div>
+        </div>
+
+          </div>
+        </div>
+      </details>
+
+      <details class="akkordeon">
+        <summary class="akkordeon-kopf">
           <span>Getränke</span>
           <span class="akkordeon-pfeil">▶</span>
         </summary>
@@ -3850,13 +3897,6 @@
           <label class="extra-item"><input type="checkbox" value="Oliven" data-preis="1.00"> Oliven <span>+1,00 €</span></label>
           <label class="extra-item"><input type="checkbox" value="Paprika" data-preis="1.00"> Paprika <span>+1,00 €</span></label>
           <label class="extra-item"><input type="checkbox" value="Peperoni" data-preis="1.00"> Peperoni <span>+1,00 €</span></label>
-          <div class="pb-wrapper">
-            <label class="extra-item"><input type="checkbox" id="pbVoll" value="Pizzabrötchen" data-preis="3.50" onchange="togglePbAuswahl('pbAuswahlVoll', this)"> Pizzabrötchen <span>+3,50 €</span></label>
-            <div class="pb-auswahl" id="pbAuswahlVoll">
-              <label class="pb-option"><input type="radio" name="pbSauceVoll" value="Soße" checked> Soße</label>
-              <label class="pb-option"><input type="radio" name="pbSauceVoll" value="Butter"> Butter</label>
-            </div>
-          </div>
           <label class="extra-item"><input type="checkbox" value="Salami" data-preis="1.00"> Salami <span>+1,00 €</span></label>
           <label class="extra-item"><input type="checkbox" value="Sardellen" data-preis="1.00"> Sardellen <span>+1,00 €</span></label>
           <label class="extra-item"><input type="checkbox" value="Schafskäse" data-preis="1.00"> Schafskäse <span>+1,00 €</span></label>
