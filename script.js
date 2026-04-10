@@ -138,8 +138,11 @@ function bestellen(name, preis, btn) {
 
   // Passende Sektion anzeigen
   if (kategorie === 'salat') {
-    document.getElementById("modalSub").textContent = "Dressing wählen für";
+    document.getElementById("modalSub").textContent = "Extras hinzufügen für";
     zeigeSektion('extrasSektion-dressing');
+    // Zusätzlich volle Extras mit Normal-Preisen anzeigen
+    document.getElementById('extrasSektion-voll').classList.add('aktiv');
+    aktualisiereExtrasModal('normal');
   } else if (kategorie === 'begrenzt') {
     document.getElementById("modalSub").textContent = "Extras hinzufügen für";
     zeigeSektion('extrasSektion-begrenzt');
@@ -184,57 +187,53 @@ function extrasBestaetigen() {
     return;
   }
 
-  // === Salat: Dressing als Note speichern ===
+  // Hauptartikel anlegen oder menge erhöhen
+  if (!warenkorbDaten[name]) {
+    warenkorbDaten[name] = { name, preis, menge: 1, extras: [] };
+  } else {
+    warenkorbDaten[name].menge += 1;
+  }
+  const eintrag = warenkorbDaten[name];
+
+  // === Salat: Dressing + Extras ===
   if (kategorie === 'salat') {
     const dressingRadio = modal.querySelector('input[name="dressing"]:checked');
     const dressing = dressingRadio ? dressingRadio.value : 'Joghurt';
-    const key = name;
-    if (warenkorbDaten[key]) {
-      warenkorbDaten[key].menge += 1;
-    } else {
-      warenkorbDaten[key] = { name, preis, menge: 1, note: `Dressing: ${dressing}` };
-    }
-    // Extra Dressing – mit Typ
+    eintrag.note = `Dressing: ${dressing}`;
+
+    // Extra Dressing
     const extraDressingCheck = modal.querySelector('#extraDressingCheck');
     if (extraDressingCheck && extraDressingCheck.checked) {
       const typRadio = modal.querySelector('input[name="extraDressingTyp"]:checked');
       const typ = typRadio ? typRadio.value : 'Joghurt';
-      const ekKey = `Extra: Extra Dressing ${typ}`;
-      if (warenkorbDaten[ekKey]) { warenkorbDaten[ekKey].menge += 1; }
-      else { warenkorbDaten[ekKey] = { name: `Extra: Extra Dressing ${typ}`, preis: 0.5, menge: 1 }; }
+      eintrag.extras.push({ key: `Extra: Extra Dressing ${typ}`, label: `Extra Dressing (${typ})`, preis: 0.5 });
     }
+    // Normale Extras mit Normal-Preisen
+    const tierKey = TIER_PREISE['normal'].key;
+    document.getElementById('extrasSektion-voll').querySelectorAll('input[type=checkbox]:checked').forEach(cb => {
+      eintrag.extras.push({ key: `${tierKey}${cb.value}`, label: cb.value, preis: parseFloat(cb.dataset.preis) });
+    });
 
-  } else {
-    // === Andere Kategorien: Extras einsammeln ===
-    const sektionId = kategorie === 'begrenzt' ? 'extrasSektion-begrenzt' : 'extrasSektion-voll';
-    const tierConfig = TIER_PREISE[kategorie];
-    const tierKey = tierConfig ? tierConfig.key : 'Extra: ';
-
-    // Hauptartikel
-    if (warenkorbDaten[name]) { warenkorbDaten[name].menge += 1; }
-    else { warenkorbDaten[name] = { name, preis, menge: 1 }; }
-
-    // Beilage-Auswahl (Grill/Pfanne)
-    if (kategorie === 'begrenzt') {
-      const beilageRadio = modal.querySelector('input[name="beilage"]:checked');
-      if (beilageRadio && beilageRadio.dataset.preis) {
-        const beilagePreis = parseFloat(beilageRadio.dataset.preis);
-        const beilageKey = 'Extra: Pommes + Gemischter Salat';
-        if (warenkorbDaten[beilageKey]) { warenkorbDaten[beilageKey].menge += 1; }
-        else { warenkorbDaten[beilageKey] = { name: 'Extra: Pommes + Gemischter Salat', preis: beilagePreis, menge: 1 }; }
+  } else if (kategorie === 'begrenzt') {
+    // Beilage als Note
+    const beilageRadio = modal.querySelector('input[name="beilage"]:checked');
+    if (beilageRadio) {
+      eintrag.note = beilageRadio.parentElement.textContent.trim().split('\n')[0].trim();
+      if (beilageRadio.dataset.preis) {
+        eintrag.extras.push({ key: 'Extra: Pommes + Gemischter Salat', label: 'Pommes + Gemischter Salat', preis: parseFloat(beilageRadio.dataset.preis) });
       }
     }
+    // Mayo / Ketchup
+    document.getElementById('extrasSektion-begrenzt').querySelectorAll('input[type=checkbox]:checked').forEach(cb => {
+      eintrag.extras.push({ key: `Extra: ${cb.value}`, label: cb.value, preis: parseFloat(cb.dataset.preis) });
+    });
 
-    // Extras einlesen
-    const sektion = document.getElementById(sektionId);
-    sektion.querySelectorAll("input[type=checkbox]:checked").forEach(cb => {
-      let extrasName = cb.value;
-      const extrasPreis = parseFloat(cb.dataset.preis);
-
-      // Alle anderen Extras mit Tier-Key für Backend-Validierung
-      const ekKey = `${tierKey}${extrasName}`;
-      if (warenkorbDaten[ekKey]) { warenkorbDaten[ekKey].menge += 1; }
-      else { warenkorbDaten[ekKey] = { name: `Extra: ${extrasName}`, preis: extrasPreis, menge: 1 }; }
+  } else {
+    // Alle anderen: volle Extras mit Tier-Preisen
+    const tierConfig = TIER_PREISE[kategorie];
+    const tierKey = tierConfig ? tierConfig.key : 'Extra: ';
+    document.getElementById('extrasSektion-voll').querySelectorAll('input[type=checkbox]:checked').forEach(cb => {
+      eintrag.extras.push({ key: `${tierKey}${cb.value}`, label: cb.value, preis: parseFloat(cb.dataset.preis) });
     });
   }
 
@@ -286,6 +285,10 @@ async function abschicken() {
   Object.values(warenkorbDaten).forEach(item => {
     for (let i = 0; i < item.menge; i++) {
       artikelListe.push({ name: item.name, preis: item.preis });
+      // Extras flach ans Backend weitergeben
+      (item.extras || []).forEach(e => {
+        artikelListe.push({ name: e.key, preis: e.preis });
+      });
     }
   });
 
@@ -362,13 +365,12 @@ async function abschicken() {
 }
 
 function neuRendern() {
-  let warenkorb = document.getElementById("warenkorb");
+  const warenkorb = document.getElementById("warenkorb");
   warenkorb.innerHTML = "";
-
   gesamt = 0;
 
   if (Object.keys(warenkorbDaten).length === 0) {
-    let leer = document.createElement("li");
+    const leer = document.createElement("li");
     leer.className = "warenkorb-leer";
     leer.textContent = "Noch nichts im Warenkorb.";
     warenkorb.appendChild(leer);
@@ -377,23 +379,33 @@ function neuRendern() {
   }
 
   Object.values(warenkorbDaten).forEach((item) => {
-    let li = document.createElement("li");
+    const extras = item.extras || [];
+    const extrasPreis = extras.reduce((s, e) => s + e.preis, 0);
+    const zeilenPreis = (item.preis + extrasPreis) * item.menge;
+    gesamt += zeilenPreis;
 
     const anzeigeName = item.displayName || item.name;
-    li.innerHTML = `
-  <div class="warenkorb-links">
-    ${anzeigeName} × ${item.menge} &nbsp;— ${(item.preis * item.menge).toFixed(2).replace('.', ',')} €
-    ${item.note ? `<br><small class="warenkorb-note">${item.note}</small>` : ''}
-  </div>
-  <div class="mengen-buttons">
-    <button class="menge-btn" onclick="minus('${item.name}')">−</button>
-    <span class="menge-zahl">${item.menge}</span>
-    <button class="menge-btn" onclick="plus('${item.name}')">+</button>
-  </div>
-`;
 
+    // Extras als HTML-Liste
+    const extrasHtml = extras.map((e, idx) => `
+      <div class="warenkorb-extra">
+        <span>+ ${e.label} &nbsp;(${e.preis.toFixed(2).replace('.', ',')} €)</span>
+        <button class="extra-entfernen" onclick="extraEntfernen('${item.name}', ${idx})" title="Entfernen">×</button>
+      </div>`).join('');
+
+    const li = document.createElement("li");
+    li.innerHTML = `
+      <div class="warenkorb-links">
+        <div class="warenkorb-name">${anzeigeName} × ${item.menge} &nbsp;— ${zeilenPreis.toFixed(2).replace('.', ',')} €</div>
+        ${item.note ? `<div class="warenkorb-note">${item.note}</div>` : ''}
+        ${extrasHtml}
+      </div>
+      <div class="mengen-buttons">
+        <button class="menge-btn" onclick="minus('${item.name}')">−</button>
+        <span class="menge-zahl">${item.menge}</span>
+        <button class="menge-btn" onclick="plus('${item.name}')">+</button>
+      </div>`;
     warenkorb.appendChild(li);
-    gesamt += item.preis * item.menge;
   });
 
   document.getElementById("summe").textContent = gesamt.toFixed(2).replace('.', ',');
@@ -406,12 +418,15 @@ function plus(name) {
 
 function minus(name) {
   warenkorbDaten[name].menge -= 1;
-
-  if (warenkorbDaten[name].menge <= 0) {
-    delete warenkorbDaten[name];
-  }
-
+  if (warenkorbDaten[name].menge <= 0) delete warenkorbDaten[name];
   neuRendern();
+}
+
+function extraEntfernen(itemName, idx) {
+  if (warenkorbDaten[itemName]) {
+    warenkorbDaten[itemName].extras.splice(idx, 1);
+    neuRendern();
+  }
 }
 function zeigeMeldung(text, typ = "ok") {
   let box = document.getElementById("meldung");
