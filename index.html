@@ -6,13 +6,14 @@
   <title>Pizzeria Pinocchio – Olfen</title>
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.0/feather.min.js"></script>
 </head>
 <body>
 
   <!-- NAVIGATION -->
   <nav class="navbar">
     <div class="nav-inner">
-      <div class="nav-logo">🍕 Pinocchio</div>
+      <div class="nav-logo">Pinocchio</div>
       <ul class="nav-links">
         <li><a href="#speisekarte">Speisekarte</a></li>
         <li><a href="#lieferung">Lieferung</a></li>
@@ -35,11 +36,11 @@
       <div class="hero-content">
         <p class="hero-sub">Willkommen bei</p>
         <h1>Pizzeria Pinocchio</h1>
-        <p class="hero-ort">📍 Olfen</p>
+        <p class="hero-ort">Olfen</p>
         <p class="hero-tagline">Frisch gebacken. Mit Liebe gemacht. Direkt zu dir.</p>
         <div class="hero-badges">
-          <span class="badge">🕐 Täglich 12 – 21 Uhr</span>
-          <span class="badge">🛵 Lieferung & Abholung</span>
+          <span class="badge">Täglich 12 – 21 Uhr</span>
+          <span class="badge">Lieferung & Abholung</span>
         </div>
         <a href="#speisekarte" class="hero-btn">Zur Speisekarte</a>
       </div>
@@ -49,7 +50,7 @@
   <!-- INFO BANNER -->
   <div class="info-banner">
     <div class="info-item">
-      <span class="info-icon">🕐</span>
+      <span class="info-icon"><i data-feather="clock"></i></span>
       <div>
         <strong>Öffnungszeiten</strong>
         <p>Täglich 12:00 – 21:00 Uhr</p>
@@ -57,7 +58,7 @@
     </div>
     <div class="info-divider"></div>
     <div class="info-item">
-      <span class="info-icon">🛵</span>
+      <span class="info-icon"><i data-feather="map-pin"></i></span>
       <div>
         <strong>Liefergebiet</strong>
         <p>Innerorts & Außerorts</p>
@@ -65,7 +66,7 @@
     </div>
     <div class="info-divider"></div>
     <div class="info-item">
-      <span class="info-icon">📞</span>
+      <span class="info-icon"><i data-feather="phone"></i></span>
       <div>
         <strong>Telefon</strong>
         <p>02595 7688</p>
@@ -84,7 +85,7 @@
 
       <div class="speise-suche-wrapper">
         <div class="speise-suche-box">
-          <span class="speise-suche-icon">🔍</span>
+          <span class="speise-suche-icon"><i data-feather="search"></i></span>
           <input type="text" id="speiseSuche" class="speise-suche-input" placeholder="Speise suchen…" autocomplete="off" oninput="speiseSuchen(this.value)">
           <button class="speise-suche-clear" id="speiseSucheClear" onclick="speiseSucheLeeren()" title="Suche leeren">✕</button>
         </div>
@@ -3629,7 +3630,7 @@
           <span class="akkordeon-pfeil">▶</span>
         </summary>
         <div class="akkordeon-inhalt">
-          <p class="kategorie-beschreibung pfand-hinweis">★ Auf Flaschen wird 0,15 € Pfand berechnet</p>
+          <p class="kategorie-beschreibung pfand-hinweis">Auf Flaschen wird 0,15 € Pfand berechnet</p>
 
           <div class="pasta-sub-titel">Alkoholfreie Getränke</div>
           <div class="menu-liste">
@@ -3700,7 +3701,7 @@
 
       <!-- WARENKORB -->
       <section class="box warenkorb-box">
-        <h2>🛒 Warenkorb</h2>
+        <h2>Warenkorb</h2>
         <ul id="warenkorb">
           <li class="warenkorb-leer" id="warenkorbLeer">Noch nichts im Warenkorb.</li>
         </ul>
@@ -3712,7 +3713,7 @@
 
       <!-- BESTELLFORMULAR -->
       <section class="box formular-box">
-        <h2>📋 Deine Bestellung</h2>
+        <h2>Deine Bestellung</h2>
 
         <div class="form-group">
           <label for="name">Name *</label>
@@ -3809,17 +3810,17 @@
 
     <!-- LIEFERINFOS -->
     <section id="lieferung" class="box lieferung-box">
-      <h2>🛵 Lieferinformationen</h2>
+      <h2>Lieferinformationen</h2>
       <div class="lieferung-grid">
         <div class="lieferung-card innerorts">
-          <div class="lieferung-icon">🏠</div>
+          <div class="lieferung-icon"><i data-feather="home"></i></div>
           <h3>Innerorts</h3>
           <p class="lieferkosten">1,00 €</p>
           <p class="liefertext">Lieferkosten</p>
           <div class="mindest">Mindestbestellwert: <strong>15,00 €</strong></div>
         </div>
         <div class="lieferung-card ausserorts">
-          <div class="lieferung-icon">🚗</div>
+          <div class="lieferung-icon"><i data-feather="truck"></i></div>
           <h3>Außerorts</h3>
           <p class="lieferkosten">2,90 €</p>
           <p class="liefertext">Lieferkosten</p>
@@ -3831,25 +3832,25 @@
 
     <!-- KONTAKT -->
     <section id="kontakt" class="box kontakt-box">
-      <h2>📍 Kontakt und Standort</h2>
+      <h2>Kontakt und Standort</h2>
       <div class="kontakt-grid">
         <div class="kontakt-info">
           <div class="kontakt-zeile">
-            <span class="kontakt-icon">📞</span>
+            <span class="kontakt-icon"><i data-feather="phone"></i></span>
             <div>
               <strong>Telefon</strong>
               <p>02595 7688</p>
             </div>
           </div>
           <div class="kontakt-zeile">
-            <span class="kontakt-icon">📍</span>
+            <span class="kontakt-icon"><i data-feather="map-pin"></i></span>
             <div>
               <strong>Adresse</strong>
               <p>Marktplatz 6, 59399 Olfen</p>
             </div>
           </div>
           <div class="kontakt-zeile">
-            <span class="kontakt-icon">🕐</span>
+            <span class="kontakt-icon"><i data-feather="clock"></i></span>
             <div>
               <strong>Öffnungszeiten</strong>
               <p>Täglich 12:00 – 21:00 Uhr</p>
@@ -3870,7 +3871,7 @@
   <!-- FOOTER -->
   <footer class="footer">
     <div class="footer-inner">
-      <p class="footer-logo">🍕 Pizzeria Pinocchio</p>
+      <p class="footer-logo">Pizzeria Pinocchio</p>
       <p>Olfen &nbsp;|&nbsp; Tel: 02595 7688 &nbsp;|&nbsp; Täglich 12 – 21 Uhr</p>
       <p class="footer-copy">© 2025 Pizzeria Pinocchio. Alle Rechte vorbehalten.</p>
     </div>
@@ -3979,5 +3980,6 @@
   </div>
 
 <script src="script.js"></script>
+<script>feather.replace({ width: 18, height: 18, 'stroke-width': 1.8 });</script>
 </body>
 </html>

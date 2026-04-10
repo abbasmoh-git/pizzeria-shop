@@ -250,8 +250,11 @@ body {
 }
 
 .info-icon {
-  font-size: 28px;
+  display: flex;
+  align-items: center;
+  color: #c0392b;
 }
+.info-icon svg { width: 22px; height: 22px; }
 
 .info-divider {
   width: 1px;
@@ -292,9 +295,12 @@ body {
   border-color: #c0392b;
 }
 .speise-suche-icon {
-  font-size: 17px;
-  opacity: 0.5;
+  display: flex;
+  align-items: center;
+  opacity: 0.4;
+  color: #333;
 }
+.speise-suche-icon svg { width: 17px; height: 17px; }
 .speise-suche-input {
   flex: 1;
   border: none;
@@ -820,9 +826,12 @@ body {
 }
 
 .lieferung-icon {
-  font-size: 36px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: center;
+  color: #c0392b;
 }
+.lieferung-icon svg { width: 32px; height: 32px; }
 
 .lieferung-card h3 {
   font-family: 'Playfair Display', serif;
@@ -878,10 +887,13 @@ body {
 }
 
 .kontakt-icon {
-  font-size: 26px;
   flex-shrink: 0;
   margin-top: 2px;
+  display: flex;
+  align-items: center;
+  color: #c0392b;
 }
+.kontakt-icon svg { width: 20px; height: 20px; }
 
 .kontakt-zeile strong {
   display: block;
