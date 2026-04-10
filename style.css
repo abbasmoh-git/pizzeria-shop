@@ -675,6 +675,9 @@ body {
   cursor: pointer;
   background: #fff;
   box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 400;
 }
 .zahlung-option input[type="radio"]:checked + .zahlung-label {
   border-color: #c0392b;
@@ -711,17 +714,38 @@ body {
 }
 
 /* Logo-Bereich */
-.zahlung-logo {
-  width: 48px;
-  height: 30px;
-  border-radius: 4px;
+.zahlung-bar-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 28px;
+  background: #f0f0f0;
+  border-radius: 6px;
+  color: #555;
   flex-shrink: 0;
+}
+.zahlung-bar-icon svg { width: 16px; height: 16px; }
+.zahlung-paypal-logo {
+  height: 22px;
+  width: 80px;
+  flex-shrink: 0;
+  object-fit: contain;
+  object-position: left;
 }
 .zahlung-karten-logos {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   flex-shrink: 0;
+}
+.zahlung-visa {
+  height: 26px;
+  width: auto;
+}
+.zahlung-mc {
+  height: 26px;
+  width: auto;
 }
 
 /* Text-Bereich */
@@ -730,9 +754,17 @@ body {
   flex-direction: column;
   gap: 2px;
 }
+.zahlung-auswahl label,
+.zahlung-auswahl .zahlung-name,
+.zahlung-auswahl .zahlung-desc {
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  font-weight: 400 !important;
+}
+
 .zahlung-name {
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 600 !important;
   color: #1a1a1a;
 }
 .zahlung-desc {
