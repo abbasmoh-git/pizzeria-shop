@@ -246,6 +246,8 @@ PREISE = {
     "Pizza della Casa (Normal)": 12.9,
     "Pizza nach Art des Hauses (Groß)": 14.9,
     "Pizza nach Art des Hauses (Normal)": 13.9,
+    "Lieferkosten Innerorts": 1.0,
+    "Lieferkosten Außerorts": 2.9,
     "Butter": 1.0,
     "Soße": 1.5,
     "Oliven": 3.9,

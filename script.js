@@ -2,6 +2,150 @@ let gesamt = 0;
 let warenkorbDaten = {};
 let pendingItem = null;
 
+const LIEFERKOSTEN = {
+  innerorts: { kosten: 1.0,  mindest: 15.0, name: 'Lieferkosten Innerorts' },
+  ausserorts: { kosten: 2.9, mindest: 25.0, name: 'Lieferkosten Außerorts' }
+};
+
+// ===== ADRESSE AUTOCOMPLETE & LIEFERGEBIET ERKENNUNG =====
+const RESTAURANT_LAT = 51.7089;
+const RESTAURANT_LON = 7.3753;
+const MAX_LIEFERRADIUS_KM = 7.5;
+
+let adresseGeoResult = null; // { lat, lon, gebiet: 'innerorts'|'ausserorts'|null }
+let adresseDebounceTimer = null;
+
+function haversineKm(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2
+    + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function adresseEingabe() {
+  clearTimeout(adresseDebounceTimer);
+  adresseGeoResult = null;
+  const q = document.getElementById('adresse').value.trim();
+  if (q.length < 3) {
+    document.getElementById('adresse-vorschlaege').style.display = 'none';
+    document.getElementById('lieferstatus').style.display = 'none';
+    aktualisierelieferkosten();
+    return;
+  }
+  adresseDebounceTimer = setTimeout(() => ladeVorschlaege(q), 420);
+}
+
+async function ladeVorschlaege(query) {
+  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=de&limit=5&addressdetails=1`;
+  try {
+    const res = await fetch(url, { headers: { 'Accept-Language': 'de' } });
+    const data = await res.json();
+    zeigeVorschlaege(data);
+  } catch (e) {
+    console.error('Nominatim Fehler:', e);
+  }
+}
+
+function zeigeVorschlaege(results) {
+  const box = document.getElementById('adresse-vorschlaege');
+  if (!results || results.length === 0) {
+    box.style.display = 'none';
+    return;
+  }
+  box._results = results;
+  box.innerHTML = results.map((r, i) => {
+    const dist = haversineKm(RESTAURANT_LAT, RESTAURANT_LON, parseFloat(r.lat), parseFloat(r.lon));
+    const inRange = dist <= MAX_LIEFERRADIUS_KM;
+    const distText = dist < 1 ? `${Math.round(dist * 1000)} m` : `${dist.toFixed(1)} km`;
+    const addr = r.address || {};
+    const hauptzeile = [
+      addr.road && addr.house_number ? `${addr.road} ${addr.house_number}` : (addr.road || r.name || ''),
+    ].filter(Boolean).join('');
+    const nebenzeile = [
+      addr.postcode,
+      addr.city || addr.town || addr.village || addr.municipality || ''
+    ].filter(Boolean).join(' ');
+    return `<div class="adresse-vorschlag${inRange ? '' : ' av-ausserhalb'}" onclick="waehleAdresse(${i})">
+      <span class="av-main">${hauptzeile || r.display_name.split(',')[0]}</span>
+      <span class="av-sub">${nebenzeile}</span>
+      <span class="av-dist">${distText}</span>
+    </div>`;
+  }).join('');
+  box.style.display = 'block';
+}
+
+function waehleAdresse(idx) {
+  const box = document.getElementById('adresse-vorschlaege');
+  const r = box._results && box._results[idx];
+  if (!r) return;
+
+  const input = document.getElementById('adresse');
+  const addr = r.address || {};
+  const strasseMitNr = addr.road
+    ? (addr.house_number ? `${addr.road} ${addr.house_number}` : addr.road)
+    : '';
+  const ort = addr.city || addr.town || addr.village || addr.municipality || '';
+  const teile = [strasseMitNr, addr.postcode, ort].filter(Boolean);
+  input.value = teile.length > 0 ? teile.join(', ') : r.display_name;
+
+  box.style.display = 'none';
+
+  const lat = parseFloat(r.lat);
+  const lon = parseFloat(r.lon);
+  const dist = haversineKm(RESTAURANT_LAT, RESTAURANT_LON, lat, lon);
+  const statusEl = document.getElementById('lieferstatus');
+
+  if (dist > MAX_LIEFERRADIUS_KM) {
+    adresseGeoResult = { lat, lon, gebiet: null };
+    statusEl.className = 'lieferstatus status-ausserhalb';
+    statusEl.innerHTML = `<i data-feather="alert-circle"></i><span>Leider außerhalb unseres Liefergebiets (${dist.toFixed(1)} km · max. ${MAX_LIEFERRADIUS_KM} km Luftlinie)</span>`;
+  } else {
+    const isOlfen = ort.toLowerCase().includes('olfen') || (addr.postcode || '') === '59399';
+    const gebiet = isOlfen ? 'innerorts' : 'ausserorts';
+    adresseGeoResult = { lat, lon, gebiet };
+    if (gebiet === 'innerorts') {
+      statusEl.className = 'lieferstatus status-innerorts';
+      statusEl.innerHTML = `<i data-feather="check-circle"></i><span>Innerorts (Olfen) · Lieferkosten: 1,00 € · Mindestbestellwert: 15,00 €</span>`;
+    } else {
+      statusEl.className = 'lieferstatus status-ausserorts';
+      statusEl.innerHTML = `<i data-feather="check-circle"></i><span>Außerorts · ${dist.toFixed(1)} km · Lieferkosten: 2,90 € · Mindestbestellwert: 25,00 €</span>`;
+    }
+  }
+  statusEl.style.display = 'flex';
+  if (window.feather) feather.replace({ width: 16, height: 16, 'stroke-width': 2 });
+  aktualisierelieferkosten();
+}
+
+// Vorschläge schließen bei Klick außerhalb
+document.addEventListener('click', function (e) {
+  const box = document.getElementById('adresse-vorschlaege');
+  const input = document.getElementById('adresse');
+  if (box && input && !box.contains(e.target) && e.target !== input) {
+    box.style.display = 'none';
+  }
+});
+
+function getLiefergebiet() {
+  if (adresseGeoResult && adresseGeoResult.gebiet) return adresseGeoResult.gebiet;
+  // Fallback: Texterkennung wenn noch keine Geocodierung
+  const adresse = (document.getElementById('adresse')?.value || '').toLowerCase();
+  if (adresse.includes('59399') || adresse.includes('olfen')) return 'innerorts';
+  return 'innerorts'; // Standard bis Adresse bestätigt
+}
+
+function aktualisierelieferkosten() {
+  const gebiet = getLiefergebiet();
+  const { kosten } = LIEFERKOSTEN[gebiet];
+  const anzeige = document.getElementById('lieferkosten-anzeige');
+  if (anzeige) anzeige.textContent = kosten.toFixed(2).replace('.', ',') + ' €';
+  const gesamtEl = document.getElementById('summe-gesamt');
+  if (gesamtEl) {
+    gesamtEl.textContent = (gesamt + kosten).toFixed(2).replace('.', ',');
+  }
+}
+
 // ===== EXTRAS KONFIGURATION =====
 const TIERISCHE_EXTRAS = new Set([
   'Dönerfleisch','Garnelen','Gorgonzola','Hähnchenbrust','Lachs',
@@ -34,7 +178,7 @@ function erkenneKategorie(name, btn) {
   if (kopfText.includes('getränk') || kopfText.includes('dessert')) return 'getränk';
   if (kopfText.includes('salat') && !kopfText.includes('famili') && !kopfText.includes('party')) return 'salat';
   if (kopfText.includes('vorspeise') || kopfText.includes('beilagen')) return 'keine';
-  if (kopfText.includes('grill') || kopfText.includes('pfannen') || kopfText.includes('geschnetzelt')) return 'begrenzt';
+  if (kopfText.includes('grill')) return 'begrenzt';
   if (kopfText.includes('spaghetti') || kopfText.includes('rigatoni') || kopfText.includes('tagliatelle')) return 'pasta';
   if (nameLower.includes('nudelplatte')) return 'pasta';
   if (nameLower.includes('salatplatte')) return 'salat';
@@ -278,21 +422,36 @@ async function abschicken() {
     return;
   }
 
+  // Lieferadresse außerhalb des Gebiets?
+  if (adresseGeoResult && adresseGeoResult.gebiet === null) {
+    zeigeMeldung("Diese Adresse liegt leider außerhalb unseres Liefergebiets.", "error");
+    return;
+  }
+
+  const gebiet = getLiefergebiet();
+  const { kosten, mindest, name: lieferkostenName } = LIEFERKOSTEN[gebiet];
+
+  if (gesamt < mindest) {
+    zeigeMeldung(`Mindestbestellwert für ${gebiet === 'innerorts' ? 'Innerorts' : 'Außerorts'}: ${mindest.toFixed(2).replace('.', ',')} €`, "error");
+    return;
+  }
+
   let artikelListe = [];
   Object.values(warenkorbDaten).forEach(item => {
     for (let i = 0; i < item.menge; i++) {
       artikelListe.push({ name: item.name, preis: item.preis });
-      // Extras flach ans Backend weitergeben
       (item.extras || []).forEach(e => {
         artikelListe.push({ name: e.key, preis: e.preis });
       });
     }
   });
+  // Lieferkosten als eigener Artikel ans Backend
+  artikelListe.push({ name: lieferkostenName, preis: kosten });
 
   const bestellungsDaten = {
     name, telefon, adresse, hinweis,
     artikel: artikelListe,
-    gesamt: gesamt,
+    gesamt: gesamt + kosten,
     zahlung: zahlung
   };
 
@@ -372,6 +531,7 @@ function neuRendern() {
     leer.textContent = "Noch nichts im Warenkorb.";
     warenkorb.appendChild(leer);
     document.getElementById("summe").textContent = "0,00";
+    document.getElementById("summe-gesamt").textContent = "0,00";
     return;
   }
 
@@ -406,6 +566,9 @@ function neuRendern() {
   });
 
   document.getElementById("summe").textContent = gesamt.toFixed(2).replace('.', ',');
+  const lieferkosten = LIEFERKOSTEN[getLiefergebiet()].kosten;
+  document.getElementById("lieferkosten-anzeige").textContent = lieferkosten.toFixed(2).replace('.', ',') + ' €';
+  document.getElementById("summe-gesamt").textContent = (gesamt + lieferkosten).toFixed(2).replace('.', ',');
 }
 
 function plus(name) {
