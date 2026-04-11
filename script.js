@@ -217,11 +217,8 @@ function extrasBestaetigen() {
   } else if (kategorie === 'begrenzt') {
     // Beilage als Note
     const beilageRadio = modal.querySelector('input[name="beilage"]:checked');
-    if (beilageRadio) {
-      eintrag.note = beilageRadio.parentElement.textContent.trim().split('\n')[0].trim();
-      if (beilageRadio.dataset.preis) {
-        eintrag.extras.push({ key: 'Extra: Pommes + Gemischter Salat', label: 'Pommes + Gemischter Salat', preis: parseFloat(beilageRadio.dataset.preis) });
-      }
+    if (beilageRadio && beilageRadio.value) {
+      eintrag.note = beilageRadio.value;
     }
     // Mayo / Ketchup
     document.getElementById('extrasSektion-begrenzt').querySelectorAll('input[type=checkbox]:checked').forEach(cb => {

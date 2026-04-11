@@ -563,7 +563,7 @@ PREISE = {
     "Extra: Pizzabrötchen mit Soße": 3.5,
     "Extra: Pizzabrötchen mit Butter": 3.5,
     # Grill/Pfanne Extras
-    "Extra: Pommes + Gemischter Salat": 3.5,
+    "Extra: Pommes + Gemischter Salat": 0.0,
     "Extra: Palatine Fritti": 3.5,
     "Extra: Ketchup": 0.5,
     "Extra: Mayonnaise": 0.5,
