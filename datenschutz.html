@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Datenschutzerklärung – Pizzeria Pinocchio</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- NAVIGATION -->
+  <nav class="navbar">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">Pinocchio</a>
+      <ul class="nav-links">
+        <li><a href="index.html#speisekarte">Speisekarte</a></li>
+        <li><a href="index.html#lieferung">Lieferung</a></li>
+        <li><a href="index.html#kontakt">Kontakt</a></li>
+        <li><a href="index.html#bestellen-section" class="nav-btn">Jetzt bestellen</a></li>
+      </ul>
+      <button class="burger" onclick="toggleMenu()">&#9776;</button>
+    </div>
+    <ul class="nav-mobile" id="navMobile">
+      <li><a href="index.html#speisekarte" onclick="toggleMenu()">Speisekarte</a></li>
+      <li><a href="index.html#lieferung" onclick="toggleMenu()">Lieferung</a></li>
+      <li><a href="index.html#kontakt" onclick="toggleMenu()">Kontakt</a></li>
+      <li><a href="index.html#bestellen-section" onclick="toggleMenu()">Jetzt bestellen</a></li>
+    </ul>
+  </nav>
+
+  <main class="rechtliches-main">
+    <div class="box">
+      <h1>Datenschutzerklärung</h1>
+
+      <h2>1. Verantwortlicher</h2>
+      <p>
+        Verantwortlich für die Datenverarbeitung auf dieser Website ist:<br>
+        Elvira Ganeeva &ndash; Pizzeria Pinocchio<br>
+        Marktplatz 6, 59399 Olfen<br>
+        Telefon: 02595 7688<br>
+        E-Mail: <a href="mailto:abbas.m@aol.de">abbas.m@aol.de</a>
+      </p>
+
+      <h2>2. Allgemeines zur Datenverarbeitung</h2>
+      <p>
+        Wir verarbeiten personenbezogene Daten unserer Nutzer grundsätzlich nur, soweit dies zur Bereitstellung einer
+        funktionsfähigen Website sowie unserer Inhalte und Leistungen (z. B. Online-Bestellungen) erforderlich ist.
+        Die Verarbeitung erfolgt regelmäßig auf Grundlage von Art. 6 Abs. 1 lit. b DSGVO (Vertragserfüllung bzw.
+        vorvertragliche Maßnahmen) sowie Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse am sicheren und
+        wirtschaftlichen Betrieb der Website).
+      </p>
+
+      <h2>3. Bereitstellung der Website / Server-Logfiles</h2>
+      <p>
+        Beim Aufruf unserer Website erhebt unser Hosting-Anbieter automatisch Informationen in sogenannten
+        Server-Logfiles, die dein Browser übermittelt. Dazu gehören u. a. IP-Adresse, Datum und Uhrzeit der Anfrage,
+        Browsertyp und -version sowie das verwendete Betriebssystem. Diese Daten sind nicht bestimmten Personen
+        zuordenbar und werden ausschließlich zur Gewährleistung eines störungsfreien Betriebs der Website sowie zur
+        Verbesserung unseres Angebots ausgewertet (Art. 6 Abs. 1 lit. f DSGVO).
+      </p>
+
+      <h2>4. Online-Bestellung</h2>
+      <p>
+        Wenn du über unsere Website eine Bestellung aufgibst, erheben und verarbeiten wir die von dir eingegebenen
+        Daten &ndash; insbesondere Name, Telefonnummer, Lieferadresse, ausgewählte Speisen/Getränke und ggf. deine
+        Anmerkungen &ndash; ausschließlich zur Abwicklung deiner Bestellung, zur Lieferung sowie zur Bearbeitung von
+        Rückfragen (Art. 6 Abs. 1 lit. b DSGVO). Die Daten werden nur so lange gespeichert, wie es für die Erfüllung
+        des Vertrags sowie ggf. bestehende gesetzliche Aufbewahrungspflichten (z. B. handels- und steuerrechtliche
+        Vorgaben) erforderlich ist.
+      </p>
+
+      <h2>5. Zahlungsabwicklung über Stripe</h2>
+      <p>
+        Für die Online-Zahlung per Kreditkarte oder PayPal setzen wir den Zahlungsdienstleister Stripe (Stripe
+        Payments Europe, Ltd., 1 Grand Canal Street Lower, Grand Canal Dock, Dublin, Irland) ein. Bei Auswahl einer
+        Online-Zahlungsart werden die dafür erforderlichen Daten (u. a. Name, Bestellsumme, Zahlungsmittelinformationen)
+        an Stripe übermittelt und dort gemäß den Datenschutzbestimmungen von Stripe verarbeitet. Rechtsgrundlage ist
+        Art. 6 Abs. 1 lit. b DSGVO (Vertragserfüllung). Weitere Informationen findest du in der Datenschutzerklärung
+        von Stripe: <a href="https://stripe.com/de/privacy" target="_blank" rel="noopener">https://stripe.com/de/privacy</a>.
+      </p>
+
+      <h2>6. Adressvorschläge bei der Lieferadresse (OpenStreetMap Nominatim)</h2>
+      <p>
+        Zur Erkennung deiner Lieferadresse und unseres Liefergebiets nutzen wir den Geocoding-Dienst Nominatim der
+        OpenStreetMap Foundation. Deine Eingaben im Adressfeld werden dabei an die Server von Nominatim
+        (nominatim.openstreetmap.org) übermittelt, um passende Adressvorschläge sowie die Entfernung zu unserem
+        Restaurant zu ermitteln (Art. 6 Abs. 1 lit. f DSGVO, berechtigtes Interesse an einer korrekten
+        Lieferabwicklung). Weitere Informationen: <a href="https://osmfoundation.org/wiki/Privacy_Policy" target="_blank" rel="noopener">osmfoundation.org/wiki/Privacy_Policy</a>.
+      </p>
+
+      <h2>7. Google Maps</h2>
+      <p>
+        Auf unserer Kontaktseite binden wir eine Karte des Dienstes Google Maps ein, bereitgestellt von Google LLC
+        (bzw. Google Ireland Limited für Nutzer im EWR). Beim Laden der Karte wird eine Verbindung zu Servern von
+        Google hergestellt, wobei deine IP-Adresse sowie weitere Informationen zu deinem Browser an Google übertragen
+        werden können. Dies geschieht unabhängig davon, ob du ein Google-Konto besitzt oder eingeloggt bist. Weitere
+        Informationen zum Umgang mit Nutzerdaten findest du in der Datenschutzerklärung von Google:
+        <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">policies.google.com/privacy</a>.
+      </p>
+
+      <h2>8. Google Fonts</h2>
+      <p>
+        Wir binden zur einheitlichen Darstellung von Schriftarten sogenannte Google Fonts ein, die von Servern von
+        Google geladen werden. Dabei kann deine IP-Adresse an Google übertragen werden. Weitere Informationen:
+        <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">policies.google.com/privacy</a>.
+      </p>
+
+      <h2>9. Cookies</h2>
+      <p>
+        Wir setzen auf dieser Website derzeit keine Analyse- oder Marketing-Cookies ein. Es werden lediglich
+        technisch notwendige Daten verarbeitet, die für den Betrieb der Website und die Abwicklung deiner Bestellung
+        erforderlich sind.
+      </p>
+
+      <h2>10. Deine Rechte als betroffene Person</h2>
+      <p>Du hast im Rahmen der geltenden gesetzlichen Bestimmungen jederzeit das Recht auf:</p>
+      <ul>
+        <li>Auskunft über deine bei uns gespeicherten personenbezogenen Daten (Art. 15 DSGVO)</li>
+        <li>Berichtigung unrichtiger Daten (Art. 16 DSGVO)</li>
+        <li>Löschung deiner bei uns gespeicherten Daten (Art. 17 DSGVO)</li>
+        <li>Einschränkung der Datenverarbeitung (Art. 18 DSGVO)</li>
+        <li>Datenübertragbarkeit (Art. 20 DSGVO)</li>
+        <li>Widerspruch gegen die Verarbeitung deiner Daten bei uns (Art. 21 DSGVO)</li>
+      </ul>
+      <p>
+        Zudem hast du das Recht, dich bei einer Datenschutz-Aufsichtsbehörde über die Verarbeitung deiner
+        personenbezogenen Daten durch uns zu beschweren.
+      </p>
+
+      <h2>11. Datensicherheit</h2>
+      <p>
+        Diese Website nutzt aus Sicherheitsgründen eine SSL- bzw. TLS-Verschlüsselung zum Schutz der Übertragung
+        vertraulicher Inhalte, wie zum Beispiel Bestellungen, die du an uns als Seitenbetreiberin sendest.
+      </p>
+
+      <h2>12. Aktualität und Änderung dieser Datenschutzerklärung</h2>
+      <p>
+        Diese Datenschutzerklärung ist aktuell gültig (Stand: September 2026). Durch die Weiterentwicklung unserer
+        Website oder aufgrund geänderter gesetzlicher bzw. behördlicher Vorgaben kann es notwendig werden, diese
+        Datenschutzerklärung zu ändern.
+      </p>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <p class="footer-logo">Pizzeria Pinocchio</p>
+      <p>Olfen &nbsp;|&nbsp; Tel: 02595 7688 &nbsp;|&nbsp; Täglich 12 – 21 Uhr</p>
+      <p class="footer-links"><a href="impressum.html">Impressum</a> &nbsp;|&nbsp; <a href="datenschutz.html">Datenschutz</a></p>
+      <p class="footer-copy">© 2026 Pizzeria Pinocchio. Alle Rechte vorbehalten.</p>
+    </div>
+  </footer>
+
+<script>
+function toggleMenu() {
+  document.getElementById("navMobile").classList.toggle("open");
+}
+</script>
+</body>
+</html>

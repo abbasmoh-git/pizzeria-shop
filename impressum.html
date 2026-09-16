@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Impressum – Pizzeria Pinocchio</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- NAVIGATION -->
+  <nav class="navbar">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">Pinocchio</a>
+      <ul class="nav-links">
+        <li><a href="index.html#speisekarte">Speisekarte</a></li>
+        <li><a href="index.html#lieferung">Lieferung</a></li>
+        <li><a href="index.html#kontakt">Kontakt</a></li>
+        <li><a href="index.html#bestellen-section" class="nav-btn">Jetzt bestellen</a></li>
+      </ul>
+      <button class="burger" onclick="toggleMenu()">&#9776;</button>
+    </div>
+    <ul class="nav-mobile" id="navMobile">
+      <li><a href="index.html#speisekarte" onclick="toggleMenu()">Speisekarte</a></li>
+      <li><a href="index.html#lieferung" onclick="toggleMenu()">Lieferung</a></li>
+      <li><a href="index.html#kontakt" onclick="toggleMenu()">Kontakt</a></li>
+      <li><a href="index.html#bestellen-section" onclick="toggleMenu()">Jetzt bestellen</a></li>
+    </ul>
+  </nav>
+
+  <main class="rechtliches-main">
+    <div class="box">
+      <h1>Impressum</h1>
+
+      <h2>Angaben gemäß § 5 TMG</h2>
+      <p>
+        Elvira Ganeeva<br>
+        Pizzeria Pinocchio (Einzelunternehmen)<br>
+        Marktplatz 6<br>
+        59399 Olfen
+      </p>
+
+      <h2>Kontakt</h2>
+      <p>
+        Telefon: 02595 7688<br>
+        E-Mail: <a href="mailto:abbas.m@aol.de">abbas.m@aol.de</a>
+      </p>
+
+      <h2>Steuernummer</h2>
+      <p>333/5000/3018</p>
+
+      <h2>Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV</h2>
+      <p>
+        Elvira Ganeeva<br>
+        Marktplatz 6, 59399 Olfen
+      </p>
+
+      <h2>EU-Streitschlichtung</h2>
+      <p>
+        Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit, die du hier findest:
+        <a href="https://ec.europa.eu/consumers/odr/" target="_blank" rel="noopener">https://ec.europa.eu/consumers/odr/</a>.
+        Unsere E-Mail-Adresse findest du oben im Impressum. Wir sind nicht verpflichtet und nicht bereit, an
+        Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.
+      </p>
+
+      <h2>Haftung für Inhalte</h2>
+      <p>
+        Als Diensteanbieter sind wir gemäß § 7 Abs. 1 TMG für eigene Inhalte auf diesen Seiten nach den allgemeinen
+        Gesetzen verantwortlich. Nach §§ 8 bis 10 TMG sind wir als Diensteanbieter jedoch nicht verpflichtet,
+        übermittelte oder gespeicherte fremde Informationen zu überwachen oder nach Umständen zu forschen, die auf
+        eine rechtswidrige Tätigkeit hinweisen. Verpflichtungen zur Entfernung oder Sperrung der Nutzung von
+        Informationen nach den allgemeinen Gesetzen bleiben hiervon unberührt. Eine diesbezügliche Haftung ist jedoch
+        erst ab dem Zeitpunkt der Kenntnis einer konkreten Rechtsverletzung möglich. Bei Bekanntwerden von
+        entsprechenden Rechtsverletzungen werden wir diese Inhalte umgehend entfernen.
+      </p>
+
+      <h2>Haftung für Links</h2>
+      <p>
+        Unser Angebot enthält Links zu externen Webseiten Dritter (z. B. Google Maps, OpenStreetMap, Stripe), auf
+        deren Inhalte wir keinen Einfluss haben. Deshalb können wir für diese fremden Inhalte auch keine Gewähr
+        übernehmen. Für die Inhalte der verlinkten Seiten ist stets der jeweilige Anbieter oder Betreiber der Seiten
+        verantwortlich.
+      </p>
+
+      <h2>Urheberrecht</h2>
+      <p>
+        Die durch die Seitenbetreiberin erstellten Inhalte und Werke auf diesen Seiten unterliegen dem deutschen
+        Urheberrecht. Die Vervielfältigung, Bearbeitung, Verbreitung und jede Art der Verwertung außerhalb der
+        Grenzen des Urheberrechts bedürfen der schriftlichen Zustimmung der jeweiligen Autorin bzw. des jeweiligen
+        Autors.
+      </p>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <p class="footer-logo">Pizzeria Pinocchio</p>
+      <p>Olfen &nbsp;|&nbsp; Tel: 02595 7688 &nbsp;|&nbsp; Täglich 12 – 21 Uhr</p>
+      <p class="footer-links"><a href="impressum.html">Impressum</a> &nbsp;|&nbsp; <a href="datenschutz.html">Datenschutz</a></p>
+      <p class="footer-copy">© 2026 Pizzeria Pinocchio. Alle Rechte vorbehalten.</p>
+    </div>
+  </footer>
+
+<script>
+function toggleMenu() {
+  document.getElementById("navMobile").classList.toggle("open");
+}
+</script>
+</body>
+</html>
