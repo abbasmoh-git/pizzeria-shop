@@ -1,8 +1,14 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from pydantic import BaseModel
 from typing import List, Optional
 import os
+import json
+import sqlite3
+import secrets
+import uuid
+from datetime import datetime, timezone
 import stripe
 from dotenv import load_dotenv
 
@@ -25,6 +31,93 @@ STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "whsec_HIER_WEBHOOK_S
 # URL deiner Webseite (für Weiterleitung nach Zahlung)
 SITE_URL = os.getenv("SITE_URL", "http://localhost:5500")
 
+# ===== DASHBOARD-ZUGANG (fürs Bestell-Dashboard) =====
+DASHBOARD_USER = os.getenv("DASHBOARD_USER", "pinocchio")
+DASHBOARD_PASSWORD = os.getenv("DASHBOARD_PASSWORD", "bitte_in_env_aendern")
+
+security = HTTPBasic()
+
+
+def pruefe_dashboard_login(credentials: HTTPBasicCredentials = Depends(security)):
+    richtiger_user = secrets.compare_digest(credentials.username, DASHBOARD_USER)
+    richtiges_passwort = secrets.compare_digest(credentials.password, DASHBOARD_PASSWORD)
+    if not (richtiger_user and richtiges_passwort):
+        raise HTTPException(
+            status_code=401,
+            detail="Falscher Benutzername oder Passwort",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    return credentials.username
+
+
+# ===== DATENBANK (SQLite, eine einzelne Datei neben main.py) =====
+DB_PFAD = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bestellungen.db")
+
+
+def get_db():
+    conn = sqlite3.connect(DB_PFAD)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
+def init_db():
+    conn = get_db()
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS bestellungen (
+            id TEXT PRIMARY KEY,
+            erstellt_um TEXT NOT NULL,
+            name TEXT NOT NULL,
+            telefon TEXT NOT NULL,
+            adresse TEXT NOT NULL,
+            hinweis TEXT,
+            artikel_json TEXT NOT NULL,
+            gesamt REAL NOT NULL,
+            zahlung TEXT NOT NULL,
+            status TEXT NOT NULL,
+            eta_minuten INTEGER,
+            eta_gesetzt_um TEXT
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+
+init_db()
+
+
+def neue_bestellungs_id() -> str:
+    return uuid.uuid4().hex[:8]
+
+
+def jetzt_iso() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def bestellung_speichern(bestellung: "Bestellung", status: str) -> str:
+    order_id = neue_bestellungs_id()
+    conn = get_db()
+    conn.execute(
+        """INSERT INTO bestellungen
+           (id, erstellt_um, name, telefon, adresse, hinweis, artikel_json, gesamt, zahlung, status)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        (
+            order_id,
+            jetzt_iso(),
+            bestellung.name,
+            bestellung.telefon,
+            bestellung.adresse,
+            bestellung.hinweis or "",
+            json.dumps([a.dict() for a in bestellung.artikel], ensure_ascii=False),
+            bestellung.gesamt,
+            bestellung.zahlung or "bar",
+            status,
+        ),
+    )
+    conn.commit()
+    conn.close()
+    return order_id
+
+
 class Artikel(BaseModel):
     name: str
     preis: float
@@ -37,6 +130,11 @@ class Bestellung(BaseModel):
     artikel: List[Artikel]
     gesamt: float
     zahlung: Optional[str] = "bar"
+
+
+class EtaEingabe(BaseModel):
+    eta_minuten: int
+
 
 @app.get("/")
 def read_root():
@@ -596,7 +694,9 @@ def bestellen(bestellung: Bestellung):
         return {"status": "error", "message": "Preis stimmt nicht!"}
 
     #  NUR HIER ist es wirklich eine gültige Bestellung
-    print("✅ Neue Bestellung akzeptiert:")
+    order_id = bestellung_speichern(bestellung, status="eingegangen")
+
+    print("✅ Neue Bestellung akzeptiert:", order_id)
     print("Name:", bestellung.name)
     print("Telefon:", bestellung.telefon)
     print("Adresse:", bestellung.adresse)
@@ -608,7 +708,7 @@ def bestellen(bestellung: Bestellung):
 
     print("Gesamt:", berechnete_summe, "€")
 
-    return {"status": "ok"}
+    return {"status": "ok", "order_id": order_id, "tracking_url": f"verfolgen.html?id={order_id}"}
 
 
 # ===== STRIPE: CHECKOUT SESSION ERSTELLEN =====
@@ -638,6 +738,10 @@ def checkout_session(bestellung: Bestellung):
     else:
         payment_methods = ["card", "paypal"]
 
+    # Bestellung schon jetzt speichern (Status: wartet auf Zahlung), damit wir
+    # eine order_id haben, die wir Stripe mitgeben und in die Erfolgsseite packen können
+    order_id = bestellung_speichern(bestellung, status="warte_auf_zahlung")
+
     try:
         session = stripe.checkout.Session.create(
             payment_method_types=payment_methods,
@@ -653,9 +757,10 @@ def checkout_session(bestellung: Bestellung):
                 "quantity": 1,
             }],
             mode="payment",
-            success_url=f"{SITE_URL}/success.html?session_id={{CHECKOUT_SESSION_ID}}",
+            success_url=f"{SITE_URL}/success.html?order_id={order_id}&session_id={{CHECKOUT_SESSION_ID}}",
             cancel_url=f"{SITE_URL}/#bestellen",
             metadata={
+                "order_id": order_id,
                 "kunde_name": bestellung.name,
                 "telefon": bestellung.telefon,
                 "adresse": bestellung.adresse,
@@ -701,8 +806,18 @@ async def stripe_webhook(request: Request):
     if event["type"] == "checkout.session.completed":
         session = event["data"]["object"]
         meta = session.get("metadata", {})
+        order_id = meta.get("order_id")
 
-        print("✅ Zahlung eingegangen!")
+        if order_id:
+            conn = get_db()
+            conn.execute(
+                "UPDATE bestellungen SET status = 'eingegangen' WHERE id = ? AND status = 'warte_auf_zahlung'",
+                (order_id,),
+            )
+            conn.commit()
+            conn.close()
+
+        print("✅ Zahlung eingegangen!", order_id or "")
         print("Name:", meta.get("kunde_name"))
         print("Telefon:", meta.get("telefon"))
         print("Adresse:", meta.get("adresse"))
@@ -711,4 +826,90 @@ async def stripe_webhook(request: Request):
         print("Gesamt:", meta.get("gesamt"), "€")
         print("Zahlungs-ID:", session.get("id"))
 
+    return {"status": "ok"}
+
+
+# ===== ÖFFENTLICH: STATUS EINER BESTELLUNG (für verfolgen.html) =====
+@app.get("/status/{order_id}")
+def bestell_status(order_id: str):
+    conn = get_db()
+    row = conn.execute(
+        "SELECT * FROM bestellungen WHERE id = ?", (order_id,)
+    ).fetchone()
+    conn.close()
+
+    if row is None or row["status"] == "warte_auf_zahlung":
+        raise HTTPException(status_code=404, detail="Bestellung nicht gefunden")
+
+    return {
+        "order_id": row["id"],
+        "status": row["status"],
+        "erstellt_um": row["erstellt_um"],
+        "artikel": json.loads(row["artikel_json"]),
+        "gesamt": row["gesamt"],
+        "eta_minuten": row["eta_minuten"],
+        "eta_gesetzt_um": row["eta_gesetzt_um"],
+    }
+
+
+# ===== DASHBOARD: BESTELLUNGEN AUFLISTEN (passwortgeschützt) =====
+@app.get("/dashboard/api/bestellungen")
+def dashboard_bestellungen(user: str = Depends(pruefe_dashboard_login)):
+    conn = get_db()
+    rows = conn.execute(
+        """SELECT * FROM bestellungen
+           WHERE status IN ('eingegangen', 'bestaetigt')
+           ORDER BY erstellt_um ASC"""
+    ).fetchall()
+    conn.close()
+
+    return [
+        {
+            "order_id": r["id"],
+            "erstellt_um": r["erstellt_um"],
+            "name": r["name"],
+            "telefon": r["telefon"],
+            "adresse": r["adresse"],
+            "hinweis": r["hinweis"],
+            "artikel": json.loads(r["artikel_json"]),
+            "gesamt": r["gesamt"],
+            "zahlung": r["zahlung"],
+            "status": r["status"],
+            "eta_minuten": r["eta_minuten"],
+            "eta_gesetzt_um": r["eta_gesetzt_um"],
+        }
+        for r in rows
+    ]
+
+
+# ===== DASHBOARD: FERTIGSTELLUNGSZEIT SETZEN =====
+@app.post("/dashboard/api/bestellungen/{order_id}/eta")
+def dashboard_eta_setzen(order_id: str, eingabe: EtaEingabe, user: str = Depends(pruefe_dashboard_login)):
+    conn = get_db()
+    row = conn.execute("SELECT id FROM bestellungen WHERE id = ?", (order_id,)).fetchone()
+    if row is None:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Bestellung nicht gefunden")
+
+    conn.execute(
+        "UPDATE bestellungen SET status = 'bestaetigt', eta_minuten = ?, eta_gesetzt_um = ? WHERE id = ?",
+        (eingabe.eta_minuten, jetzt_iso(), order_id),
+    )
+    conn.commit()
+    conn.close()
+    return {"status": "ok"}
+
+
+# ===== DASHBOARD: BESTELLUNG ALS FERTIG MARKIEREN =====
+@app.post("/dashboard/api/bestellungen/{order_id}/fertig")
+def dashboard_fertig(order_id: str, user: str = Depends(pruefe_dashboard_login)):
+    conn = get_db()
+    row = conn.execute("SELECT id FROM bestellungen WHERE id = ?", (order_id,)).fetchone()
+    if row is None:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Bestellung nicht gefunden")
+
+    conn.execute("UPDATE bestellungen SET status = 'fertig' WHERE id = ?", (order_id,))
+    conn.commit()
+    conn.close()
     return {"status": "ok"}

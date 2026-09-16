@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bestell-Dashboard – Pizzeria Pinocchio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f4f2ef;
+      color: #1a1a1a;
+      padding: 24px;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 900px;
+      margin: 0 auto 24px;
+    }
+    header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 24px;
+      color: #c0392b;
+    }
+    #ausloggen-btn {
+      background: none;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 6px 14px;
+      cursor: pointer;
+      font-size: 13px;
+      color: #666;
+    }
+    #login-bereich {
+      max-width: 340px;
+      margin: 80px auto;
+      background: #fff;
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+    #login-bereich h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    #login-bereich input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      font-size: 14px;
+    }
+    #login-bereich button {
+      width: 100%;
+      padding: 12px;
+      background: #c0392b;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    #login-fehler {
+      color: #c0392b;
+      font-size: 13px;
+      margin-bottom: 10px;
+      display: none;
+    }
+    #bestell-liste {
+      max-width: 900px;
+      margin: 0 auto;
+      display: grid;
+      gap: 16px;
+    }
+    .bestell-karte {
+      background: #fff;
+      border-radius: 14px;
+      padding: 20px 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+      border-left: 5px solid #ccc;
+    }
+    .bestell-karte.status-eingegangen { border-left-color: #e67e22; }
+    .bestell-karte.status-bestaetigt { border-left-color: #27ae60; }
+    .bestell-kopf {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .bestell-kopf .name { font-weight: 600; font-size: 16px; }
+    .bestell-kopf .zeit { font-size: 12px; color: #999; }
+    .bestell-details { font-size: 13px; color: #555; margin-bottom: 10px; line-height: 1.6; }
+    .bestell-artikel { font-size: 13px; color: #444; margin-bottom: 10px; }
+    .bestell-artikel div { display: flex; justify-content: space-between; max-width: 400px; }
+    .bestell-summe { font-weight: 600; margin-bottom: 12px; }
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-left: 8px;
+    }
+    .badge.bar { background: #eef; color: #445; }
+    .badge.online { background: #efe; color: #285; }
+    .eta-zeile {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-top: 10px;
+    }
+    .eta-btn {
+      background: #f4f2ef;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .eta-btn:hover { background: #eee; }
+    .eta-eigene {
+      width: 70px;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+    .eta-gesetzt {
+      color: #27ae60;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    .fertig-btn {
+      margin-top: 12px;
+      background: #1a1a1a;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .leer-hinweis {
+      text-align: center;
+      color: #999;
+      padding: 60px 0;
+      font-size: 15px;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="login-bereich">
+    <h1>🍕 Dashboard-Login</h1>
+    <p id="login-fehler">Benutzername oder Passwort falsch.</p>
+    <input type="text" id="login-user" placeholder="Benutzername">
+    <input type="password" id="login-pass" placeholder="Passwort">
+    <button onclick="einloggen()">Anmelden</button>
+  </div>
+
+  <div id="dashboard-bereich" style="display:none;">
+    <header>
+      <h1>🍕 Eingehende Bestellungen</h1>
+      <button id="ausloggen-btn" onclick="ausloggen()">Abmelden</button>
+    </header>
+    <div id="bestell-liste"></div>
+  </div>
+
+<script src="config.js"></script>
+<script>
+let authHeader = null;
+
+function einloggen() {
+  const user = document.getElementById("login-user").value;
+  const pass = document.getElementById("login-pass").value;
+  authHeader = "Basic " + btoa(user + ":" + pass);
+  ladeBestellungen(true);
+}
+
+function ausloggen() {
+  authHeader = null;
+  sessionStorage.removeItem("dashboardAuth");
+  document.getElementById("dashboard-bereich").style.display = "none";
+  document.getElementById("login-bereich").style.display = "block";
+}
+
+async function ladeBestellungen(istLoginVersuch) {
+  if (!authHeader) return;
+
+  try {
+    const res = await fetch(`${BACKEND_URL}/dashboard/api/bestellungen`, {
+      headers: { "Authorization": authHeader }
+    });
+
+    if (res.status === 401) {
+      if (istLoginVersuch) {
+        document.getElementById("login-fehler").style.display = "block";
+      } else {
+        ausloggen();
+      }
+      return;
+    }
+
+    sessionStorage.setItem("dashboardAuth", authHeader);
+    document.getElementById("login-bereich").style.display = "none";
+    document.getElementById("dashboard-bereich").style.display = "block";
+    document.getElementById("login-fehler").style.display = "none";
+
+    const bestellungen = await res.json();
+    renderBestellungen(bestellungen);
+  } catch (e) {
+    console.error("Fehler beim Laden:", e);
+  }
+}
+
+function formatiereZeit(iso) {
+  return new Date(iso).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+}
+
+function renderBestellungen(bestellungen) {
+  const liste = document.getElementById("bestell-liste");
+
+  if (bestellungen.length === 0) {
+    liste.innerHTML = `<div class="leer-hinweis">Aktuell keine offenen Bestellungen 🎉</div>`;
+    return;
+  }
+
+  liste.innerHTML = bestellungen.map(b => {
+    const artikelHtml = b.artikel.map(a =>
+      `<div><span>${a.name}</span><span>${a.preis.toFixed(2).replace('.', ',')} €</span></div>`
+    ).join('');
+
+    let etaBereich;
+    if (b.status === "bestaetigt") {
+      etaBereich = `<div class="eta-gesetzt">⏱ Fertig in ca. ${b.eta_minuten} Min. (gesetzt um ${formatiereZeit(b.eta_gesetzt_um)})</div>`;
+    } else {
+      etaBereich = `
+        <div class="eta-zeile">
+          <button class="eta-btn" onclick="etaSetzen('${b.order_id}', 15)">15 Min</button>
+          <button class="eta-btn" onclick="etaSetzen('${b.order_id}', 20)">20 Min</button>
+          <button class="eta-btn" onclick="etaSetzen('${b.order_id}', 30)">30 Min</button>
+          <button class="eta-btn" onclick="etaSetzen('${b.order_id}', 45)">45 Min</button>
+          <button class="eta-btn" onclick="etaSetzen('${b.order_id}', 60)">60 Min</button>
+          <input type="number" min="1" class="eta-eigene" id="eigene-${b.order_id}" placeholder="eigene">
+          <button class="eta-btn" onclick="etaEigeneSetzen('${b.order_id}')">Setzen</button>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="bestell-karte status-${b.status}">
+        <div class="bestell-kopf">
+          <span class="name">${b.name} <span class="badge ${b.zahlung === 'bar' ? 'bar' : 'online'}">${b.zahlung === 'bar' ? 'Barzahlung' : 'Online bezahlt'}</span></span>
+          <span class="zeit">eingegangen um ${formatiereZeit(b.erstellt_um)}</span>
+        </div>
+        <div class="bestell-details">
+          📞 ${b.telefon} &nbsp;|&nbsp; 📍 ${b.adresse}
+          ${b.hinweis ? `<br>📝 ${b.hinweis}` : ''}
+        </div>
+        <div class="bestell-artikel">${artikelHtml}</div>
+        <div class="bestell-summe">Gesamt: ${b.gesamt.toFixed(2).replace('.', ',')} €</div>
+        ${etaBereich}
+        <button class="fertig-btn" onclick="alsFertigMarkieren('${b.order_id}')">✅ Fertig / abgeschlossen</button>
+      </div>
+    `;
+  }).join('');
+}
+
+async function etaSetzen(orderId, minuten) {
+  await fetch(`${BACKEND_URL}/dashboard/api/bestellungen/${orderId}/eta`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Authorization": authHeader },
+    body: JSON.stringify({ eta_minuten: minuten })
+  });
+  ladeBestellungen(false);
+}
+
+function etaEigeneSetzen(orderId) {
+  const wert = parseInt(document.getElementById(`eigene-${orderId}`).value, 10);
+  if (!wert || wert <= 0) return;
+  etaSetzen(orderId, wert);
+}
+
+async function alsFertigMarkieren(orderId) {
+  await fetch(`${BACKEND_URL}/dashboard/api/bestellungen/${orderId}/fertig`, {
+    method: "POST",
+    headers: { "Authorization": authHeader }
+  });
+  ladeBestellungen(false);
+}
+
+// Automatisch eingeloggt bleiben, solange der Tab offen ist
+const gespeicherteAuth = sessionStorage.getItem("dashboardAuth");
+if (gespeicherteAuth) {
+  authHeader = gespeicherteAuth;
+  ladeBestellungen(false);
+}
+
+setInterval(() => ladeBestellungen(false), 10000);
+</script>
+</body>
+</html>

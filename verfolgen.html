@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bestellung verfolgen – Pizzeria Pinocchio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #fafafa;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      padding: 48px 40px;
+      max-width: 480px;
+      width: 100%;
+      text-align: center;
+    }
+    .logo {
+      font-family: 'Playfair Display', serif;
+      color: #c0392b;
+      font-size: 18px;
+      margin-bottom: 24px;
+      opacity: 0.7;
+    }
+    .status-icon {
+      font-size: 56px;
+      margin-bottom: 16px;
+    }
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 24px;
+      color: #1a1a1a;
+      margin-bottom: 10px;
+    }
+    p {
+      color: #666;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+    .eta-box {
+      background: #fff8f0;
+      border: 1px solid #f0d9c0;
+      border-radius: 10px;
+      padding: 20px;
+      margin: 24px 0;
+    }
+    .eta-box .zeit {
+      font-family: 'Playfair Display', serif;
+      font-size: 30px;
+      color: #c0392b;
+      margin-bottom: 4px;
+    }
+    .eta-box .uhrzeit {
+      font-size: 13px;
+      color: #999;
+    }
+    .artikel-liste {
+      text-align: left;
+      margin-top: 24px;
+      border-top: 1px solid #eee;
+      padding-top: 16px;
+    }
+    .artikel-liste .zeile {
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+      color: #444;
+      margin-bottom: 6px;
+    }
+    .artikel-liste .gesamt-zeile {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 600;
+      font-size: 15px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid #eee;
+      color: #1a1a1a;
+    }
+    .back-btn {
+      display: inline-block;
+      margin-top: 28px;
+      background: #c0392b;
+      color: #fff;
+      text-decoration: none;
+      padding: 12px 28px;
+      border-radius: 50px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .hinweis-text {
+      margin-top: 16px;
+      font-size: 13px;
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+  <div class="card" id="karte">
+    <div class="logo">🍕 Pizzeria Pinocchio</div>
+    <div id="inhalt">
+      <div class="status-icon">⏳</div>
+      <h1>Wir laden deine Bestellung …</h1>
+    </div>
+  </div>
+
+<script src="config.js"></script>
+<script>
+function holeOrderId() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get("id") || params.get("order_id");
+}
+
+function formatiereUhrzeit(datum) {
+  return datum.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+}
+
+function formatiereEuro(zahl) {
+  return zahl.toFixed(2).replace('.', ',') + ' €';
+}
+
+async function ladeStatus() {
+  const orderId = holeOrderId();
+  const inhalt = document.getElementById("inhalt");
+
+  if (!orderId) {
+    inhalt.innerHTML = `
+      <div class="status-icon">🔍</div>
+      <h1>Keine Bestellung angegeben</h1>
+      <p>Der Link scheint unvollständig zu sein. Bitte nutze den Link, den du direkt nach deiner Bestellung erhalten hast.</p>
+    `;
+    return;
+  }
+
+  try {
+    const res = await fetch(`${BACKEND_URL}/status/${orderId}`);
+    if (!res.ok) {
+      inhalt.innerHTML = `
+        <div class="status-icon">🔍</div>
+        <h1>Bestellung nicht gefunden</h1>
+        <p>Wir konnten diese Bestellung nicht finden. Bitte prüfe den Link oder ruf uns kurz an: <strong>02595 7688</strong></p>
+      `;
+      return;
+    }
+    const daten = await res.json();
+    zeigeStatus(daten);
+  } catch (e) {
+    inhalt.innerHTML = `
+      <div class="status-icon">📡</div>
+      <h1>Verbindung nicht möglich</h1>
+      <p>Wir konnten den Status gerade nicht laden. Diese Seite versucht es automatisch weiter.</p>
+    `;
+  }
+}
+
+function zeigeStatus(daten) {
+  const inhalt = document.getElementById("inhalt");
+
+  let kopf = "";
+  if (daten.status === "eingegangen") {
+    kopf = `
+      <div class="status-icon">✅</div>
+      <h1>Bestellung eingegangen!</h1>
+      <p>Wir haben deine Bestellung erhalten und bestätigen gleich, wie lange es ungefähr dauert. Diese Seite aktualisiert sich automatisch.</p>
+    `;
+  } else if (daten.status === "bestaetigt") {
+    const gesetztUm = new Date(daten.eta_gesetzt_um);
+    const fertigUm = new Date(gesetztUm.getTime() + daten.eta_minuten * 60000);
+    const restMinuten = Math.max(0, Math.round((fertigUm - new Date()) / 60000));
+
+    kopf = `
+      <div class="status-icon">🍕</div>
+      <h1>Deine Bestellung wird zubereitet</h1>
+      <div class="eta-box">
+        <div class="zeit">${restMinuten > 0 ? 'ca. ' + restMinuten + ' Min.' : 'gleich fertig'}</div>
+        <div class="uhrzeit">voraussichtlich fertig um ${formatiereUhrzeit(fertigUm)} Uhr</div>
+      </div>
+    `;
+  } else if (daten.status === "fertig") {
+    kopf = `
+      <div class="status-icon">🎉</div>
+      <h1>Fertig – guten Appetit!</h1>
+      <p>Deine Bestellung ist fertig bzw. unterwegs zu dir.</p>
+    `;
+  }
+
+  const artikelHtml = daten.artikel.map(a => `
+    <div class="zeile"><span>${a.name}</span><span>${formatiereEuro(a.preis)}</span></div>
+  `).join('');
+
+  inhalt.innerHTML = `
+    ${kopf}
+    <div class="artikel-liste">
+      ${artikelHtml}
+      <div class="gesamt-zeile"><span>Gesamt</span><span>${formatiereEuro(daten.gesamt)}</span></div>
+    </div>
+    <a href="index.html" class="back-btn">Zurück zur Speisekarte</a>
+    <p class="hinweis-text">Fragen? Ruf uns an: 02595 7688</p>
+  `;
+}
+
+ladeStatus();
+setInterval(ladeStatus, 8000);
+</script>
+</body>
+</html>

@@ -462,7 +462,7 @@ async function abschicken() {
   if (zahlung === 'paypal' || zahlung === 'kreditkarte') {
     buttonText.textContent = "Weiterleitung zur Zahlung...";
     try {
-      let response = await fetch("http://127.0.0.1:8000/checkout-session", {
+      let response = await fetch(`${BACKEND_URL}/checkout-session`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(bestellungsDaten)
@@ -491,7 +491,7 @@ async function abschicken() {
   await new Promise(resolve => setTimeout(resolve, 2000));
 
   try {
-    let response = await fetch("http://127.0.0.1:8000/bestellen", {
+    let response = await fetch(`${BACKEND_URL}/bestellen`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(bestellungsDaten)
@@ -500,13 +500,14 @@ async function abschicken() {
     let data = await response.json();
 
     if (data.status === "ok") {
-      zeigeMeldung("🍕 Bestellung erfolgreich!");
       warenkorbDaten = {};
       neuRendern();
       document.getElementById("name").value = "";
       document.getElementById("telefon").value = "";
       document.getElementById("adresse").value = "";
       document.getElementById("hinweis").value = "";
+      // Weiter zur Tracking-Seite, damit der Kunde den Status verfolgen kann
+      window.location.href = data.tracking_url || "verfolgen.html";
     } else {
       zeigeMeldung(data.message || "Fehler bei der Bestellung.", "error");
     }
@@ -686,3 +687,42 @@ function speiseSucheLeeren() {
   input.focus();
 }
 
+
+// ===== DIASHOW =====
+let diashowAktiv = 0;
+const diashowAnzahl = 6;
+let diashowTimer;
+
+function diashowZeige(index) {
+  const slides = document.querySelectorAll('.diashow-slide');
+  const dots = document.querySelectorAll('.diashow-dot');
+  slides.forEach(s => s.classList.remove('active', 'leaving'));
+  dots.forEach(d => d.classList.remove('active'));
+  diashowAktiv = (index + diashowAnzahl) % diashowAnzahl;
+  slides[diashowAktiv].classList.add('active');
+  if (dots[diashowAktiv]) dots[diashowAktiv].classList.add('active');
+}
+
+function diashowVor(richtung) {
+  clearInterval(diashowTimer);
+  diashowZeige(diashowAktiv + richtung);
+  diashowAutoplay();
+}
+
+function diashowAutoplay() {
+  diashowTimer = setInterval(() => diashowZeige(diashowAktiv + 1), 4000);
+}
+
+function diashowInit() {
+  const container = document.getElementById('diashowDots');
+  if (!container) return;
+  for (let i = 0; i < diashowAnzahl; i++) {
+    const dot = document.createElement('button');
+    dot.className = 'diashow-dot' + (i === 0 ? ' active' : '');
+    dot.onclick = () => { clearInterval(diashowTimer); diashowZeige(i); diashowAutoplay(); };
+    container.appendChild(dot);
+  }
+  diashowAutoplay();
+}
+
+document.addEventListener('DOMContentLoaded', diashowInit);

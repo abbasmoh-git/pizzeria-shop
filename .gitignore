@@ -11,6 +11,9 @@ __pycache__/
 venv/
 .venv/
 
+# Bestell-Datenbank (enthaelt Kundendaten, gehoert nicht auf GitHub)
+backend/bestellungen.db
+
 # VS Code
 .vscode/
 

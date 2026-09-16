@@ -88,9 +88,19 @@
       Wir haben deine Zahlung erhalten und bereiten deine Bestellung jetzt vor.<br><br>
       📞 Bei Fragen erreichst du uns unter <strong>02595 7688</strong>
     </div>
-    <p style="font-size:14px; color:#999;">Geschätzte Lieferzeit: 30–45 Minuten</p>
+    <p style="font-size:14px; color:#999;">Auf der Tracking-Seite siehst du, sobald wir die Zeit bestätigt haben.</p>
     <br>
-    <a href="/" class="back-btn">Zurück zur Speisekarte</a>
+    <a id="tracking-link" href="verfolgen.html" class="back-btn">Bestellung verfolgen</a>
+    <br><br>
+    <a href="/" style="font-size:14px; color:#999;">Zurück zur Speisekarte</a>
   </div>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const orderId = params.get("order_id");
+  if (orderId) {
+    document.getElementById("tracking-link").href = `verfolgen.html?id=${orderId}`;
+  }
+</script>
 </body>
 </html>
