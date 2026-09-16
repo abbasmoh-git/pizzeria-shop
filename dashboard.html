@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bestell-Dashboard – Pizzeria Pinocchio</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Inter', sans-serif;
-      background: #f4f2ef;
+      background: #eef0f2;
       color: #1a1a1a;
       padding: 24px;
     }
@@ -17,18 +17,46 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      max-width: 900px;
+      max-width: 960px;
       margin: 0 auto 24px;
+    }
+    .titel-zeile { display: flex; align-items: center; gap: 10px; }
+    .titel-marke {
+      width: 34px; height: 34px;
+      border-radius: 9px;
+      background: #c0392b;
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      font-size: 17px;
     }
     header h1 {
       font-family: 'Playfair Display', serif;
-      font-size: 24px;
-      color: #c0392b;
+      font-size: 21px;
+      font-weight: 700;
     }
+    header .anzahl-offen {
+      font-size: 13px;
+      color: #888;
+      margin-left: 4px;
+    }
+    .kopf-rechts { display: flex; align-items: center; gap: 14px; }
+    #ton-toggle {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 13px;
+      color: #555;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 20px;
+      padding: 6px 14px;
+      cursor: pointer;
+    }
+    #ton-toggle.aus { color: #aaa; }
     #ausloggen-btn {
       background: none;
       border: 1px solid #ccc;
-      border-radius: 8px;
+      border-radius: 20px;
       padding: 6px 14px;
       cursor: pointer;
       font-size: 13px;
@@ -44,7 +72,7 @@
     }
     #login-bereich h1 {
       font-family: 'Playfair Display', serif;
-      font-size: 22px;
+      font-size: 20px;
       margin-bottom: 20px;
       text-align: center;
     }
@@ -73,83 +101,154 @@
       display: none;
     }
     #bestell-liste {
-      max-width: 900px;
+      max-width: 960px;
       margin: 0 auto;
       display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
       gap: 16px;
+      align-items: start;
     }
+
+    /* ===== Bestell-Karte im Beleg-Stil ===== */
     .bestell-karte {
       background: #fff;
-      border-radius: 14px;
-      padding: 20px 24px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
-      border-left: 5px solid #ccc;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+      overflow: hidden;
+      border-top: 4px solid #ccc;
     }
-    .bestell-karte.status-eingegangen { border-left-color: #e67e22; }
-    .bestell-karte.status-bestaetigt { border-left-color: #27ae60; }
-    .bestell-kopf {
+    .bestell-karte.status-eingegangen { border-top-color: #e67e22; }
+    .bestell-karte.status-bestaetigt { border-top-color: #27ae60; }
+    .bestell-karte.neu-blinken { animation: neuAnkunft 1.4s ease-in-out 2; }
+    @keyframes neuAnkunft {
+      0%, 100% { box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
+      50% { box-shadow: 0 2px 22px rgba(192,57,43,0.45); }
+    }
+
+    .karte-kopf {
+      padding: 14px 18px;
       display: flex;
       justify-content: space-between;
-      align-items: baseline;
-      margin-bottom: 8px;
-      flex-wrap: wrap;
-      gap: 8px;
+      align-items: center;
+      background: #fafafa;
+      border-bottom: 1px dashed #ddd;
     }
-    .bestell-kopf .name { font-weight: 600; font-size: 16px; }
-    .bestell-kopf .zeit { font-size: 12px; color: #999; }
-    .bestell-details { font-size: 13px; color: #555; margin-bottom: 10px; line-height: 1.6; }
-    .bestell-artikel { font-size: 13px; color: #444; margin-bottom: 10px; }
-    .bestell-artikel div { display: flex; justify-content: space-between; max-width: 400px; }
-    .bestell-summe { font-weight: 600; margin-bottom: 12px; }
+    .karte-kopf .name { font-weight: 700; font-size: 15px; }
+    .karte-kopf .zeit-info { text-align: right; }
+    .karte-kopf .zeit { font-size: 12px; color: #999; display: block; }
+    .karte-kopf .vor-min { font-size: 11px; color: #bbb; }
+
+    .karte-body { padding: 16px 18px; }
+
+    .kontakt-zeilen { font-size: 13px; color: #555; margin-bottom: 12px; }
+    .kontakt-zeilen .zeile { display: flex; gap: 6px; margin-bottom: 3px; }
+    .kontakt-zeilen .label { color: #aaa; min-width: 58px; }
+    .kontakt-zeilen .hinweis-wert { color: #a9601f; font-style: italic; }
+
     .badge {
       display: inline-block;
-      font-size: 11px;
+      font-size: 10.5px;
       font-weight: 600;
-      padding: 3px 10px;
+      padding: 2px 9px;
       border-radius: 20px;
-      margin-left: 8px;
+      margin-top: 4px;
     }
-    .badge.bar { background: #eef; color: #445; }
-    .badge.online { background: #efe; color: #285; }
+    .badge.bar { background: #eef2fb; color: #3a5aa8; }
+    .badge.online { background: #eaf7ef; color: #1f8a4c; }
+
+    .artikel-tabelle {
+      font-size: 13.5px;
+      border-top: 1px dashed #e5e5e5;
+      padding-top: 10px;
+      margin-top: 4px;
+    }
+    .artikel-zeile {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 4px;
+      color: #222;
+    }
+    .artikel-zeile .menge { color: #999; min-width: 22px; }
+    .extra-zeile {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 12px;
+      color: #888;
+      padding-left: 26px;
+      margin-bottom: 2px;
+    }
+    .liefer-zeile {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12.5px;
+      color: #888;
+      margin-top: 6px;
+    }
+    .summe-zeile {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 700;
+      font-size: 14.5px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid #eee;
+    }
+
+    .eta-bereich { margin-top: 14px; }
     .eta-zeile {
       display: flex;
-      gap: 8px;
+      gap: 6px;
       flex-wrap: wrap;
       align-items: center;
-      margin-top: 10px;
     }
     .eta-btn {
       background: #f4f2ef;
       border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 8px 14px;
-      font-size: 13px;
+      border-radius: 7px;
+      padding: 7px 12px;
+      font-size: 12.5px;
       cursor: pointer;
+      color: #333;
     }
     .eta-btn:hover { background: #eee; }
     .eta-eigene {
-      width: 70px;
-      padding: 8px;
+      width: 62px;
+      padding: 7px;
       border: 1px solid #ddd;
-      border-radius: 8px;
-      font-size: 13px;
+      border-radius: 7px;
+      font-size: 12.5px;
     }
     .eta-gesetzt {
-      color: #27ae60;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #f2faf5;
+      border: 1px solid #d7ecdf;
+      border-radius: 8px;
+      padding: 9px 12px;
+      color: #1f8a4c;
       font-weight: 600;
-      font-size: 14px;
+      font-size: 13.5px;
     }
+
     .fertig-btn {
       margin-top: 12px;
+      width: 100%;
       background: #1a1a1a;
       color: #fff;
       border: none;
       border-radius: 8px;
-      padding: 8px 16px;
+      padding: 10px 16px;
       font-size: 13px;
+      font-weight: 600;
       cursor: pointer;
     }
+    .fertig-btn:hover { background: #333; }
+
     .leer-hinweis {
+      grid-column: 1 / -1;
       text-align: center;
       color: #999;
       padding: 60px 0;
@@ -160,7 +259,7 @@
 <body>
 
   <div id="login-bereich">
-    <h1>🍕 Dashboard-Login</h1>
+    <h1>Dashboard-Login</h1>
     <p id="login-fehler">Benutzername oder Passwort falsch.</p>
     <input type="text" id="login-user" placeholder="Benutzername">
     <input type="password" id="login-pass" placeholder="Passwort">
@@ -169,8 +268,17 @@
 
   <div id="dashboard-bereich" style="display:none;">
     <header>
-      <h1>🍕 Eingehende Bestellungen</h1>
-      <button id="ausloggen-btn" onclick="ausloggen()">Abmelden</button>
+      <div class="titel-zeile">
+        <div class="titel-marke">P</div>
+        <div>
+          <h1>Eingehende Bestellungen</h1>
+        </div>
+        <span class="anzahl-offen" id="anzahl-offen"></span>
+      </div>
+      <div class="kopf-rechts">
+        <button id="ton-toggle" onclick="tonUmschalten()">🔔 Ton an</button>
+        <button id="ausloggen-btn" onclick="ausloggen()">Abmelden</button>
+      </div>
     </header>
     <div id="bestell-liste"></div>
   </div>
@@ -178,8 +286,48 @@
 <script src="config.js"></script>
 <script>
 let authHeader = null;
+let bekannteIds = null;
+let tonAktiv = true;
+let audioCtx = null;
+
+const LIEFERKOSTEN_NAMEN = ["Lieferkosten Innerorts", "Lieferkosten Außerorts"];
+
+function audioFreischalten() {
+  if (!audioCtx) {
+    const AudioCtor = window.AudioContext || window.webkitAudioContext;
+    if (AudioCtor) audioCtx = new AudioCtor();
+  } else if (audioCtx.state === "suspended") {
+    audioCtx.resume();
+  }
+}
+
+function spieleBenachrichtigung() {
+  if (!tonAktiv || !audioCtx) return;
+  const jetzt = audioCtx.currentTime;
+  [{ t: 0, f: 880 }, { t: 0.16, f: 1175 }].forEach(ton => {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = "sine";
+    osc.frequency.value = ton.f;
+    gain.gain.setValueAtTime(0.0001, jetzt + ton.t);
+    gain.gain.exponentialRampToValueAtTime(0.28, jetzt + ton.t + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, jetzt + ton.t + 0.3);
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start(jetzt + ton.t);
+    osc.stop(jetzt + ton.t + 0.32);
+  });
+}
+
+function tonUmschalten() {
+  tonAktiv = !tonAktiv;
+  const btn = document.getElementById("ton-toggle");
+  btn.textContent = tonAktiv ? "🔔 Ton an" : "🔕 Ton aus";
+  btn.classList.toggle("aus", !tonAktiv);
+  if (tonAktiv) audioFreischalten();
+}
 
 function einloggen() {
+  audioFreischalten();
   const user = document.getElementById("login-user").value;
   const pass = document.getElementById("login-pass").value;
   authHeader = "Basic " + btoa(user + ":" + pass);
@@ -216,7 +364,16 @@ async function ladeBestellungen(istLoginVersuch) {
     document.getElementById("login-fehler").style.display = "none";
 
     const bestellungen = await res.json();
-    renderBestellungen(bestellungen);
+
+    const aktuelleIds = new Set(bestellungen.map(b => b.order_id));
+    let neueIds = [];
+    if (bekannteIds !== null) {
+      neueIds = bestellungen.filter(b => !bekannteIds.has(b.order_id)).map(b => b.order_id);
+      if (neueIds.length > 0) spieleBenachrichtigung();
+    }
+    bekannteIds = aktuelleIds;
+
+    renderBestellungen(bestellungen, neueIds);
   } catch (e) {
     console.error("Fehler beim Laden:", e);
   }
@@ -226,50 +383,133 @@ function formatiereZeit(iso) {
   return new Date(iso).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
 }
 
-function renderBestellungen(bestellungen) {
+function vorXMinuten(iso) {
+  const min = Math.max(0, Math.floor((Date.now() - new Date(iso)) / 60000));
+  if (min < 1) return "gerade eben";
+  return `vor ${min} Min.`;
+}
+
+function euro(zahl) {
+  return zahl.toFixed(2).replace('.', ',') + ' €';
+}
+
+// Fasst die flache Artikelliste zu Hauptgerichten mit eingerückten Extras
+// zusammen und trennt die Lieferkosten als eigene Zeile heraus.
+function gruppiereArtikel(artikelListe) {
+  let lieferkosten = null;
+  const gruppen = [];
+
+  artikelListe.forEach(a => {
+    if (LIEFERKOSTEN_NAMEN.includes(a.name)) {
+      lieferkosten = a;
+      return;
+    }
+    const istExtra = a.name.startsWith("Extra");
+    const letzte = gruppen[gruppen.length - 1];
+    if (istExtra && letzte) {
+      letzte.extras.push(a);
+    } else {
+      gruppen.push({ name: a.name, preis: a.preis, extras: [], menge: 1 });
+    }
+  });
+
+  const zusammengefasst = [];
+  gruppen.forEach(g => {
+    const signatur = g.name + '|' + g.extras.map(e => e.name).sort().join(',');
+    const letzte = zusammengefasst[zusammengefasst.length - 1];
+    const letzteSignatur = letzte ? letzte.name + '|' + letzte.extras.map(e => e.name).sort().join(',') : null;
+    if (letzte && letzteSignatur === signatur) {
+      letzte.menge += 1;
+    } else {
+      zusammengefasst.push(g);
+    }
+  });
+
+  return { gruppen: zusammengefasst, lieferkosten };
+}
+
+function renderBestellungen(bestellungen, neueIds) {
   const liste = document.getElementById("bestell-liste");
+  document.getElementById("anzahl-offen").textContent =
+    bestellungen.length > 0 ? `(${bestellungen.length} offen)` : "";
 
   if (bestellungen.length === 0) {
-    liste.innerHTML = `<div class="leer-hinweis">Aktuell keine offenen Bestellungen 🎉</div>`;
+    liste.innerHTML = `<div class="leer-hinweis">Aktuell keine offenen Bestellungen.</div>`;
     return;
   }
 
   liste.innerHTML = bestellungen.map(b => {
-    const artikelHtml = b.artikel.map(a =>
-      `<div><span>${a.name}</span><span>${a.preis.toFixed(2).replace('.', ',')} €</span></div>`
-    ).join('');
+    const { gruppen, lieferkosten } = gruppiereArtikel(b.artikel);
+
+    const artikelHtml = gruppen.map(g => {
+      const einzelpreis = g.preis + g.extras.reduce((s, e) => s + e.preis, 0);
+      const extrasHtml = g.extras.map(e =>
+        `<div class="extra-zeile"><span>+ ${e.name.replace(/^Extra(\s\[\w+\])?:\s*/, '')}</span><span>${euro(e.preis)}</span></div>`
+      ).join('');
+      return `
+        <div class="artikel-zeile">
+          <span><span class="menge">${g.menge}×</span> ${g.name}</span>
+          <span>${euro(einzelpreis * g.menge)}</span>
+        </div>
+        ${extrasHtml}
+      `;
+    }).join('');
+
+    const lieferHtml = lieferkosten
+      ? `<div class="liefer-zeile"><span>${lieferkosten.name}</span><span>${euro(lieferkosten.preis)}</span></div>`
+      : '';
 
     let etaBereich;
     if (b.status === "bestaetigt") {
-      etaBereich = `<div class="eta-gesetzt">⏱ Fertig in ca. ${b.eta_minuten} Min. (gesetzt um ${formatiereZeit(b.eta_gesetzt_um)})</div>`;
+      etaBereich = `
+        <div class="eta-bereich">
+          <div class="eta-gesetzt">⏱ Fertig in ca. ${b.eta_minuten} Min. <span style="font-weight:400; color:#4d9a6a;">(gesetzt um ${formatiereZeit(b.eta_gesetzt_um)})</span></div>
+        </div>
+      `;
     } else {
       etaBereich = `
-        <div class="eta-zeile">
-          <button class="eta-btn" onclick="etaSetzen('${b.order_id}', 15)">15 Min</button>
-          <button class="eta-btn" onclick="etaSetzen('${b.order_id}', 20)">20 Min</button>
-          <button class="eta-btn" onclick="etaSetzen('${b.order_id}', 30)">30 Min</button>
-          <button class="eta-btn" onclick="etaSetzen('${b.order_id}', 45)">45 Min</button>
-          <button class="eta-btn" onclick="etaSetzen('${b.order_id}', 60)">60 Min</button>
-          <input type="number" min="1" class="eta-eigene" id="eigene-${b.order_id}" placeholder="eigene">
-          <button class="eta-btn" onclick="etaEigeneSetzen('${b.order_id}')">Setzen</button>
+        <div class="eta-bereich">
+          <div class="eta-zeile">
+            <button class="eta-btn" onclick="etaSetzen('${b.order_id}', 15)">15 Min</button>
+            <button class="eta-btn" onclick="etaSetzen('${b.order_id}', 20)">20 Min</button>
+            <button class="eta-btn" onclick="etaSetzen('${b.order_id}', 30)">30 Min</button>
+            <button class="eta-btn" onclick="etaSetzen('${b.order_id}', 45)">45 Min</button>
+            <button class="eta-btn" onclick="etaSetzen('${b.order_id}', 60)">60 Min</button>
+            <input type="number" min="1" class="eta-eigene" id="eigene-${b.order_id}" placeholder="eigene">
+            <button class="eta-btn" onclick="etaEigeneSetzen('${b.order_id}')">Setzen</button>
+          </div>
         </div>
       `;
     }
 
+    const istNeu = neueIds && neueIds.includes(b.order_id);
+
     return `
-      <div class="bestell-karte status-${b.status}">
-        <div class="bestell-kopf">
-          <span class="name">${b.name} <span class="badge ${b.zahlung === 'bar' ? 'bar' : 'online'}">${b.zahlung === 'bar' ? 'Barzahlung' : 'Online bezahlt'}</span></span>
-          <span class="zeit">eingegangen um ${formatiereZeit(b.erstellt_um)}</span>
+      <div class="bestell-karte status-${b.status} ${istNeu ? 'neu-blinken' : ''}">
+        <div class="karte-kopf">
+          <div>
+            <div class="name">${b.name}</div>
+            <span class="badge ${b.zahlung === 'bar' ? 'bar' : 'online'}">${b.zahlung === 'bar' ? 'Barzahlung' : 'Online bezahlt'}</span>
+          </div>
+          <div class="zeit-info">
+            <span class="zeit">${formatiereZeit(b.erstellt_um)} Uhr</span>
+            <span class="vor-min">${vorXMinuten(b.erstellt_um)}</span>
+          </div>
         </div>
-        <div class="bestell-details">
-          📞 ${b.telefon} &nbsp;|&nbsp; 📍 ${b.adresse}
-          ${b.hinweis ? `<br>📝 ${b.hinweis}` : ''}
+        <div class="karte-body">
+          <div class="kontakt-zeilen">
+            <div class="zeile"><span class="label">Telefon</span><span>${b.telefon}</span></div>
+            <div class="zeile"><span class="label">Adresse</span><span>${b.adresse}</span></div>
+            ${b.hinweis ? `<div class="zeile"><span class="label">Hinweis</span><span class="hinweis-wert">${b.hinweis}</span></div>` : ''}
+          </div>
+          <div class="artikel-tabelle">
+            ${artikelHtml}
+            ${lieferHtml}
+            <div class="summe-zeile"><span>Gesamt</span><span>${euro(b.gesamt)}</span></div>
+          </div>
+          ${etaBereich}
+          <button class="fertig-btn" onclick="alsFertigMarkieren('${b.order_id}')">Fertig / abgeschlossen</button>
         </div>
-        <div class="bestell-artikel">${artikelHtml}</div>
-        <div class="bestell-summe">Gesamt: ${b.gesamt.toFixed(2).replace('.', ',')} €</div>
-        ${etaBereich}
-        <button class="fertig-btn" onclick="alsFertigMarkieren('${b.order_id}')">✅ Fertig / abgeschlossen</button>
       </div>
     `;
   }).join('');
@@ -304,6 +544,10 @@ if (gespeicherteAuth) {
   authHeader = gespeicherteAuth;
   ladeBestellungen(false);
 }
+
+// Ton beim ersten Klick irgendwo auf der Seite freischalten (Browser verlangen
+// eine Nutzerinteraktion, bevor Audio automatisch abgespielt werden darf)
+document.addEventListener("click", audioFreischalten, { once: true });
 
 setInterval(() => ladeBestellungen(false), 10000);
 </script>
