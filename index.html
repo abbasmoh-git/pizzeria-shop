@@ -3766,7 +3766,7 @@
           <span>Zwischensumme</span>
           <span><span id="summe">0,00</span> €</span>
         </div>
-        <div class="gesamt-zeile gesamt-sub">
+        <div class="gesamt-zeile gesamt-sub" id="lieferkosten-zeile">
           <span>Lieferkosten</span>
           <span id="lieferkosten-anzeige">1,00 €</span>
         </div>
@@ -3781,6 +3781,32 @@
         <h2>Deine Bestellung</h2>
 
         <div class="form-group">
+          <label>Lieferung oder Abholung? *</label>
+          <div class="zahlung-auswahl">
+            <label class="zahlung-option">
+              <input type="radio" name="bestellart" value="lieferung" checked onchange="bestellartGeaendert()">
+              <span class="zahlung-label">
+                <span class="zahlung-check"></span>
+                <span class="zahlung-info">
+                  <span class="zahlung-name">Lieferung</span>
+                  <span class="zahlung-desc">Wir bringen dir die Bestellung</span>
+                </span>
+              </span>
+            </label>
+            <label class="zahlung-option">
+              <input type="radio" name="bestellart" value="abholung" onchange="bestellartGeaendert()">
+              <span class="zahlung-label">
+                <span class="zahlung-check"></span>
+                <span class="zahlung-info">
+                  <span class="zahlung-name">Abholung</span>
+                  <span class="zahlung-desc">Selbst abholen, Marktplatz 6</span>
+                </span>
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
           <label for="name">Name *</label>
           <input type="text" id="name" placeholder="Vor- und Nachname">
         </div>
@@ -3790,7 +3816,12 @@
           <input type="tel" id="telefon" placeholder="z. B. 02595 12345">
         </div>
 
-        <div class="form-group" style="position:relative">
+        <div class="form-group">
+          <label for="email">E-Mail *</label>
+          <input type="email" id="email" placeholder="z. B. name@beispiel.de" autocomplete="email">
+        </div>
+
+        <div class="form-group" style="position:relative" id="adresse-gruppe">
           <label for="adresse">Adresse *</label>
           <input type="text" id="adresse" placeholder="Straße, Hausnummer..." autocomplete="off" oninput="adresseEingabe()">
           <div id="adresse-vorschlaege" class="adresse-vorschlaege" style="display:none"></div>

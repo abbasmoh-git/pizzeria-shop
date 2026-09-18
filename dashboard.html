@@ -3,263 +3,387 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bestell-Dashboard – Pizzeria Pinocchio</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <title>Bestellterminal – Pizzeria Pinocchio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.0/feather.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { -webkit-text-size-adjust: 100%; }
     body {
       font-family: 'Inter', sans-serif;
-      background: #eef0f2;
-      color: #1a1a1a;
-      padding: 24px;
+      background: #e9ebee;
+      color: #16181b;
     }
-    header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      max-width: 960px;
-      margin: 0 auto 24px;
-    }
-    .titel-zeile { display: flex; align-items: center; gap: 10px; }
-    .titel-marke {
-      width: 34px; height: 34px;
-      border-radius: 9px;
-      background: #c0392b;
-      color: #fff;
-      display: flex; align-items: center; justify-content: center;
-      font-family: 'Playfair Display', serif;
-      font-weight: 700;
-      font-size: 17px;
-    }
-    header h1 {
-      font-family: 'Playfair Display', serif;
-      font-size: 21px;
-      font-weight: 700;
-    }
-    header .anzahl-offen {
-      font-size: 13px;
-      color: #888;
-      margin-left: 4px;
-    }
-    .kopf-rechts { display: flex; align-items: center; gap: 14px; }
-    #ton-toggle {
-      display: flex; align-items: center; gap: 6px;
-      font-size: 13px;
-      color: #555;
-      background: #fff;
-      border: 1px solid #ddd;
-      border-radius: 20px;
-      padding: 6px 14px;
-      cursor: pointer;
-    }
-    #ton-toggle.aus { color: #aaa; }
-    #ausloggen-btn {
-      background: none;
-      border: 1px solid #ccc;
-      border-radius: 20px;
-      padding: 6px 14px;
-      cursor: pointer;
-      font-size: 13px;
-      color: #666;
-    }
+
+    /* ===== Login ===== */
     #login-bereich {
-      max-width: 340px;
-      margin: 80px auto;
+      max-width: 360px;
+      margin: 100px auto;
       background: #fff;
-      border-radius: 16px;
-      padding: 32px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+      border-radius: 14px;
+      padding: 36px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
     }
     #login-bereich h1 {
       font-family: 'Playfair Display', serif;
-      font-size: 20px;
-      margin-bottom: 20px;
+      font-size: 22px;
+      margin-bottom: 22px;
       text-align: center;
     }
     #login-bereich input {
       width: 100%;
-      padding: 12px 14px;
+      padding: 14px 16px;
       border: 1px solid #ddd;
       border-radius: 8px;
       margin-bottom: 12px;
-      font-size: 14px;
+      font-size: 16px;
     }
     #login-bereich button {
       width: 100%;
-      padding: 12px;
-      background: #c0392b;
+      padding: 14px;
+      background: #b3261e;
       color: #fff;
       border: none;
       border-radius: 8px;
-      font-weight: 600;
+      font-weight: 700;
+      font-size: 15px;
       cursor: pointer;
     }
     #login-fehler {
-      color: #c0392b;
+      color: #b3261e;
       font-size: 13px;
       margin-bottom: 10px;
       display: none;
     }
-    #bestell-liste {
-      max-width: 960px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 16px;
-      align-items: start;
-    }
 
-    /* ===== Bestell-Karte im Beleg-Stil ===== */
-    .bestell-karte {
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
-      overflow: hidden;
-      border-top: 4px solid #ccc;
-    }
-    .bestell-karte.status-eingegangen { border-top-color: #e67e22; }
-    .bestell-karte.status-bestaetigt { border-top-color: #27ae60; }
-    .bestell-karte.neu-blinken { animation: neuAnkunft 1.4s ease-in-out 2; }
-    @keyframes neuAnkunft {
-      0%, 100% { box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
-      50% { box-shadow: 0 2px 22px rgba(192,57,43,0.45); }
-    }
-
-    .karte-kopf {
-      padding: 14px 18px;
+    /* ===== Kopfleiste ===== */
+    #app-kopf {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: #16181b;
+      color: #fff;
+      padding: 14px 28px;
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      background: #fafafa;
-      border-bottom: 1px dashed #ddd;
-    }
-    .karte-kopf .name { font-weight: 700; font-size: 15px; }
-    .karte-kopf .zeit-info { text-align: right; }
-    .karte-kopf .zeit { font-size: 12px; color: #999; display: block; }
-    .karte-kopf .vor-min { font-size: 11px; color: #bbb; }
-
-    .karte-body { padding: 16px 18px; }
-
-    .kontakt-zeilen { font-size: 13px; color: #555; margin-bottom: 12px; }
-    .kontakt-zeilen .zeile { display: flex; gap: 6px; margin-bottom: 3px; }
-    .kontakt-zeilen .label { color: #aaa; min-width: 58px; }
-    .kontakt-zeilen .hinweis-wert { color: #a9601f; font-style: italic; }
-
-    .badge {
-      display: inline-block;
-      font-size: 10.5px;
-      font-weight: 600;
-      padding: 2px 9px;
-      border-radius: 20px;
-      margin-top: 4px;
-    }
-    .badge.bar { background: #eef2fb; color: #3a5aa8; }
-    .badge.online { background: #eaf7ef; color: #1f8a4c; }
-
-    .artikel-tabelle {
-      font-size: 13.5px;
-      border-top: 1px dashed #e5e5e5;
-      padding-top: 10px;
-      margin-top: 4px;
-    }
-    .artikel-zeile {
-      display: flex;
       justify-content: space-between;
-      gap: 8px;
-      margin-bottom: 4px;
-      color: #222;
     }
-    .artikel-zeile .menge { color: #999; min-width: 22px; }
-    .extra-zeile {
-      display: flex;
-      justify-content: space-between;
-      gap: 8px;
-      font-size: 12px;
-      color: #888;
-      padding-left: 26px;
-      margin-bottom: 2px;
-    }
-    .liefer-zeile {
-      display: flex;
-      justify-content: space-between;
-      font-size: 12.5px;
-      color: #888;
-      margin-top: 6px;
-    }
-    .summe-zeile {
-      display: flex;
-      justify-content: space-between;
+    #app-kopf .marke {
+      font-family: 'Playfair Display', serif;
+      font-size: 19px;
       font-weight: 700;
-      font-size: 14.5px;
-      margin-top: 10px;
-      padding-top: 10px;
-      border-top: 1px solid #eee;
+      letter-spacing: 0.01em;
     }
-
-    .eta-bereich { margin-top: 14px; }
-    .eta-zeile {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-    .eta-btn {
-      background: #f4f2ef;
-      border: 1px solid #ddd;
-      border-radius: 7px;
-      padding: 7px 12px;
-      font-size: 12.5px;
-      cursor: pointer;
-      color: #333;
-    }
-    .eta-btn:hover { background: #eee; }
-    .eta-eigene {
-      width: 62px;
-      padding: 7px;
-      border: 1px solid #ddd;
-      border-radius: 7px;
-      font-size: 12.5px;
-    }
-    .eta-gesetzt {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: #f2faf5;
-      border: 1px solid #d7ecdf;
+    #app-kopf .marke .unter { font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 400; color: #9aa0a6; display: block; }
+    #kopf-rechts { display: flex; align-items: center; gap: 10px; }
+    .kopf-btn {
+      display: flex; align-items: center; gap: 7px;
+      background: #2a2d31;
+      border: none;
       border-radius: 8px;
-      padding: 9px 12px;
-      color: #1f8a4c;
-      font-weight: 600;
+      padding: 9px 16px;
+      color: #e8eaed;
       font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
     }
+    .kopf-btn:hover { background: #35383d; }
+    .kopf-btn.aus { color: #7a7f85; }
+    .kopf-btn svg { width: 16px; height: 16px; }
 
-    .fertig-btn {
-      margin-top: 12px;
-      width: 100%;
-      background: #1a1a1a;
+    /* ===== Bestellalarm-Banner ===== */
+    #alarm-banner {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      background: #fff4e5;
+      border-bottom: 1px solid #f0c080;
+      color: #7a4a10;
+      padding: 12px 28px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    #alarm-banner button {
+      background: #16181b;
       color: #fff;
       border: none;
       border-radius: 8px;
-      padding: 10px 16px;
+      padding: 10px 18px;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    #alarm-banner button:hover { background: #33363b; }
+
+    /* ===== Layout ===== */
+    #inhalt { padding: 24px 28px 60px; max-width: 1400px; margin: 0 auto; }
+    .abschnitt { margin-bottom: 36px; }
+    .abschnitt-titel {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .abschnitt-titel h2 {
+      font-size: 15px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #444;
+    }
+    .abschnitt-titel .anzahl {
+      background: #16181b;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 2px 9px;
+      border-radius: 20px;
+    }
+    .abschnitt-titel.neu h2 { color: #b3261e; }
+    .abschnitt-titel.neu .anzahl { background: #b3261e; }
+
+    .karten-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+      gap: 18px;
+    }
+
+    /* ===== Bestell-Karte ===== */
+    .karte {
+      background: #fff;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+    }
+    .karte.neu {
+      border: 3px solid #b3261e;
+      box-shadow: 0 4px 18px rgba(179,38,30,0.22);
+    }
+    .karte.zubereitung {
+      border: 1px solid #dbe3dc;
+    }
+
+    .karte-kopf {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .karte.neu .karte-kopf { background: #b3261e; color: #fff; }
+    .karte.zubereitung .karte-kopf { background: #eef6f0; color: #1c5c33; }
+
+    .bestellart-abzeichen {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 16px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .bestellart-abzeichen svg { width: 20px; height: 20px; }
+
+    .karte-kopf-status {
+      font-size: 12.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      opacity: 0.92;
+    }
+
+    .karte-zeit {
+      font-size: 12px;
+      opacity: 0.85;
+      text-align: right;
+    }
+
+    .karte-body { padding: 18px 20px 20px; }
+
+    .kunde-name { font-size: 21px; font-weight: 700; margin-bottom: 10px; }
+
+    .kontakt-zeilen { margin-bottom: 14px; }
+    .kontakt-zeile {
+      display: flex; align-items: flex-start; gap: 9px;
+      font-size: 15px;
+      color: #2a2d31;
+      margin-bottom: 6px;
+    }
+    .kontakt-zeile svg { width: 17px; height: 17px; flex-shrink: 0; margin-top: 2px; color: #888; }
+    .kontakt-zeile.hinweis { color: #8a4b12; font-style: italic; }
+
+    .artikel-block {
+      border-top: 1px solid #eee;
+      padding-top: 12px;
+      margin-top: 4px;
+    }
+    .artikel-zeile {
+      display: flex; justify-content: space-between; gap: 8px;
+      font-size: 15.5px;
+      color: #16181b;
+      margin-bottom: 5px;
+    }
+    .artikel-zeile .menge { color: #999; margin-right: 4px; }
+    .extra-zeile {
+      display: flex; justify-content: space-between; gap: 8px;
       font-size: 13px;
-      font-weight: 600;
+      color: #888;
+      padding-left: 24px;
+      margin-bottom: 3px;
+    }
+    .liefer-zeile {
+      display: flex; justify-content: space-between;
+      font-size: 13.5px;
+      color: #888;
+      margin-top: 6px;
+    }
+    .summen-zeile {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #eee;
+    }
+    .summen-zeile .betrag { font-size: 20px; font-weight: 800; }
+    .zahlart-abzeichen {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 11px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .zahlart-abzeichen.bar { background: #eef2fb; color: #2b4a9e; }
+    .zahlart-abzeichen.online { background: #eaf7ef; color: #1c5c33; }
+
+    /* ===== Zeit-Auswahl (neue Bestellungen) ===== */
+    .zeit-bereich { margin-top: 18px; }
+    .zeit-hinweis { font-size: 12.5px; color: #888; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700; }
+    .zeit-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .zeit-btn {
+      background: #16181b;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 16px 8px;
+      font-size: 17px;
+      font-weight: 700;
       cursor: pointer;
     }
-    .fertig-btn:hover { background: #333; }
+    .zeit-btn:hover { background: #33363b; }
+    .zeit-eigene-zeile {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .zeit-eigene-zeile input {
+      flex: 1;
+      padding: 14px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      font-size: 16px;
+    }
+    .zeit-eigene-zeile button {
+      background: #444;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 0 20px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* ===== In Zubereitung ===== */
+    .eta-anzeige {
+      margin-top: 16px;
+      background: #f2faf5;
+      border: 1px solid #cdebd7;
+      border-radius: 10px;
+      padding: 14px 16px;
+    }
+    .eta-anzeige .zeit-gross { font-size: 22px; font-weight: 800; color: #1c5c33; }
+    .eta-anzeige .zeit-detail { font-size: 12.5px; color: #4d8a63; margin-top: 2px; }
+
+    .fertig-btn {
+      margin-top: 14px;
+      width: 100%;
+      background: #fff;
+      color: #16181b;
+      border: 1.5px solid #16181b;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 14.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .fertig-btn:hover { background: #16181b; color: #fff; }
+    .fertig-btn svg { width: 16px; height: 16px; }
 
     .leer-hinweis {
-      grid-column: 1 / -1;
-      text-align: center;
       color: #999;
-      padding: 60px 0;
-      font-size: 15px;
+      font-size: 14.5px;
+      padding: 18px 4px;
+    }
+
+    /* ===== Druck-Bereich: unsichtbar auf dem Bildschirm, erscheint nur beim Drucken ===== */
+    #druck-bereich { display: none; }
+
+    @media print {
+      body * { visibility: hidden; }
+      #druck-bereich, #druck-bereich * { visibility: visible; }
+      #druck-bereich {
+        display: block;
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%;
+        padding: 20px;
+        font-family: 'Inter', sans-serif;
+        color: #000;
+      }
+      #druck-zettel { max-width: 380px; margin: 0 auto; }
+      #druck-zettel h2 {
+        font-family: 'Playfair Display', serif;
+        font-size: 20px;
+        text-align: center;
+        margin-bottom: 2px;
+      }
+      #druck-zettel .druck-bestellart {
+        text-align: center;
+        font-size: 16px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin: 6px 0 2px;
+      }
+      #druck-zettel .druck-unterzeile { text-align: center; font-size: 12px; color: #444; margin-bottom: 14px; }
+      #druck-zettel .druck-trennlinie { border-top: 1px dashed #000; margin: 10px 0; }
+      #druck-zettel .druck-zeile { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 4px; }
+      #druck-zettel .druck-extra { display: flex; justify-content: space-between; font-size: 12px; color: #333; padding-left: 20px; margin-bottom: 2px; }
+      #druck-zettel .druck-label { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 0.03em; }
+      #druck-zettel .druck-eta {
+        margin-top: 14px;
+        border: 2px solid #000;
+        border-radius: 6px;
+        padding: 10px;
+        text-align: center;
+        font-size: 18px;
+        font-weight: 700;
+      }
+      #druck-zettel .druck-summe { font-size: 16px; font-weight: 700; margin-top: 8px; }
     }
   </style>
 </head>
 <body>
 
   <div id="login-bereich">
-    <h1>Dashboard-Login</h1>
+    <h1>Bestellterminal-Login</h1>
     <p id="login-fehler">Benutzername oder Passwort falsch.</p>
     <input type="text" id="login-user" placeholder="Benutzername">
     <input type="password" id="login-pass" placeholder="Passwort">
@@ -267,21 +391,43 @@
   </div>
 
   <div id="dashboard-bereich" style="display:none;">
-    <header>
-      <div class="titel-zeile">
-        <div class="titel-marke">P</div>
-        <div>
-          <h1>Eingehende Bestellungen</h1>
-        </div>
-        <span class="anzahl-offen" id="anzahl-offen"></span>
+    <header id="app-kopf">
+      <div class="marke">
+        Pizzeria Pinocchio
+        <span class="unter">Bestellterminal</span>
       </div>
-      <div class="kopf-rechts">
-        <button id="ton-toggle" onclick="tonUmschalten()">🔔 Ton an</button>
-        <button id="ausloggen-btn" onclick="ausloggen()">Abmelden</button>
+      <div id="kopf-rechts">
+        <button class="kopf-btn" id="ton-toggle" onclick="tonUmschalten()"></button>
+        <button class="kopf-btn" id="ausloggen-btn" onclick="ausloggen()"><i data-feather="log-out"></i><span>Abmelden</span></button>
       </div>
     </header>
-    <div id="bestell-liste"></div>
+
+    <div id="alarm-banner">
+      <span>Der Bestellalarm ist noch nicht aktiviert. Ohne Aktivierung bleibt es bei neuen Bestellungen stumm.</span>
+      <button onclick="alarmAktivieren()">Bestellalarm aktivieren</button>
+    </div>
+
+    <div id="inhalt">
+      <div class="abschnitt">
+        <div class="abschnitt-titel neu">
+          <h2>Neue Bestellungen</h2>
+          <span class="anzahl" id="anzahl-neu">0</span>
+        </div>
+        <div class="karten-grid" id="liste-neu"></div>
+      </div>
+
+      <div class="abschnitt">
+        <div class="abschnitt-titel">
+          <h2>In Zubereitung</h2>
+          <span class="anzahl" id="anzahl-zubereitung">0</span>
+        </div>
+        <div class="karten-grid" id="liste-zubereitung"></div>
+      </div>
+    </div>
   </div>
+
+  <!-- Wird nur beim Drucken sichtbar (siehe @media print oben) -->
+  <div id="druck-bereich"><div id="druck-zettel"></div></div>
 
 <script src="config.js"></script>
 <script>
@@ -289,8 +435,20 @@ let authHeader = null;
 let bekannteIds = null;
 let tonAktiv = true;
 let audioCtx = null;
+let letzteBestellungen = [];
 
-const LIEFERKOSTEN_NAMEN = ["Lieferkosten Innerorts", "Lieferkosten Außerorts"];
+// Ob der Bestellalarm über den expliziten "Bestellalarm aktivieren"-Knopf
+// freigeschaltet wurde (Browser verlangen dafür eine direkte Nutzeraktion).
+let alarmAktiviert = false;
+// Läuft, solange mindestens eine neue (unbestätigte) Bestellung wartet -
+// wird sofort gestoppt, sobald keine mehr offen ist.
+let alarmIntervalId = null;
+
+const LIEFERKOSTEN_NAMEN = ["Lieferkosten"];
+
+function symbolePlatzieren() {
+  if (window.feather) feather.replace({ width: 16, height: 16, "stroke-width": 2.2 });
+}
 
 function audioFreischalten() {
   if (!audioCtx) {
@@ -301,29 +459,70 @@ function audioFreischalten() {
   }
 }
 
+// Deutlich hörbarer Dreiklang - bewusst länger/lauter als ein einzelner
+// kurzer Ton, damit er im Betrieb (Küchenlärm, andere Tabs) nicht übergangen
+// wird. Wird per Intervall wiederholt, solange Bestellungen unbestätigt sind.
 function spieleBenachrichtigung() {
   if (!tonAktiv || !audioCtx) return;
   const jetzt = audioCtx.currentTime;
-  [{ t: 0, f: 880 }, { t: 0.16, f: 1175 }].forEach(ton => {
+  [{ t: 0, f: 880 }, { t: 0.16, f: 1175 }, { t: 0.32, f: 1480 }].forEach(ton => {
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
     osc.type = "sine";
     osc.frequency.value = ton.f;
     gain.gain.setValueAtTime(0.0001, jetzt + ton.t);
-    gain.gain.exponentialRampToValueAtTime(0.28, jetzt + ton.t + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.0001, jetzt + ton.t + 0.3);
+    gain.gain.exponentialRampToValueAtTime(0.32, jetzt + ton.t + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, jetzt + ton.t + 0.34);
     osc.connect(gain).connect(audioCtx.destination);
     osc.start(jetzt + ton.t);
-    osc.stop(jetzt + ton.t + 0.32);
+    osc.stop(jetzt + ton.t + 0.36);
   });
+}
+
+function aktualisiereTonKnopf() {
+  const btn = document.getElementById("ton-toggle");
+  btn.innerHTML = (tonAktiv ? '<i data-feather="bell"></i>' : '<i data-feather="bell-off"></i>') +
+    '<span>' + (tonAktiv ? 'Ton an' : 'Ton aus') + '</span>';
+  btn.classList.toggle("aus", !tonAktiv);
+  symbolePlatzieren();
 }
 
 function tonUmschalten() {
   tonAktiv = !tonAktiv;
-  const btn = document.getElementById("ton-toggle");
-  btn.textContent = tonAktiv ? "🔔 Ton an" : "🔕 Ton aus";
-  btn.classList.toggle("aus", !tonAktiv);
+  aktualisiereTonKnopf();
   if (tonAktiv) audioFreischalten();
+}
+
+// Explizite, einmalige Nutzeraktion, um den Bestellalarm freizuschalten
+// (Browser blockieren automatisch abgespielten Ton ohne direkte Interaktion).
+function alarmAktivieren() {
+  audioFreischalten();
+  alarmAktiviert = true;
+  tonAktiv = true;
+  aktualisiereTonKnopf();
+  document.getElementById("alarm-banner").style.display = "none";
+  // Kurzer Test-Ton als hörbare Bestätigung, dass der Alarm jetzt aktiv ist.
+  spieleBenachrichtigung();
+  alarmStatusAktualisieren();
+}
+
+// Startet/stoppt den wiederholenden Alarm je nachdem, ob noch unbestätigte
+// ("neue") Bestellungen offen sind. Läuft weiter, bis die letzte davon
+// angenommen (ETA gesetzt) wurde - dann stoppt er sofort.
+function alarmStatusAktualisieren() {
+  const anzahlNeu = letzteBestellungen.filter(b => b.status === "eingegangen").length;
+
+  if (!alarmAktiviert || anzahlNeu === 0) {
+    if (alarmIntervalId) {
+      clearInterval(alarmIntervalId);
+      alarmIntervalId = null;
+    }
+    return;
+  }
+
+  if (!alarmIntervalId) {
+    alarmIntervalId = setInterval(spieleBenachrichtigung, 4000);
+  }
 }
 
 function einloggen() {
@@ -362,18 +561,20 @@ async function ladeBestellungen(istLoginVersuch) {
     document.getElementById("login-bereich").style.display = "none";
     document.getElementById("dashboard-bereich").style.display = "block";
     document.getElementById("login-fehler").style.display = "none";
+    document.getElementById("alarm-banner").style.display = alarmAktiviert ? "none" : "flex";
 
     const bestellungen = await res.json();
+    letzteBestellungen = bestellungen;
 
     const aktuelleIds = new Set(bestellungen.map(b => b.order_id));
-    let neueIds = [];
     if (bekannteIds !== null) {
-      neueIds = bestellungen.filter(b => !bekannteIds.has(b.order_id)).map(b => b.order_id);
+      const neueIds = bestellungen.filter(b => !bekannteIds.has(b.order_id));
       if (neueIds.length > 0) spieleBenachrichtigung();
     }
     bekannteIds = aktuelleIds;
 
-    renderBestellungen(bestellungen, neueIds);
+    renderBestellungen(bestellungen);
+    alarmStatusAktualisieren();
   } catch (e) {
     console.error("Fehler beim Laden:", e);
   }
@@ -391,6 +592,14 @@ function vorXMinuten(iso) {
 
 function euro(zahl) {
   return zahl.toFixed(2).replace('.', ',') + ' €';
+}
+
+function bestellartLabel(bestellart) {
+  return bestellart === "abholung" ? "Abholung" : "Lieferung";
+}
+
+function bestellartIcon(bestellart) {
+  return bestellart === "abholung" ? "shopping-bag" : "truck";
 }
 
 // Fasst die flache Artikelliste zu Hauptgerichten mit eingerückten Extras
@@ -428,106 +637,159 @@ function gruppiereArtikel(artikelListe) {
   return { gruppen: zusammengefasst, lieferkosten };
 }
 
-function renderBestellungen(bestellungen, neueIds) {
-  const liste = document.getElementById("bestell-liste");
-  document.getElementById("anzahl-offen").textContent =
-    bestellungen.length > 0 ? `(${bestellungen.length} offen)` : "";
-
-  if (bestellungen.length === 0) {
-    liste.innerHTML = `<div class="leer-hinweis">Aktuell keine offenen Bestellungen.</div>`;
-    return;
-  }
-
-  liste.innerHTML = bestellungen.map(b => {
-    const { gruppen, lieferkosten } = gruppiereArtikel(b.artikel);
-
-    const artikelHtml = gruppen.map(g => {
-      const einzelpreis = g.preis + g.extras.reduce((s, e) => s + e.preis, 0);
-      const extrasHtml = g.extras.map(e =>
-        `<div class="extra-zeile"><span>+ ${e.name.replace(/^Extra(\s\[\w+\])?:\s*/, '')}</span><span>${euro(e.preis)}</span></div>`
-      ).join('');
-      return `
-        <div class="artikel-zeile">
-          <span><span class="menge">${g.menge}×</span> ${g.name}</span>
-          <span>${euro(einzelpreis * g.menge)}</span>
-        </div>
-        ${extrasHtml}
-      `;
-    }).join('');
-
-    const lieferHtml = lieferkosten
-      ? `<div class="liefer-zeile"><span>${lieferkosten.name}</span><span>${euro(lieferkosten.preis)}</span></div>`
-      : '';
-
-    let etaBereich;
-    if (b.status === "bestaetigt") {
-      etaBereich = `
-        <div class="eta-bereich">
-          <div class="eta-gesetzt">⏱ Fertig in ca. ${b.eta_minuten} Min. <span style="font-weight:400; color:#4d9a6a;">(gesetzt um ${formatiereZeit(b.eta_gesetzt_um)})</span></div>
-        </div>
-      `;
-    } else {
-      etaBereich = `
-        <div class="eta-bereich">
-          <div class="eta-zeile">
-            <button class="eta-btn" onclick="etaSetzen('${b.order_id}', 15)">15 Min</button>
-            <button class="eta-btn" onclick="etaSetzen('${b.order_id}', 20)">20 Min</button>
-            <button class="eta-btn" onclick="etaSetzen('${b.order_id}', 30)">30 Min</button>
-            <button class="eta-btn" onclick="etaSetzen('${b.order_id}', 45)">45 Min</button>
-            <button class="eta-btn" onclick="etaSetzen('${b.order_id}', 60)">60 Min</button>
-            <input type="number" min="1" class="eta-eigene" id="eigene-${b.order_id}" placeholder="eigene">
-            <button class="eta-btn" onclick="etaEigeneSetzen('${b.order_id}')">Setzen</button>
-          </div>
-        </div>
-      `;
-    }
-
-    const istNeu = neueIds && neueIds.includes(b.order_id);
-
+function baueArtikelHtml(gruppen, lieferkosten, zeilenKlasse, extraKlasse) {
+  const artikelHtml = gruppen.map(g => {
+    const einzelpreis = g.preis + g.extras.reduce((s, e) => s + e.preis, 0);
+    const extrasHtml = g.extras.map(e =>
+      `<div class="${extraKlasse}"><span>+ ${e.name.replace(/^Extra(\s\[\w+\])?:\s*/, '')}</span><span>${euro(e.preis)}</span></div>`
+    ).join('');
     return `
-      <div class="bestell-karte status-${b.status} ${istNeu ? 'neu-blinken' : ''}">
-        <div class="karte-kopf">
-          <div>
-            <div class="name">${b.name}</div>
-            <span class="badge ${b.zahlung === 'bar' ? 'bar' : 'online'}">${b.zahlung === 'bar' ? 'Barzahlung' : 'Online bezahlt'}</span>
-          </div>
-          <div class="zeit-info">
-            <span class="zeit">${formatiereZeit(b.erstellt_um)} Uhr</span>
-            <span class="vor-min">${vorXMinuten(b.erstellt_um)}</span>
-          </div>
-        </div>
-        <div class="karte-body">
-          <div class="kontakt-zeilen">
-            <div class="zeile"><span class="label">Telefon</span><span>${b.telefon}</span></div>
-            <div class="zeile"><span class="label">Adresse</span><span>${b.adresse}</span></div>
-            ${b.hinweis ? `<div class="zeile"><span class="label">Hinweis</span><span class="hinweis-wert">${b.hinweis}</span></div>` : ''}
-          </div>
-          <div class="artikel-tabelle">
-            ${artikelHtml}
-            ${lieferHtml}
-            <div class="summe-zeile"><span>Gesamt</span><span>${euro(b.gesamt)}</span></div>
-          </div>
-          ${etaBereich}
-          <button class="fertig-btn" onclick="alsFertigMarkieren('${b.order_id}')">Fertig / abgeschlossen</button>
-        </div>
-      </div>
+      <div class="${zeilenKlasse}"><span><span class="menge">${g.menge}×</span>${g.name}</span><span>${euro(einzelpreis * g.menge)}</span></div>
+      ${extrasHtml}
     `;
   }).join('');
+
+  const lieferHtml = lieferkosten
+    ? `<div class="liefer-zeile"><span>${lieferkosten.name}</span><span>${euro(lieferkosten.preis)}</span></div>`
+    : '';
+
+  return artikelHtml + lieferHtml;
 }
 
-async function etaSetzen(orderId, minuten) {
+function baueKontaktHtml(b) {
+  let html = `
+    <div class="kontakt-zeile"><i data-feather="phone"></i><span>${b.telefon}</span></div>
+  `;
+  if (b.bestellart !== "abholung") {
+    html += `<div class="kontakt-zeile"><i data-feather="map-pin"></i><span>${b.adresse}</span></div>`;
+  }
+  if (b.hinweis) {
+    html += `<div class="kontakt-zeile hinweis"><i data-feather="message-square"></i><span>${b.hinweis}</span></div>`;
+  }
+  return html;
+}
+
+function renderBestellungen(bestellungen) {
+  const neu = bestellungen.filter(b => b.status === "eingegangen");
+  const zubereitung = bestellungen.filter(b => b.status === "bestaetigt");
+
+  document.getElementById("anzahl-neu").textContent = neu.length;
+  document.getElementById("anzahl-zubereitung").textContent = zubereitung.length;
+
+  const listeNeu = document.getElementById("liste-neu");
+  const listeZubereitung = document.getElementById("liste-zubereitung");
+
+  listeNeu.innerHTML = neu.length === 0
+    ? `<div class="leer-hinweis">Aktuell keine neuen Bestellungen.</div>`
+    : neu.map(b => renderNeueKarte(b)).join('');
+
+  listeZubereitung.innerHTML = zubereitung.length === 0
+    ? `<div class="leer-hinweis">Aktuell nichts in Zubereitung.</div>`
+    : zubereitung.map(b => renderZubereitungsKarte(b)).join('');
+
+  symbolePlatzieren();
+}
+
+function renderNeueKarte(b) {
+  const { gruppen, lieferkosten } = gruppiereArtikel(b.artikel);
+  const artikelHtml = baueArtikelHtml(gruppen, lieferkosten, "artikel-zeile", "extra-zeile");
+
+  return `
+    <div class="karte neu">
+      <div class="karte-kopf">
+        <div class="bestellart-abzeichen"><i data-feather="${bestellartIcon(b.bestellart)}"></i>${bestellartLabel(b.bestellart)}</div>
+        <div class="karte-kopf-status">Neue Bestellung</div>
+        <div class="karte-zeit">${formatiereZeit(b.erstellt_um)} Uhr<br>${vorXMinuten(b.erstellt_um)}</div>
+      </div>
+      <div class="karte-body">
+        <div class="kunde-name">${b.name}</div>
+        <div class="kontakt-zeilen">${baueKontaktHtml(b)}</div>
+        <div class="artikel-block">
+          ${artikelHtml}
+          <div class="summen-zeile">
+            <span class="zahlart-abzeichen ${b.zahlung === 'bar' ? 'bar' : 'online'}">${b.zahlung === 'bar' ? 'Barzahlung' : 'Online bezahlt'}</span>
+            <span class="betrag">${euro(b.gesamt)}</span>
+          </div>
+        </div>
+        <div class="zeit-bereich">
+          <div class="zeit-hinweis">Bestellung annehmen – fertig in ...</div>
+          <div class="zeit-grid">
+            <button class="zeit-btn" onclick="zeitAuswaehlen('${b.order_id}', 15)">15 Min</button>
+            <button class="zeit-btn" onclick="zeitAuswaehlen('${b.order_id}', 20)">20 Min</button>
+            <button class="zeit-btn" onclick="zeitAuswaehlen('${b.order_id}', 30)">30 Min</button>
+            <button class="zeit-btn" onclick="zeitAuswaehlen('${b.order_id}', 40)">40 Min</button>
+            <button class="zeit-btn" onclick="zeitAuswaehlen('${b.order_id}', 45)">45 Min</button>
+            <button class="zeit-btn" onclick="zeitAuswaehlen('${b.order_id}', 60)">60 Min</button>
+          </div>
+          <div class="zeit-eigene-zeile">
+            <input type="number" min="1" id="eigene-${b.order_id}" placeholder="Eigene Minuten">
+            <button onclick="eigeneZeitAuswaehlen('${b.order_id}')">Setzen</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderZubereitungsKarte(b) {
+  const { gruppen, lieferkosten } = gruppiereArtikel(b.artikel);
+  const artikelHtml = baueArtikelHtml(gruppen, lieferkosten, "artikel-zeile", "extra-zeile");
+
+  const gesetztUm = new Date(b.eta_gesetzt_um);
+  const fertigUm = new Date(gesetztUm.getTime() + b.eta_minuten * 60000);
+  const restMinuten = Math.max(0, Math.round((fertigUm - new Date()) / 60000));
+
+  return `
+    <div class="karte zubereitung">
+      <div class="karte-kopf">
+        <div class="bestellart-abzeichen"><i data-feather="${bestellartIcon(b.bestellart)}"></i>${bestellartLabel(b.bestellart)}</div>
+        <div class="karte-kopf-status">In Zubereitung</div>
+        <div class="karte-zeit">${formatiereZeit(b.erstellt_um)} Uhr<br>${vorXMinuten(b.erstellt_um)}</div>
+      </div>
+      <div class="karte-body">
+        <div class="kunde-name">${b.name}</div>
+        <div class="kontakt-zeilen">${baueKontaktHtml(b)}</div>
+        <div class="artikel-block">
+          ${artikelHtml}
+          <div class="summen-zeile">
+            <span class="zahlart-abzeichen ${b.zahlung === 'bar' ? 'bar' : 'online'}">${b.zahlung === 'bar' ? 'Barzahlung' : 'Online bezahlt'}</span>
+            <span class="betrag">${euro(b.gesamt)}</span>
+          </div>
+        </div>
+        <div class="eta-anzeige">
+          <div class="zeit-gross">${restMinuten > 0 ? 'ca. ' + restMinuten + ' Min.' : 'gleich fertig'}</div>
+          <div class="zeit-detail">${bestellartLabel(b.bestellart) === 'Abholung' ? 'abholbereit' : 'fertig'} ca. ${formatiereZeit(fertigUm.toISOString())} Uhr &middot; angenommen um ${formatiereZeit(b.eta_gesetzt_um)} Uhr</div>
+        </div>
+        <button class="fertig-btn" onclick="alsFertigMarkieren('${b.order_id}')"><i data-feather="check"></i>Fertig / abgeschlossen</button>
+      </div>
+    </div>
+  `;
+}
+
+// Klick auf eine Zeit = zentrale Annahmeaktion: Zettel sofort drucken (synchron,
+// damit der Browser den Druckdialog als direkte Nutzeraktion zulässt) und
+// parallel die Zeit am Server hinterlegen, damit der Kunde sie sieht.
+function zeitAuswaehlen(orderId, minuten) {
+  const bestellung = letzteBestellungen.find(b => b.order_id === orderId);
+  if (bestellung) {
+    druckeBestellung(bestellung, minuten);
+  }
+  etaAmServerSetzen(orderId, minuten);
+}
+
+function eigeneZeitAuswaehlen(orderId) {
+  const wert = parseInt(document.getElementById(`eigene-${orderId}`).value, 10);
+  if (!wert || wert <= 0) return;
+  zeitAuswaehlen(orderId, wert);
+}
+
+async function etaAmServerSetzen(orderId, minuten) {
   await fetch(`${BACKEND_URL}/dashboard/api/bestellungen/${orderId}/eta`, {
     method: "POST",
     headers: { "Content-Type": "application/json", "Authorization": authHeader },
     body: JSON.stringify({ eta_minuten: minuten })
   });
   ladeBestellungen(false);
-}
-
-function etaEigeneSetzen(orderId) {
-  const wert = parseInt(document.getElementById(`eigene-${orderId}`).value, 10);
-  if (!wert || wert <= 0) return;
-  etaSetzen(orderId, wert);
 }
 
 async function alsFertigMarkieren(orderId) {
@@ -538,16 +800,49 @@ async function alsFertigMarkieren(orderId) {
   ladeBestellungen(false);
 }
 
+// Baut einen Bestellzettel und öffnet sofort/synchron den Druckdialog,
+// damit der Klick auf den Zeit-Button als direkte Nutzeraktion zählt.
+function druckeBestellung(b, etaMinuten) {
+  const { gruppen, lieferkosten } = gruppiereArtikel(b.artikel);
+  const artikelHtml = baueArtikelHtml(gruppen, lieferkosten, "druck-zeile", "druck-extra");
+
+  const jetzt = new Date();
+  const fertigUm = new Date(jetzt.getTime() + etaMinuten * 60000);
+  const istAbholung = b.bestellart === "abholung";
+
+  document.getElementById("druck-zettel").innerHTML = `
+    <h2>Pizzeria Pinocchio</h2>
+    <div class="druck-bestellart">${istAbholung ? 'Abholung' : 'Lieferung'}</div>
+    <div class="druck-unterzeile">Bestellung #${b.order_id} &middot; gedruckt um ${formatiereZeit(jetzt.toISOString())} Uhr</div>
+    <div class="druck-trennlinie"></div>
+    <div class="druck-label">Kunde</div>
+    <div class="druck-zeile"><span>${b.name}</span><span>${b.zahlung === 'bar' ? 'Barzahlung' : 'Online bezahlt'}</span></div>
+    <div class="druck-zeile"><span>${b.telefon}</span><span></span></div>
+    ${!istAbholung ? `<div class="druck-zeile"><span>${b.adresse}</span><span></span></div>` : ''}
+    ${b.hinweis ? `<div class="druck-zeile"><span>Hinweis: ${b.hinweis}</span><span></span></div>` : ''}
+    <div class="druck-trennlinie"></div>
+    <div class="druck-label">Artikel</div>
+    ${artikelHtml}
+    <div class="druck-zeile druck-summe"><span>Gesamt</span><span>${euro(b.gesamt)}</span></div>
+    <div class="druck-eta">${istAbholung ? 'Abholbereit' : 'Fertig'} in ca. ${etaMinuten} Min.<br><span style="font-weight:400; font-size:13px;">(ca. ${formatiereZeit(fertigUm.toISOString())} Uhr)</span></div>
+  `;
+
+  window.print();
+}
+
 // Automatisch eingeloggt bleiben, solange der Tab offen ist
+aktualisiereTonKnopf();
+symbolePlatzieren();
 const gespeicherteAuth = sessionStorage.getItem("dashboardAuth");
 if (gespeicherteAuth) {
   authHeader = gespeicherteAuth;
   ladeBestellungen(false);
 }
 
-// Ton beim ersten Klick irgendwo auf der Seite freischalten (Browser verlangen
-// eine Nutzerinteraktion, bevor Audio automatisch abgespielt werden darf)
-document.addEventListener("click", audioFreischalten, { once: true });
+// Der Bestellalarm wird bewusst nicht beim ersten beliebigen Klick
+// freigeschaltet, sondern nur über den expliziten "Bestellalarm aktivieren"-
+// Knopf im Banner oben - so ist für das Personal klar erkennbar, ob der
+// Alarm aktiv ist oder nicht.
 
 setInterval(() => ladeBestellungen(false), 10000);
 </script>

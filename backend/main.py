@@ -5,10 +5,13 @@ from pydantic import BaseModel
 from typing import List, Optional
 import os
 import json
+import re
 import sqlite3
 import secrets
 import uuid
-from datetime import datetime, timezone
+import requests
+from datetime import datetime, timezone, timedelta
+from zoneinfo import ZoneInfo
 import stripe
 from dotenv import load_dotenv
 
@@ -34,6 +37,13 @@ SITE_URL = os.getenv("SITE_URL", "http://localhost:5500")
 # ===== DASHBOARD-ZUGANG (fürs Bestell-Dashboard) =====
 DASHBOARD_USER = os.getenv("DASHBOARD_USER", "pinocchio")
 DASHBOARD_PASSWORD = os.getenv("DASHBOARD_PASSWORD", "bitte_in_env_aendern")
+
+# ===== E-MAIL (Brevo, transaktionale E-Mails) =====
+# Zugangsdaten kommen ausschließlich aus der .env / den Server-Umgebungsvariablen.
+# Es liegen niemals Zugangsdaten, SMTP-Passwörter oder API-Keys im Frontend.
+BREVO_API_KEY = os.getenv("BREVO_API_KEY", "")
+MAIL_ABSENDER_ADRESSE = os.getenv("MAIL_ABSENDER_ADRESSE", "")
+MAIL_ABSENDER_NAME = os.getenv("MAIL_ABSENDER_NAME", "Pizzeria Pinocchio")
 
 security = HTTPBasic()
 
@@ -78,6 +88,17 @@ def init_db():
             eta_gesetzt_um TEXT
         )
     """)
+    # Migration: bestellart wurde nachträglich ergänzt. Bestehende Datenbanken
+    # (vor dieser Änderung angelegt) bekommen die Spalte per ALTER TABLE dazu,
+    # ohne dass vorhandene Bestellungen verloren gehen.
+    vorhandene_spalten = {row["name"] for row in conn.execute("PRAGMA table_info(bestellungen)")}
+    if "bestellart" not in vorhandene_spalten:
+        conn.execute("ALTER TABLE bestellungen ADD COLUMN bestellart TEXT NOT NULL DEFAULT 'lieferung'")
+    # Migration: E-Mail-Adresse wurde nachträglich ergänzt (für Bestell- und
+    # ETA-Bestätigungsmails). Bestehende Datenbanken bekommen die Spalte per
+    # ALTER TABLE dazu, ohne dass vorhandene Bestellungen verloren gehen.
+    if "email" not in vorhandene_spalten:
+        conn.execute("ALTER TABLE bestellungen ADD COLUMN email TEXT NOT NULL DEFAULT ''")
     conn.commit()
     conn.close()
 
@@ -98,19 +119,21 @@ def bestellung_speichern(bestellung: "Bestellung", status: str) -> str:
     conn = get_db()
     conn.execute(
         """INSERT INTO bestellungen
-           (id, erstellt_um, name, telefon, adresse, hinweis, artikel_json, gesamt, zahlung, status)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+           (id, erstellt_um, name, telefon, adresse, hinweis, artikel_json, gesamt, zahlung, status, bestellart, email)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (
             order_id,
             jetzt_iso(),
             bestellung.name,
             bestellung.telefon,
-            bestellung.adresse,
+            bestellung.adresse or "",
             bestellung.hinweis or "",
             json.dumps([a.dict() for a in bestellung.artikel], ensure_ascii=False),
             bestellung.gesamt,
             bestellung.zahlung or "bar",
             status,
+            bestellung.bestellart or "lieferung",
+            bestellung.email or "",
         ),
     )
     conn.commit()
@@ -125,15 +148,296 @@ class Artikel(BaseModel):
 class Bestellung(BaseModel):
     name: str
     telefon: str
-    adresse: str
+    email: str
+    # Bei Abholung wird keine Lieferadresse benötigt, deshalb optional.
+    adresse: Optional[str] = ""
     hinweis: Optional[str] = ""
     artikel: List[Artikel]
     gesamt: float
     zahlung: Optional[str] = "bar"
+    # "lieferung" oder "abholung"
+    bestellart: Optional[str] = "lieferung"
 
 
 class EtaEingabe(BaseModel):
     eta_minuten: int
+
+
+EMAIL_REGEX = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+
+
+def bestellart_fehler(bestellung: "Bestellung") -> Optional[str]:
+    """Prüft, ob Bestellart, Adresse und E-Mail zusammenpassen. Gibt eine
+    Fehlermeldung zurück, oder None wenn alles in Ordnung ist."""
+    if bestellung.bestellart not in ("lieferung", "abholung"):
+        return "Ungültige Bestellart."
+    if bestellung.bestellart == "lieferung" and not (bestellung.adresse or "").strip():
+        return "Für eine Lieferung wird eine Adresse benötigt."
+    if not EMAIL_REGEX.match((bestellung.email or "").strip()):
+        return "Bitte gib eine gültige E-Mail-Adresse an."
+    return None
+
+
+# ===== ÖFFNUNGSZEITEN (einzige Quelle der Wahrheit für die ganze Anwendung) =====
+# Wird sowohl serverseitig (Bestellungen ablehnen) als auch für die Anzeige im
+# Frontend über /oeffnungszeiten verwendet - so steht die Konfiguration nur
+# an dieser einen Stelle.
+# 0 = Montag ... 6 = Sonntag. None = Ruhetag. Zeiten als "HH:MM".
+OEFFNUNGSZEITEN = {
+    0: None,                # Montag: Ruhetag
+    1: ("12:00", "21:00"),  # Dienstag
+    2: ("12:00", "21:00"),  # Mittwoch
+    3: ("12:00", "21:00"),  # Donnerstag
+    4: ("12:00", "21:00"),  # Freitag
+    5: ("12:00", "21:00"),  # Samstag
+    6: ("12:00", "21:00"),  # Sonntag
+}
+BERLIN_TZ = ZoneInfo("Europe/Berlin")
+
+
+def oeffnungszeiten_text() -> str:
+    return "Dienstag bis Sonntag, 12:00–21:00 Uhr. Montags Ruhetag."
+
+
+def ist_geoeffnet(zeitpunkt: Optional[datetime] = None) -> bool:
+    zeitpunkt = zeitpunkt or datetime.now(BERLIN_TZ)
+    zeiten = OEFFNUNGSZEITEN.get(zeitpunkt.weekday())
+    if zeiten is None:
+        return False
+    start_std, start_min = (int(x) for x in zeiten[0].split(":"))
+    ende_std, ende_min = (int(x) for x in zeiten[1].split(":"))
+    start = zeitpunkt.replace(hour=start_std, minute=start_min, second=0, microsecond=0)
+    ende = zeitpunkt.replace(hour=ende_std, minute=ende_min, second=0, microsecond=0)
+    return start <= zeitpunkt <= ende
+
+
+def pruefe_oeffnungszeiten() -> Optional[str]:
+    if not ist_geoeffnet():
+        return f"Wir haben aktuell geschlossen. Öffnungszeiten: {oeffnungszeiten_text()}"
+    return None
+
+
+@app.get("/oeffnungszeiten")
+def oeffnungszeiten_status():
+    geoeffnet = ist_geoeffnet()
+    return {
+        "geoeffnet": geoeffnet,
+        "text": "Aktuell geöffnet." if geoeffnet else f"Wir haben aktuell geschlossen. Öffnungszeiten: {oeffnungszeiten_text()}",
+    }
+
+
+# ===== LIEFERGEBIET & ADRESSPRÜFUNG =====
+# Die Zone (und damit Lieferkosten/Mindestbestellwert) wird automatisch anhand
+# der Adresse bestimmt - niemals vom Kunden ausgewählt, und dem Kunden auch
+# nie als "Innerorts"/"Außerorts" angezeigt.
+RESTAURANT_LAT = 51.7089
+RESTAURANT_LON = 7.3753
+MAX_LIEFERRADIUS_KM = 7.5
+
+LIEFERZONEN = {
+    "olfen":     {"mindest": 20.0, "kosten": 1.0},
+    "erweitert": {"mindest": 35.0, "kosten": 2.5},
+}
+
+
+def haversine_km(lat1, lon1, lat2, lon2) -> float:
+    from math import radians, sin, cos, asin, sqrt
+    R = 6371
+    dlat = radians(lat2 - lat1)
+    dlon = radians(lon2 - lon1)
+    a = sin(dlat / 2) ** 2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon / 2) ** 2
+    return R * 2 * asin(sqrt(a))
+
+
+def geocodiere_adresse(adresse_text: str):
+    """Fragt die Adresse serverseitig bei OpenStreetMap/Nominatim ab -
+    unabhängig davon, was das Frontend behauptet. So wird sichergestellt,
+    dass die Adresse wirklich existiert (eine erfundene Adresse wie
+    "Kackwurst" liefert hier keinen Treffer) und niemand der Anfrage vom
+    Browser aus vertraut werden muss."""
+    adresse_text = (adresse_text or "").strip()
+    if not adresse_text:
+        return None
+    try:
+        res = requests.get(
+            "https://nominatim.openstreetmap.org/search",
+            params={
+                "format": "json",
+                "q": adresse_text,
+                "countrycodes": "de",
+                "limit": 1,
+                "addressdetails": 1,
+            },
+            headers={"User-Agent": "PizzeriaPinocchioBestellsystem/1.0 (abbas.m@aol.de)"},
+            timeout=6,
+        )
+        daten = res.json()
+    except Exception as e:
+        print("Geokodierung fehlgeschlagen:", e)
+        return None
+
+    if not daten:
+        return None
+
+    treffer = daten[0]
+    addr = treffer.get("address", {})
+    try:
+        return {
+            "lat": float(treffer["lat"]),
+            "lon": float(treffer["lon"]),
+            "ort": addr.get("city") or addr.get("town") or addr.get("village") or addr.get("municipality") or "",
+            "plz": addr.get("postcode") or "",
+        }
+    except (KeyError, ValueError):
+        return None
+
+
+def liefergebiet_bestimmen(adresse_text: str) -> Optional[str]:
+    """Prüft die Adresse serverseitig und bestimmt automatisch die Lieferzone.
+    Gibt None zurück, wenn die Adresse nicht auffindbar ist oder außerhalb
+    unseres Liefergebiets liegt (genaue Radius-/Zonenlogik kann später
+    verfeinert werden - hier zählt vor allem: echte, geokodierbare Adresse
+    innerhalb des Radius)."""
+    geo = geocodiere_adresse(adresse_text)
+    if geo is None:
+        return None
+    distanz = haversine_km(RESTAURANT_LAT, RESTAURANT_LON, geo["lat"], geo["lon"])
+    if distanz > MAX_LIEFERRADIUS_KM:
+        return None
+    ist_olfen = geo["plz"] == "59399" or "olfen" in geo["ort"].lower()
+    return "olfen" if ist_olfen else "erweitert"
+
+
+def berechne_bestellung(bestellung: "Bestellung"):
+    """Zentrale Prüfung für /bestellen und /checkout-session: Öffnungszeiten,
+    Bestellart/Adresse/E-Mail, Artikelpreise und - bei Lieferung - serverseitig
+    bestimmte Lieferzone samt Lieferkosten/Mindestbestellwert. Gibt
+    (finale_artikel, endsumme, fehler) zurück; fehler ist None, wenn alles in
+    Ordnung ist."""
+    fehler = pruefe_oeffnungszeiten()
+    if fehler:
+        return None, None, fehler
+
+    fehler = bestellart_fehler(bestellung)
+    if fehler:
+        return None, None, fehler
+
+    artikel_summe = 0.0
+    for artikel in bestellung.artikel:
+        if artikel.name not in PREISE:
+            return None, None, "Unbekannter Artikel!"
+        artikel_summe += PREISE[artikel.name]
+    artikel_summe = round(artikel_summe, 2)
+
+    if round(bestellung.gesamt, 2) != artikel_summe:
+        return None, None, "Preis stimmt nicht!"
+
+    finale_artikel = list(bestellung.artikel)
+    lieferkosten = 0.0
+
+    if bestellung.bestellart == "lieferung":
+        zone = liefergebiet_bestimmen(bestellung.adresse)
+        if zone is None:
+            return None, None, (
+                "Diese Adresse konnte nicht bestätigt werden oder liegt außerhalb "
+                "unseres Liefergebiets. Bitte wähle eine Adresse aus den Vorschlägen aus."
+            )
+        zonendaten = LIEFERZONEN[zone]
+        if artikel_summe < zonendaten["mindest"]:
+            mindest_text = f"{zonendaten['mindest']:.2f}".replace(".", ",")
+            return None, None, f"Mindestbestellwert für deine Adresse: {mindest_text} €"
+        lieferkosten = zonendaten["kosten"]
+        finale_artikel.append(Artikel(name="Lieferkosten", preis=lieferkosten))
+
+    endsumme = round(artikel_summe + lieferkosten, 2)
+    return finale_artikel, endsumme, None
+
+
+# ===== E-MAIL-VERSAND =====
+def sende_email(empfaenger: str, betreff: str, text: str) -> None:
+    """Verschickt eine transaktionale E-Mail über die Brevo-API. Ein
+    fehlgeschlagener Versand wird nur geloggt - eine Bestellung darf daran nie
+    scheitern. Der API-Key kommt ausschließlich aus der Server-.env."""
+    if not empfaenger:
+        return
+    if not BREVO_API_KEY or not MAIL_ABSENDER_ADRESSE:
+        print("E-Mail nicht gesendet (BREVO_API_KEY/MAIL_ABSENDER_ADRESSE fehlt in .env):", betreff)
+        return
+    try:
+        requests.post(
+            "https://api.brevo.com/v3/smtp/email",
+            headers={
+                "api-key": BREVO_API_KEY,
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            },
+            json={
+                "sender": {"name": MAIL_ABSENDER_NAME, "email": MAIL_ABSENDER_ADRESSE},
+                "to": [{"email": empfaenger}],
+                "subject": betreff,
+                "textContent": text,
+            },
+            timeout=8,
+        )
+    except Exception as e:
+        print("E-Mail-Versand fehlgeschlagen:", e)
+
+
+def artikel_text_liste(artikel_liste) -> str:
+    zeilen = []
+    for a in artikel_liste:
+        name = a["name"] if isinstance(a, dict) else a.name
+        preis = a["preis"] if isinstance(a, dict) else a.preis
+        preis_text = f"{preis:.2f}".replace(".", ",")
+        zeilen.append(f"  - {name}: {preis_text} €")
+    return "\n".join(zeilen)
+
+
+def sende_bestellbestaetigung(empfaenger_email: str, name: str, order_id: str, bestellart: str, artikel_liste, gesamt: float) -> None:
+    bestellart_text = "Abholung" if bestellart == "abholung" else "Lieferung"
+    gesamt_text = f"{gesamt:.2f}".replace(".", ",")
+    betreff = f"Deine Bestellung bei Pizzeria Pinocchio (#{order_id})"
+    text = (
+        f"Hallo {name},\n\n"
+        f"vielen Dank für deine Bestellung bei Pizzeria Pinocchio!\n\n"
+        f"Bestellnummer: {order_id}\n"
+        f"Bestellart: {bestellart_text}\n\n"
+        f"Deine Artikel:\n{artikel_text_liste(artikel_liste)}\n\n"
+        f"Gesamt: {gesamt_text} €\n\n"
+        f"Wir bestätigen dir die voraussichtliche {'Abholzeit' if bestellart == 'abholung' else 'Lieferzeit'} "
+        f"in Kürze per E-Mail. Du kannst deine Bestellung außerdem jederzeit hier verfolgen:\n"
+        f"{SITE_URL}/verfolgen.html?id={order_id}\n\n"
+        f"Bei Fragen erreichst du uns unter 02595 7688.\n\n"
+        f"Pizzeria Pinocchio"
+    )
+    sende_email(empfaenger_email, betreff, text)
+
+
+def sende_eta_bestaetigung(empfaenger_email: str, name: str, order_id: str, bestellart: str, eta_minuten: int, fertig_um: datetime) -> None:
+    """Schickt die zweite Bestätigungsmail, sobald das Restaurant die Zeit
+    gesetzt hat. Der Haupttext folgt exakt dem vorgegebenen Wortlaut."""
+    ist_abholung = bestellart == "abholung"
+    uhrzeit_text = fertig_um.strftime("%H:%M")
+    if ist_abholung:
+        haupttext = (
+            f"Ihre Bestellung wurde bestätigt. Voraussichtlich abholbereit in ca. "
+            f"{eta_minuten} Minuten. Voraussichtlich abholbereit gegen {uhrzeit_text} Uhr."
+        )
+    else:
+        haupttext = (
+            f"Ihre Bestellung wurde bestätigt. Voraussichtliche Lieferzeit: ca. "
+            f"{eta_minuten} Minuten. Voraussichtliche Lieferung gegen {uhrzeit_text} Uhr."
+        )
+    betreff = f"Deine Bestellung ist bestätigt (#{order_id})"
+    text = (
+        f"Hallo {name},\n\n"
+        f"{haupttext}\n\n"
+        f"Du kannst den Status auch jederzeit hier verfolgen:\n"
+        f"{SITE_URL}/verfolgen.html?id={order_id}\n\n"
+        f"Bei Fragen erreichst du uns unter 02595 7688.\n\n"
+        f"Pizzeria Pinocchio"
+    )
+    sende_email(empfaenger_email, betreff, text)
 
 
 @app.get("/")
@@ -344,8 +648,6 @@ PREISE = {
     "Pizza della Casa (Normal)": 12.9,
     "Pizza nach Art des Hauses (Groß)": 14.9,
     "Pizza nach Art des Hauses (Normal)": 13.9,
-    "Lieferkosten Innerorts": 1.0,
-    "Lieferkosten Außerorts": 2.9,
     "Butter": 1.0,
     "Soße": 1.5,
     "Oliven": 3.9,
@@ -675,38 +977,30 @@ PREISE = {
 
 @app.post("/bestellen")
 def bestellen(bestellung: Bestellung):
-    berechnete_summe = 0
-
-    for artikel in bestellung.artikel:
-        if artikel.name not in PREISE:
-            print("❌ Unbekannter Artikel")
-            return {"status": "error", "message": "Unbekannter Artikel!"}
-
-        berechnete_summe += PREISE[artikel.name]
-
-    berechnete_summe = round(berechnete_summe, 2)
-
-    print("Frontend Summe:", bestellung.gesamt)
-    print("Backend Summe:", berechnete_summe)
-
-    if round(bestellung.gesamt, 2) != berechnete_summe:
-        print("❌ Bestellung abgelehnt (Preis stimmt nicht)")
-        return {"status": "error", "message": "Preis stimmt nicht!"}
+    finale_artikel, endsumme, fehler = berechne_bestellung(bestellung)
+    if fehler:
+        print("❌ Bestellung abgelehnt:", fehler)
+        return {"status": "error", "message": fehler}
 
     #  NUR HIER ist es wirklich eine gültige Bestellung
+    bestellung.artikel = finale_artikel
+    bestellung.gesamt = endsumme
     order_id = bestellung_speichern(bestellung, status="eingegangen")
 
     print("✅ Neue Bestellung akzeptiert:", order_id)
     print("Name:", bestellung.name)
     print("Telefon:", bestellung.telefon)
+    print("E-Mail:", bestellung.email)
     print("Adresse:", bestellung.adresse)
     print("Hinweis:", bestellung.hinweis)
     print("Artikel:")
 
     for artikel in bestellung.artikel:
-        print("-", artikel.name, "-", PREISE[artikel.name], "€")
+        print("-", artikel.name, "-", artikel.preis, "€")
 
-    print("Gesamt:", berechnete_summe, "€")
+    print("Gesamt:", endsumme, "€")
+
+    sende_bestellbestaetigung(bestellung.email, bestellung.name, order_id, bestellung.bestellart, bestellung.artikel, endsumme)
 
     return {"status": "ok", "order_id": order_id, "tracking_url": f"verfolgen.html?id={order_id}"}
 
@@ -714,16 +1008,14 @@ def bestellen(bestellung: Bestellung):
 # ===== STRIPE: CHECKOUT SESSION ERSTELLEN =====
 @app.post("/checkout-session")
 def checkout_session(bestellung: Bestellung):
-    # Preise zuerst validieren (genau wie bei /bestellen)
-    berechnete_summe = 0
-    for artikel in bestellung.artikel:
-        if artikel.name not in PREISE:
-            return {"status": "error", "message": "Unbekannter Artikel!"}
-        berechnete_summe += PREISE[artikel.name]
-    berechnete_summe = round(berechnete_summe, 2)
+    # Preise, Öffnungszeiten, Adresse/Liefergebiet zuerst validieren (genau wie bei /bestellen)
+    finale_artikel, endsumme, fehler = berechne_bestellung(bestellung)
+    if fehler:
+        return {"status": "error", "message": fehler}
 
-    if round(bestellung.gesamt, 2) != berechnete_summe:
-        return {"status": "error", "message": "Preis stimmt nicht!"}
+    bestellung.artikel = finale_artikel
+    bestellung.gesamt = endsumme
+    berechnete_summe = endsumme
 
     # Artikelliste als lesbaren Text für Stripe-Beschreibung
     artikel_text = ", ".join(
@@ -773,12 +1065,13 @@ def checkout_session(bestellung: Bestellung):
         print(f"💳 NEUE ONLINE-BESTELLUNG ({bestellung.zahlung.upper()})")
         print(f"Name:     {bestellung.name}")
         print(f"Telefon:  {bestellung.telefon}")
+        print(f"E-Mail:   {bestellung.email}")
         print(f"Adresse:  {bestellung.adresse}")
         if bestellung.hinweis:
             print(f"Hinweis:  {bestellung.hinweis}")
         print("Artikel:")
         for artikel in bestellung.artikel:
-            print(f"  - {artikel.name}  {PREISE[artikel.name]:.2f} €")
+            print(f"  - {artikel.name}  {artikel.preis:.2f} €")
         print(f"Gesamt:   {berechnete_summe:.2f} €")
         print("━" * 40)
         return {"url": session.url}
@@ -815,7 +1108,15 @@ async def stripe_webhook(request: Request):
                 (order_id,),
             )
             conn.commit()
+            zeile = conn.execute("SELECT * FROM bestellungen WHERE id = ?", (order_id,)).fetchone()
             conn.close()
+            # Bestellbestätigung erst jetzt verschicken (Zahlung ist bestätigt,
+            # nicht schon beim Erstellen der Stripe-Session).
+            if zeile is not None:
+                sende_bestellbestaetigung(
+                    zeile["email"], zeile["name"], order_id, zeile["bestellart"],
+                    json.loads(zeile["artikel_json"]), zeile["gesamt"],
+                )
 
         print("✅ Zahlung eingegangen!", order_id or "")
         print("Name:", meta.get("kunde_name"))
@@ -844,6 +1145,7 @@ def bestell_status(order_id: str):
     return {
         "order_id": row["id"],
         "status": row["status"],
+        "bestellart": row["bestellart"],
         "erstellt_um": row["erstellt_um"],
         "artikel": json.loads(row["artikel_json"]),
         "gesamt": row["gesamt"],
@@ -875,6 +1177,7 @@ def dashboard_bestellungen(user: str = Depends(pruefe_dashboard_login)):
             "gesamt": r["gesamt"],
             "zahlung": r["zahlung"],
             "status": r["status"],
+            "bestellart": r["bestellart"],
             "eta_minuten": r["eta_minuten"],
             "eta_gesetzt_um": r["eta_gesetzt_um"],
         }
@@ -886,7 +1189,7 @@ def dashboard_bestellungen(user: str = Depends(pruefe_dashboard_login)):
 @app.post("/dashboard/api/bestellungen/{order_id}/eta")
 def dashboard_eta_setzen(order_id: str, eingabe: EtaEingabe, user: str = Depends(pruefe_dashboard_login)):
     conn = get_db()
-    row = conn.execute("SELECT id FROM bestellungen WHERE id = ?", (order_id,)).fetchone()
+    row = conn.execute("SELECT * FROM bestellungen WHERE id = ?", (order_id,)).fetchone()
     if row is None:
         conn.close()
         raise HTTPException(status_code=404, detail="Bestellung nicht gefunden")
@@ -897,6 +1200,11 @@ def dashboard_eta_setzen(order_id: str, eingabe: EtaEingabe, user: str = Depends
     )
     conn.commit()
     conn.close()
+
+    # Zweite Bestätigungsmail: Zeit ist jetzt vom Restaurant bestätigt.
+    fertig_um = datetime.now(timezone.utc).astimezone(BERLIN_TZ) + timedelta(minutes=eingabe.eta_minuten)
+    sende_eta_bestaetigung(row["email"], row["name"], order_id, row["bestellart"], eingabe.eta_minuten, fertig_um)
+
     return {"status": "ok"}
 
 

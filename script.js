@@ -2,9 +2,28 @@ let gesamt = 0;
 let warenkorbDaten = {};
 let pendingItem = null;
 
-const LIEFERKOSTEN = {
-  innerorts: { kosten: 1.0,  mindest: 15.0, name: 'Lieferkosten Innerorts' },
-  ausserorts: { kosten: 2.9, mindest: 25.0, name: 'Lieferkosten Außerorts' }
+// "lieferung" oder "abholung" - gesteuert über die Radiobuttons im Bestellformular
+let bestellart = 'lieferung';
+
+function bestellartGeaendert() {
+  bestellart = document.querySelector('input[name="bestellart"]:checked')?.value || 'lieferung';
+  const adresseGruppe = document.getElementById('adresse-gruppe');
+  const lieferkostenZeile = document.getElementById('lieferkosten-zeile');
+  const istAbholung = bestellart === 'abholung';
+
+  if (adresseGruppe) adresseGruppe.style.display = istAbholung ? 'none' : '';
+  if (lieferkostenZeile) lieferkostenZeile.style.display = istAbholung ? 'none' : '';
+
+  neuRendern();
+}
+
+// Die Lieferzone (und damit Lieferkosten/Mindestbestellwert) wird automatisch
+// anhand der Adresse bestimmt - der Kunde wählt sie nie selbst aus, und die
+// Namen "Olfen"/"erweitert" tauchen an keiner Stelle in der Oberfläche auf.
+// Maßgeblich ist am Ende ohnehin die serverseitige Prüfung beim Absenden.
+const LIEFERZONEN = {
+  olfen:     { kosten: 1.0, mindest: 20.0 },
+  erweitert: { kosten: 2.5, mindest: 35.0 },
 };
 
 // ===== ADRESSE AUTOCOMPLETE & LIEFERGEBIET ERKENNUNG =====
@@ -102,16 +121,14 @@ function waehleAdresse(idx) {
     statusEl.className = 'lieferstatus status-ausserhalb';
     statusEl.innerHTML = `<i data-feather="alert-circle"></i><span>Leider außerhalb unseres Liefergebiets (${dist.toFixed(1)} km · max. ${MAX_LIEFERRADIUS_KM} km Luftlinie)</span>`;
   } else {
+    // Zone wird nur intern bestimmt (für Lieferkosten/Mindestbestellwert) -
+    // dem Kunden wird nie "Innerorts"/"Außerorts" o.ä. angezeigt.
     const isOlfen = ort.toLowerCase().includes('olfen') || (addr.postcode || '') === '59399';
-    const gebiet = isOlfen ? 'innerorts' : 'ausserorts';
+    const gebiet = isOlfen ? 'olfen' : 'erweitert';
     adresseGeoResult = { lat, lon, gebiet };
-    if (gebiet === 'innerorts') {
-      statusEl.className = 'lieferstatus status-innerorts';
-      statusEl.innerHTML = `<i data-feather="check-circle"></i><span>Innerorts (Olfen) · Lieferkosten: 1,00 € · Mindestbestellwert: 15,00 €</span>`;
-    } else {
-      statusEl.className = 'lieferstatus status-ausserorts';
-      statusEl.innerHTML = `<i data-feather="check-circle"></i><span>Außerorts · ${dist.toFixed(1)} km · Lieferkosten: 2,90 € · Mindestbestellwert: 25,00 €</span>`;
-    }
+    const { kosten, mindest } = LIEFERZONEN[gebiet];
+    statusEl.className = 'lieferstatus status-innerorts';
+    statusEl.innerHTML = `<i data-feather="check-circle"></i><span>Lieferung möglich · Lieferkosten: ${kosten.toFixed(2).replace('.', ',')} € · Mindestbestellwert: ${mindest.toFixed(2).replace('.', ',')} €</span>`;
   }
   statusEl.style.display = 'flex';
   if (window.feather) feather.replace({ width: 16, height: 16, 'stroke-width': 2 });
@@ -127,22 +144,26 @@ document.addEventListener('click', function (e) {
   }
 });
 
-function getLiefergebiet() {
-  if (adresseGeoResult && adresseGeoResult.gebiet) return adresseGeoResult.gebiet;
-  // Fallback: Texterkennung wenn noch keine Geocodierung
-  const adresse = (document.getElementById('adresse')?.value || '').toLowerCase();
-  if (adresse.includes('59399') || adresse.includes('olfen')) return 'innerorts';
-  return 'innerorts'; // Standard bis Adresse bestätigt
-}
-
+// Zeigt eine Live-Schätzung der Lieferkosten, sobald die Adresse aus den
+// Vorschlägen ausgewählt wurde. Vor der Auswahl (oder bei erfundenen/nicht
+// bestätigten Adressen) wird noch nichts behauptet - maßgeblich ist ohnehin
+// die serverseitige Prüfung beim Absenden der Bestellung.
 function aktualisierelieferkosten() {
-  const gebiet = getLiefergebiet();
-  const { kosten } = LIEFERKOSTEN[gebiet];
-  const anzeige = document.getElementById('lieferkosten-anzeige');
-  if (anzeige) anzeige.textContent = kosten.toFixed(2).replace('.', ',') + ' €';
   const gesamtEl = document.getElementById('summe-gesamt');
-  if (gesamtEl) {
-    gesamtEl.textContent = (gesamt + kosten).toFixed(2).replace('.', ',');
+  const anzeige = document.getElementById('lieferkosten-anzeige');
+
+  if (bestellart === 'abholung') {
+    if (gesamtEl) gesamtEl.textContent = gesamt.toFixed(2).replace('.', ',');
+    return;
+  }
+
+  if (adresseGeoResult && adresseGeoResult.gebiet) {
+    const { kosten } = LIEFERZONEN[adresseGeoResult.gebiet];
+    if (anzeige) anzeige.textContent = kosten.toFixed(2).replace('.', ',') + ' €';
+    if (gesamtEl) gesamtEl.textContent = (gesamt + kosten).toFixed(2).replace('.', ',');
+  } else {
+    if (anzeige) anzeige.textContent = 'wird anhand der Adresse berechnet';
+    if (gesamtEl) gesamtEl.textContent = gesamt.toFixed(2).replace('.', ',');
   }
 }
 
@@ -405,6 +426,7 @@ function blinkBtn(btn) {
 async function abschicken() {
   let name = document.getElementById("name").value.trim();
   let telefon = document.getElementById("telefon").value.trim();
+  let email = document.getElementById("email").value.trim();
   let adresse = document.getElementById("adresse").value.trim();
   let hinweis = document.getElementById("hinweis").value.trim();
   let zahlung = document.querySelector('input[name="zahlung"]:checked')?.value || 'bar';
@@ -412,27 +434,23 @@ async function abschicken() {
   let buttonText = document.getElementById("buttonText");
   let buttonSpinner = document.getElementById("buttonSpinner");
 
-  if (name === "" || telefon === "" || adresse === "") {
-    zeigeMeldung("Bitte Name, Telefonnummer und Adresse eingeben!", "error");
+  const istAbholung = bestellart === 'abholung';
+  const EMAIL_MUSTER = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+
+  if (name === "" || telefon === "" || email === "" || (!istAbholung && adresse === "")) {
+    zeigeMeldung(istAbholung
+      ? "Bitte Name, Telefonnummer und E-Mail-Adresse eingeben!"
+      : "Bitte Name, Telefonnummer, E-Mail-Adresse und Adresse eingeben!", "error");
+    return;
+  }
+
+  if (!EMAIL_MUSTER.test(email)) {
+    zeigeMeldung("Bitte gib eine gültige E-Mail-Adresse ein.", "error");
     return;
   }
 
   if (Object.keys(warenkorbDaten).length === 0) {
     zeigeMeldung("Bitte zuerst etwas bestellen!", "error");
-    return;
-  }
-
-  // Lieferadresse außerhalb des Gebiets?
-  if (adresseGeoResult && adresseGeoResult.gebiet === null) {
-    zeigeMeldung("Diese Adresse liegt leider außerhalb unseres Liefergebiets.", "error");
-    return;
-  }
-
-  const gebiet = getLiefergebiet();
-  const { kosten, mindest, name: lieferkostenName } = LIEFERKOSTEN[gebiet];
-
-  if (gesamt < mindest) {
-    zeigeMeldung(`Mindestbestellwert für ${gebiet === 'innerorts' ? 'Innerorts' : 'Außerorts'}: ${mindest.toFixed(2).replace('.', ',')} €`, "error");
     return;
   }
 
@@ -445,15 +463,45 @@ async function abschicken() {
       });
     }
   });
-  // Lieferkosten als eigener Artikel ans Backend
-  artikelListe.push({ name: lieferkostenName, preis: kosten });
 
-  const bestellungsDaten = {
-    name, telefon, adresse, hinweis,
-    artikel: artikelListe,
-    gesamt: gesamt + kosten,
-    zahlung: zahlung
-  };
+  let bestellungsDaten;
+
+  if (istAbholung) {
+    // Abholung: keine Adresse, kein Liefergebiet, keine Lieferkosten/Mindestbestellwert
+    bestellungsDaten = {
+      name, telefon, email, adresse: "", hinweis,
+      artikel: artikelListe,
+      gesamt: gesamt,
+      zahlung: zahlung,
+      bestellart: 'abholung',
+    };
+  } else {
+    // Die Adresse muss aus den Vorschlägen ausgewählt worden sein - eine frei
+    // getippte, nicht bestätigte Adresse (z. B. eine erfundene Adresse) wird
+    // hier abgelehnt. Der Server prüft die Adresse beim Absenden ohnehin noch
+    // einmal unabhängig, das hier ist nur die schnelle Rückmeldung im Formular.
+    if (!adresseGeoResult || !adresseGeoResult.gebiet) {
+      zeigeMeldung("Bitte wähle deine Adresse aus der Vorschlagsliste aus, damit wir sie prüfen können.", "error");
+      return;
+    }
+
+    const { mindest } = LIEFERZONEN[adresseGeoResult.gebiet];
+
+    if (gesamt < mindest) {
+      zeigeMeldung(`Mindestbestellwert für deine Adresse: ${mindest.toFixed(2).replace('.', ',')} €`, "error");
+      return;
+    }
+
+    // Die Lieferkosten werden serverseitig anhand der Adresse berechnet und
+    // als eigener Posten ergänzt - hier wird nur die Artikelsumme geschickt.
+    bestellungsDaten = {
+      name, telefon, email, adresse, hinweis,
+      artikel: artikelListe,
+      gesamt: gesamt,
+      zahlung: zahlung,
+      bestellart: 'lieferung',
+    };
+  }
 
   button.disabled = true;
   buttonSpinner.style.display = "inline-block";
@@ -504,6 +552,7 @@ async function abschicken() {
       neuRendern();
       document.getElementById("name").value = "";
       document.getElementById("telefon").value = "";
+      document.getElementById("email").value = "";
       document.getElementById("adresse").value = "";
       document.getElementById("hinweis").value = "";
       // Weiter zur Tracking-Seite, damit der Kunde den Status verfolgen kann
@@ -567,9 +616,7 @@ function neuRendern() {
   });
 
   document.getElementById("summe").textContent = gesamt.toFixed(2).replace('.', ',');
-  const lieferkosten = LIEFERKOSTEN[getLiefergebiet()].kosten;
-  document.getElementById("lieferkosten-anzeige").textContent = lieferkosten.toFixed(2).replace('.', ',') + ' €';
-  document.getElementById("summe-gesamt").textContent = (gesamt + lieferkosten).toFixed(2).replace('.', ',');
+  aktualisierelieferkosten();
 }
 
 function plus(name) {
@@ -726,3 +773,47 @@ function diashowInit() {
 }
 
 document.addEventListener('DOMContentLoaded', diashowInit);
+
+// ===== ÖFFNUNGSZEITEN =====
+// Die Öffnungszeiten kommen ausschließlich vom Backend (einzige Quelle der
+// Wahrheit, siehe main.py). Hier wird nur angezeigt/gesperrt, nie erneut
+// festgelegt - die eigentliche Prüfung passiert beim Absenden serverseitig.
+async function pruefeOeffnungszeiten() {
+  try {
+    const res = await fetch(`${BACKEND_URL}/oeffnungszeiten`);
+    const daten = await res.json();
+    aktualisiereOeffnungsstatus(daten.geoeffnet, daten.text);
+  } catch (e) {
+    console.error('Öffnungszeiten konnten nicht geladen werden:', e);
+  }
+}
+
+function aktualisiereOeffnungsstatus(geoeffnet, text) {
+  let banner = document.getElementById('geschlossen-banner');
+  const button = document.getElementById('bestellButton');
+
+  if (!geoeffnet) {
+    if (!banner) {
+      banner = document.createElement('div');
+      banner.id = 'geschlossen-banner';
+      banner.className = 'geschlossen-banner';
+      document.body.prepend(banner);
+    }
+    banner.textContent = text;
+    if (button) {
+      button.disabled = true;
+      button.title = text;
+    }
+  } else {
+    if (banner) banner.remove();
+    if (button) {
+      button.disabled = false;
+      button.title = '';
+    }
+  }
+}
+
+document.addEventListener('DOMContentLoaded', pruefeOeffnungszeiten);
+// Regelmäßig erneut prüfen, falls die Seite über eine Öffnungs-/Schließzeit
+// hinweg geöffnet bleibt.
+setInterval(pruefeOeffnungszeiten, 5 * 60 * 1000);
