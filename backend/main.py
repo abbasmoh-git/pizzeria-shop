@@ -1130,6 +1130,18 @@ async def stripe_webhook(request: Request):
     return {"status": "ok"}
 
 
+def maskiere_email(email: str) -> str:
+    """Maskiert eine E-Mail-Adresse für die Anzeige auf der öffentlichen
+    Tracking-Seite (kein Login nötig), z. B. max@gmail.com -> m***@gmail.com.
+    Die volle Adresse wird dabei nie an diesen öffentlichen Endpunkt gegeben."""
+    if not email or "@" not in email:
+        return ""
+    lokal, _, domain = email.partition("@")
+    if not lokal or not domain:
+        return ""
+    return f"{lokal[0]}***@{domain}"
+
+
 # ===== ÖFFENTLICH: STATUS EINER BESTELLUNG (für verfolgen.html) =====
 @app.get("/status/{order_id}")
 def bestell_status(order_id: str):
@@ -1151,6 +1163,7 @@ def bestell_status(order_id: str):
         "gesamt": row["gesamt"],
         "eta_minuten": row["eta_minuten"],
         "eta_gesetzt_um": row["eta_gesetzt_um"],
+        "email_maskiert": maskiere_email(row["email"]),
     }
 
 

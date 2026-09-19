@@ -92,6 +92,7 @@
       Wir haben deine Zahlung erhalten und bereiten deine Bestellung jetzt vor.<br><br>
       Bei Fragen erreichst du uns unter <strong>02595 7688</strong>
     </div>
+    <p id="email-hinweis" style="font-size:14px; color:#999; display:none;"></p>
     <p style="font-size:14px; color:#999;">Auf der Tracking-Seite siehst du, sobald wir die Zeit bestätigt haben.</p>
     <br>
     <a id="tracking-link" href="verfolgen.html" class="back-btn">Bestellung verfolgen</a>
@@ -99,12 +100,40 @@
     <a href="/" style="font-size:14px; color:#999;">Zurück zur Speisekarte</a>
   </div>
 
+<script src="config.js"></script>
 <script>
   const params = new URLSearchParams(window.location.search);
   const orderId = params.get("order_id");
   if (orderId) {
     document.getElementById("tracking-link").href = `verfolgen.html?id=${orderId}`;
   }
+
+  // Zeigt den Hinweis auf die versendete Bestätigungs-E-Mail, sobald die
+  // Bestellung serverseitig abrufbar ist. Direkt nach der Weiterleitung von
+  // Stripe kann es einen kurzen Moment dauern, bis der Webhook die Bestellung
+  // von "wartet auf Zahlung" auf "eingegangen" setzt (erst dann liefert
+  // /status Daten) - deshalb wird bei Fehlschlag mit wachsendem Abstand ein
+  // paar Mal erneut versucht, statt sofort aufzugeben. Schlägt es dauerhaft
+  // fehl, bleibt die Zeile einfach ausgeblendet; der Rest der Seite
+  // funktioniert unverändert.
+  async function zeigeEmailHinweis(versuch) {
+    if (!orderId) return;
+    try {
+      const res = await fetch(`${BACKEND_URL}/status/${orderId}`);
+      if (!res.ok) throw new Error("Bestellung noch nicht abrufbar");
+      const daten = await res.json();
+      if (!daten.email_maskiert) return;
+      const istAbholung = daten.bestellart === "abholung";
+      const hinweis = document.getElementById("email-hinweis");
+      hinweis.textContent = `Wir haben deine Bestellung erhalten. Eine Bestätigung wurde an ${daten.email_maskiert} gesendet. Sobald wir deine Bestellung bestätigen, erhältst du per E-Mail auch die voraussichtliche ${istAbholung ? 'Abholzeit' : 'Lieferzeit'}.`;
+      hinweis.style.display = "block";
+    } catch (e) {
+      if (versuch < 5) {
+        setTimeout(() => zeigeEmailHinweis(versuch + 1), 1500);
+      }
+    }
+  }
+  zeigeEmailHinweis(0);
 </script>
 </body>
 </html>

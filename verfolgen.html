@@ -214,11 +214,16 @@ function zeigeStatus(daten) {
   const istAbholung = daten.bestellart === "abholung";
   const bestellartText = istAbholung ? "Abholung" : "Lieferung";
 
+  const emailZeile = daten.email_maskiert
+    ? `<p class="unterzeile">Wir haben deine Bestellung erhalten. Eine Bestätigung wurde an ${daten.email_maskiert} gesendet. Sobald wir deine Bestellung bestätigen, erhältst du per E-Mail auch die voraussichtliche ${istAbholung ? 'Abholzeit' : 'Lieferzeit'}.</p>`
+    : `<p class="unterzeile">Wir bestätigen in Kürze die voraussichtliche ${istAbholung ? 'Abholzeit' : 'Lieferzeit'}.</p>`;
+
   let kopf = "";
   if (daten.status === "eingegangen") {
     kopf = `
       <h1>Bestellung eingegangen</h1>
-      <p class="unterzeile">Wir bestätigen in Kürze die voraussichtliche ${istAbholung ? 'Abholzeit' : 'Lieferzeit'}. Diese Seite aktualisiert sich automatisch.</p>
+      ${emailZeile}
+      <p class="unterzeile">Diese Seite aktualisiert sich automatisch.</p>
     `;
   } else if (daten.status === "bestaetigt") {
     const gesetztUm = new Date(daten.eta_gesetzt_um);
@@ -231,6 +236,7 @@ function zeigeStatus(daten) {
         <div class="zeile-1">${istAbholung ? 'Voraussichtliche Abholzeit' : 'Voraussichtliche Lieferzeit'}: ca. ${restMinuten > 0 ? restMinuten : 0} Minuten</div>
         <div class="zeile-2">${istAbholung ? 'Voraussichtlich abholbereit gegen' : 'Voraussichtlich gegen'} ${formatiereUhrzeit(fertigUm)} Uhr</div>
       </div>
+      ${daten.email_maskiert ? `<p class="unterzeile">Die Bestätigung mit dieser Zeit wurde per E-Mail an ${daten.email_maskiert} gesendet.</p>` : ""}
     `;
   } else if (daten.status === "fertig") {
     kopf = istAbholung

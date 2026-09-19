@@ -91,32 +91,6 @@
     .kopf-btn.aus { color: #7a7f85; }
     .kopf-btn svg { width: 16px; height: 16px; }
 
-    /* ===== Bestellalarm-Banner ===== */
-    #alarm-banner {
-      display: none;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      background: #fff4e5;
-      border-bottom: 1px solid #f0c080;
-      color: #7a4a10;
-      padding: 12px 28px;
-      font-size: 14px;
-      font-weight: 600;
-    }
-    #alarm-banner button {
-      background: #16181b;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      padding: 10px 18px;
-      font-size: 13.5px;
-      font-weight: 700;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-    #alarm-banner button:hover { background: #33363b; }
-
     /* ===== Layout ===== */
     #inhalt { padding: 24px 28px 60px; max-width: 1400px; margin: 0 auto; }
     .abschnitt { margin-bottom: 36px; }
@@ -402,11 +376,6 @@
       </div>
     </header>
 
-    <div id="alarm-banner">
-      <span>Der Bestellalarm ist noch nicht aktiviert. Ohne Aktivierung bleibt es bei neuen Bestellungen stumm.</span>
-      <button onclick="alarmAktivieren()">Bestellalarm aktivieren</button>
-    </div>
-
     <div id="inhalt">
       <div class="abschnitt">
         <div class="abschnitt-titel neu">
@@ -437,8 +406,11 @@ let tonAktiv = true;
 let audioCtx = null;
 let letzteBestellungen = [];
 
-// Ob der Bestellalarm über den expliziten "Bestellalarm aktivieren"-Knopf
-// freigeschaltet wurde (Browser verlangen dafür eine direkte Nutzeraktion).
+// Ob der Bestellalarm freigeschaltet wurde. Das passiert beim Klick auf
+// "Anmelden" (siehe einloggen()) - Browser verlangen dafür eine direkte
+// Nutzeraktion, und der Login-Klick ist ohnehin nötig, liefert diese also
+// "kostenlos" mit. Bleibt danach für die ganze Sitzung (bis Tab/Browser neu
+// startet) aktiv.
 let alarmAktiviert = false;
 // Läuft, solange mindestens eine neue (unbestätigte) Bestellung wartet -
 // wird sofort gestoppt, sobald keine mehr offen ist.
@@ -464,6 +436,16 @@ function audioFreischalten() {
 // wird. Wird per Intervall wiederholt, solange Bestellungen unbestätigt sind.
 function spieleBenachrichtigung() {
   if (!tonAktiv || !audioCtx) return;
+  // Chrome/Edge versetzen einen AudioContext automatisch in "suspended", wenn
+  // länger keine tatsächliche Ausgabe stattfand (Energiesparen) - das passiert
+  // z.B. immer dann, wenn zwischen zwei Bestellungen mehr als ~30 Sekunden
+  // Stille liegen. Ohne diesen Resume-Aufruf blieb der wiederholende Alarm
+  // dann stumm, bis man erneut auf "Bestellalarm aktivieren" klickte. Ein
+  // .resume() auf einen bereits einmal per Nutzeraktion freigeschalteten
+  // Context ist erlaubt und braucht keine erneute Nutzeraktion.
+  if (audioCtx.state === "suspended") {
+    audioCtx.resume();
+  }
   const jetzt = audioCtx.currentTime;
   [{ t: 0, f: 880 }, { t: 0.16, f: 1175 }, { t: 0.32, f: 1480 }].forEach(ton => {
     const osc = audioCtx.createOscillator();
@@ -493,19 +475,6 @@ function tonUmschalten() {
   if (tonAktiv) audioFreischalten();
 }
 
-// Explizite, einmalige Nutzeraktion, um den Bestellalarm freizuschalten
-// (Browser blockieren automatisch abgespielten Ton ohne direkte Interaktion).
-function alarmAktivieren() {
-  audioFreischalten();
-  alarmAktiviert = true;
-  tonAktiv = true;
-  aktualisiereTonKnopf();
-  document.getElementById("alarm-banner").style.display = "none";
-  // Kurzer Test-Ton als hörbare Bestätigung, dass der Alarm jetzt aktiv ist.
-  spieleBenachrichtigung();
-  alarmStatusAktualisieren();
-}
-
 // Startet/stoppt den wiederholenden Alarm je nachdem, ob noch unbestätigte
 // ("neue") Bestellungen offen sind. Läuft weiter, bis die letzte davon
 // angenommen (ETA gesetzt) wurde - dann stoppt er sofort.
@@ -526,7 +495,13 @@ function alarmStatusAktualisieren() {
 }
 
 function einloggen() {
+  // Der Anmelden-Klick ist die ohnehin nötige Nutzeraktion: mit ihr wird der
+  // AudioContext freigeschaltet und der Bestellalarm für die komplette
+  // laufende Dashboard-Sitzung aktiviert - kein separater Aktivierungsknopf
+  // mehr nötig. Muss synchron im gleichen Klick-Handler passieren, sonst
+  // blockieren Browser die Audiofreischaltung.
   audioFreischalten();
+  alarmAktiviert = true;
   const user = document.getElementById("login-user").value;
   const pass = document.getElementById("login-pass").value;
   authHeader = "Basic " + btoa(user + ":" + pass);
@@ -539,6 +514,25 @@ function ausloggen() {
   document.getElementById("dashboard-bereich").style.display = "none";
   document.getElementById("login-bereich").style.display = "block";
 }
+
+// Sicherheitsnetz für den Fall, dass die Sitzung NICHT über einen frischen
+// Klick auf "Anmelden" zustande kam - z.B. wenn der Tab automatisch über
+// sessionStorage wieder eingeloggt wird (siehe ganz unten) oder wenn Chrome
+// den Tab im Hintergrund entladen und neu geladen hat. In diesen Fällen lief
+// bislang NIE eine echte Nutzeraktion, also blieb alarmAktiviert für den Rest
+// der Sitzung auf false stehen - das Dashboard sah normal aus (Bestellungen
+// kamen an), aber der Alarm konnte nie klingeln, ohne dass das sichtbar war.
+// Jeder Klick irgendwo im Dashboard ist eine echte, vom Browser akzeptierte
+// Nutzeraktion, also nutzen wir den allerersten Klick nach dem Laden als
+// nachträgliche Freischaltung - ganz ohne separaten Aktivierungsknopf. War
+// bereits über einloggen() aktiviert, passiert hier einfach nichts Neues.
+document.addEventListener("click", function () {
+  audioFreischalten();
+  if (!alarmAktiviert) {
+    alarmAktiviert = true;
+    alarmStatusAktualisieren();
+  }
+});
 
 async function ladeBestellungen(istLoginVersuch) {
   if (!authHeader) return;
@@ -561,7 +555,6 @@ async function ladeBestellungen(istLoginVersuch) {
     document.getElementById("login-bereich").style.display = "none";
     document.getElementById("dashboard-bereich").style.display = "block";
     document.getElementById("login-fehler").style.display = "none";
-    document.getElementById("alarm-banner").style.display = alarmAktiviert ? "none" : "flex";
 
     const bestellungen = await res.json();
     letzteBestellungen = bestellungen;
@@ -830,7 +823,13 @@ function druckeBestellung(b, etaMinuten) {
   window.print();
 }
 
-// Automatisch eingeloggt bleiben, solange der Tab offen ist
+// Automatisch eingeloggt bleiben, solange der Tab offen ist. Hinweis: dieser
+// Pfad läuft OHNE frischen Klick auf "Anmelden", daher bleibt alarmAktiviert
+// hier bewusst false - ohne echte Nutzeraktion in diesem Seitenaufruf würde
+// der Browser eine automatische Audiofreischaltung ohnehin blockieren. Der
+// Bestellalarm bleibt in diesem Fall stumm, bis entweder neu eingeloggt wird
+// ODER (siehe Klick-Sicherheitsnetz weiter oben) die Bedienperson zum ersten
+// Mal irgendwo ins Dashboard klickt - je nachdem, was zuerst passiert.
 aktualisiereTonKnopf();
 symbolePlatzieren();
 const gespeicherteAuth = sessionStorage.getItem("dashboardAuth");
@@ -838,11 +837,6 @@ if (gespeicherteAuth) {
   authHeader = gespeicherteAuth;
   ladeBestellungen(false);
 }
-
-// Der Bestellalarm wird bewusst nicht beim ersten beliebigen Klick
-// freigeschaltet, sondern nur über den expliziten "Bestellalarm aktivieren"-
-// Knopf im Banner oben - so ist für das Personal klar erkennbar, ob der
-// Alarm aktiv ist oder nicht.
 
 setInterval(() => ladeBestellungen(false), 10000);
 </script>
