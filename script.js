@@ -513,8 +513,20 @@ async function abschicken() {
       let response = await fetch(`${BACKEND_URL}/checkout-session`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(bestellungsDaten)
       });
+      // /checkout-session verlangt seit Schritt 5 eine gültige Kundensession. Statt
+      // eines rohen 401-Fehlers öffnen wir die Konto-Oberfläche mit einer
+      // verständlichen Erklärung - der Warenkorb bleibt dabei unverändert erhalten,
+      // weil kein Seitenwechsel stattfindet.
+      if (response.status === 401) {
+        button.disabled = false;
+        buttonText.textContent = "Bestellung abschicken";
+        buttonSpinner.style.display = "none";
+        oeffneKontoModal('login', 'bestellen');
+        return;
+      }
       let data = await response.json();
       if (data.url) {
         window.location.href = data.url;  // → zu Stripe weiterleiten
@@ -542,8 +554,19 @@ async function abschicken() {
     let response = await fetch(`${BACKEND_URL}/bestellen`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify(bestellungsDaten)
     });
+
+    // /bestellen verlangt seit Schritt 5 eine gültige Kundensession. Statt eines
+    // rohen 401-Fehlers öffnen wir die Konto-Oberfläche mit einer verständlichen
+    // Erklärung - der Warenkorb bleibt dabei unverändert erhalten, weil kein
+    // Seitenwechsel stattfindet. Der finally-Block weiter unten setzt den Button
+    // ohnehin zurück.
+    if (response.status === 401) {
+      oeffneKontoModal('login', 'bestellen');
+      return;
+    }
 
     let data = await response.json();
 
@@ -817,3 +840,301 @@ document.addEventListener('DOMContentLoaded', pruefeOeffnungszeiten);
 // Regelmäßig erneut prüfen, falls die Seite über eine Öffnungs-/Schließzeit
 // hinweg geöffnet bleibt.
 setInterval(pruefeOeffnungszeiten, 5 * 60 * 1000);
+
+// ===== KUNDENKONTO (Schritt 6) =====
+// aktuellerKunde ist ausschließlich eine Anzeige-Kopie dessen, was /auth/me bzw.
+// /auth/login zurückgeben - die eigentliche Identitätsprüfung passiert bei jeder
+// Bestellung weiterhin serverseitig über das HttpOnly-Session-Cookie
+// (pruefe_kunden_login in main.py), niemals über diesen JS-Zustand.
+let aktuellerKunde = null;
+let kontoModalGrund = null;       // null | 'bestellen' - steuert den Hinweistext im Modal
+let letzteRegistrierteEmail = ""; // für den Resend-Button in der Bestätigungsbox
+let kontoResendSperreBis = 0;     // rein clientseitige 60s-Anzeige, spiegelt nur die
+                                  // ohnehin serverseitige Sperre (RESEND_VERIFIKATION_SPERRE)
+
+function oeffneKontoModal(tab, grund) {
+  kontoModalGrund = grund || null;
+  const hinweis = document.getElementById('kontoModalHinweis');
+  hinweis.style.display = (grund === 'bestellen') ? 'block' : 'none';
+  wechsleKontoTab(tab || 'login');
+  document.getElementById('kontoModal').classList.add('aktiv');
+}
+
+function schliesseKontoModal(event) {
+  if (!event || event.target === document.getElementById("kontoModal")) {
+    document.getElementById("kontoModal").classList.remove("aktiv");
+  }
+}
+
+function wechsleKontoTab(tab) {
+  const loginForm = document.getElementById('kontoLoginForm');
+  const registerForm = document.getElementById('kontoRegisterForm');
+  const bestaetigung = document.getElementById('kontoRegBestaetigung');
+  const tabs = document.getElementById('kontoTabs');
+  const tabLogin = document.getElementById('kontoTabLogin');
+  const tabRegister = document.getElementById('kontoTabRegister');
+  const titel = document.getElementById('kontoModalTitel');
+
+  bestaetigung.style.display = 'none';
+  tabs.style.display = 'flex';
+  document.getElementById('kontoLoginFehler').style.display = 'none';
+  document.getElementById('kontoRegFehler').style.display = 'none';
+  document.getElementById('kontoLoginResendZeile').style.display = 'none';
+
+  if (tab === 'register') {
+    loginForm.style.display = 'none';
+    registerForm.style.display = 'block';
+    tabLogin.classList.remove('aktiv');
+    tabRegister.classList.add('aktiv');
+    titel.textContent = 'Registrieren';
+  } else {
+    loginForm.style.display = 'block';
+    registerForm.style.display = 'none';
+    tabRegister.classList.remove('aktiv');
+    tabLogin.classList.add('aktiv');
+    titel.textContent = 'Anmelden';
+  }
+}
+
+async function kontoRegistrierenSenden(event) {
+  event.preventDefault();
+  const vorname = document.getElementById('kontoRegVorname').value.trim();
+  const nachname = document.getElementById('kontoRegNachname').value.trim();
+  const email = document.getElementById('kontoRegEmail').value.trim();
+  const passwort = document.getElementById('kontoRegPasswort').value;
+  const passwortWiederholen = document.getElementById('kontoRegPasswortWiederholen').value;
+  const fehlerBox = document.getElementById('kontoRegFehler');
+  const button = document.getElementById('kontoRegButton');
+  const buttonText = document.getElementById('kontoRegButtonText');
+  const spinner = document.getElementById('kontoRegSpinner');
+
+  fehlerBox.style.display = 'none';
+
+  if (passwort !== passwortWiederholen) {
+    fehlerBox.textContent = 'Die Passwörter stimmen nicht überein.';
+    fehlerBox.style.display = 'block';
+    return;
+  }
+
+  button.disabled = true;
+  spinner.style.display = 'inline-block';
+  buttonText.textContent = 'Wird gesendet...';
+
+  try {
+    const res = await fetch(`${BACKEND_URL}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ vorname, nachname, email, passwort }),
+    });
+    const data = await res.json();
+
+    if (res.ok) {
+      letzteRegistrierteEmail = email;
+      document.getElementById('kontoRegisterForm').style.display = 'none';
+      document.getElementById('kontoTabs').style.display = 'none';
+      document.getElementById('kontoModalHinweis').style.display = 'none';
+      document.getElementById('kontoModalTitel').textContent = 'Fast geschafft!';
+      document.getElementById('kontoRegResendStatus').style.display = 'none';
+      document.getElementById('kontoRegBestaetigung').style.display = 'block';
+    } else {
+      fehlerBox.textContent = data.detail || 'Registrierung fehlgeschlagen.';
+      fehlerBox.style.display = 'block';
+    }
+  } catch (e) {
+    fehlerBox.textContent = 'Backend nicht erreichbar. Bitte später erneut versuchen.';
+    fehlerBox.style.display = 'block';
+    console.error(e);
+  } finally {
+    button.disabled = false;
+    buttonText.textContent = 'Registrieren';
+    spinner.style.display = 'none';
+  }
+}
+
+async function kontoLoginSenden(event) {
+  event.preventDefault();
+  const email = document.getElementById('kontoLoginEmail').value.trim();
+  const passwort = document.getElementById('kontoLoginPasswort').value;
+  const fehlerBox = document.getElementById('kontoLoginFehler');
+  const resendZeile = document.getElementById('kontoLoginResendZeile');
+  const button = document.getElementById('kontoLoginButton');
+  const buttonText = document.getElementById('kontoLoginButtonText');
+  const spinner = document.getElementById('kontoLoginSpinner');
+
+  fehlerBox.style.display = 'none';
+  resendZeile.style.display = 'none';
+  button.disabled = true;
+  spinner.style.display = 'inline-block';
+  buttonText.textContent = 'Wird geprüft...';
+
+  const warBestellVersuch = kontoModalGrund === 'bestellen';
+
+  try {
+    const res = await fetch(`${BACKEND_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ email, passwort }),
+    });
+    const data = await res.json();
+
+    if (res.ok) {
+      document.getElementById('kontoLoginPasswort').value = '';
+      schliesseKontoModal();
+      setKontoStatus(data);
+      zeigeMeldung(warBestellVersuch
+        ? 'Angemeldet! Du kannst deine Bestellung jetzt abschicken.'
+        : `Willkommen zurück, ${data.vorname}!`);
+      kontoModalGrund = null;
+    } else {
+      fehlerBox.textContent = data.detail || 'Anmeldung fehlgeschlagen.';
+      fehlerBox.style.display = 'block';
+      // 403 bedeutet hier immer "E-Mail noch nicht bestätigt" (main.py auth_login) -
+      // an dieser Stelle war das Passwort bereits korrekt, daher verrät der
+      // Resend-Vorschlag nichts zusätzlich über fremde Konten.
+      if (res.status === 403) {
+        resendZeile.style.display = 'block';
+      }
+    }
+  } catch (e) {
+    fehlerBox.textContent = 'Backend nicht erreichbar. Bitte später erneut versuchen.';
+    fehlerBox.style.display = 'block';
+    console.error(e);
+  } finally {
+    button.disabled = false;
+    buttonText.textContent = 'Anmelden';
+    spinner.style.display = 'none';
+  }
+}
+
+async function kontoResendSenden(email) {
+  email = (email || '').trim();
+  if (!email) return;
+  if (Date.now() < kontoResendSperreBis) return; // clientseitig bereits gesperrt
+
+  const buttons = [document.getElementById('kontoLoginResendBtn'), document.getElementById('kontoRegResendBtn')]
+    .filter(Boolean);
+  const statusBox = document.getElementById('kontoRegResendStatus');
+
+  buttons.forEach(b => b.disabled = true);
+
+  try {
+    await fetch(`${BACKEND_URL}/auth/resend-verification`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ email }),
+    });
+  } catch (e) {
+    console.error(e);
+  }
+
+  // Die Antwort von /auth/resend-verification ist bewusst IMMER dieselbe neutrale
+  // Meldung (siehe main.py) - unabhängig davon, ob wirklich eine neue Mail
+  // verschickt oder die Anfrage serverseitig stillschweigend gedrosselt wurde. Wir
+  // zeigen deshalb ebenfalls immer dieselbe Bestätigung und sperren den Button hier
+  // nur clientseitig für 60s (passend zur serverseitigen RESEND_VERIFIKATION_SPERRE),
+  // damit niemand den Button spammen kann.
+  const neutraleMeldung = 'Falls ein noch nicht bestätigtes Konto mit dieser E-Mail-Adresse existiert, wurde soeben eine neue Bestätigungs-E-Mail verschickt.';
+  if (statusBox) {
+    statusBox.textContent = neutraleMeldung;
+    statusBox.style.display = 'block';
+  }
+  zeigeMeldung(neutraleMeldung);
+
+  kontoResendSperreBis = Date.now() + 60000;
+  kontoResendCountdown(buttons);
+}
+
+function kontoResendCountdown(buttons) {
+  const restSekunden = Math.ceil((kontoResendSperreBis - Date.now()) / 1000);
+  if (restSekunden <= 0) {
+    buttons.forEach(b => { b.disabled = false; b.textContent = 'Bestätigungs-E-Mail erneut senden'; });
+    return;
+  }
+  buttons.forEach(b => { b.textContent = `Erneut senden (${restSekunden}s)`; });
+  setTimeout(() => kontoResendCountdown(buttons), 1000);
+}
+
+function setKontoStatus(kunde) {
+  aktuellerKunde = kunde || null;
+
+  const aus = document.getElementById('nav-konto-aus');
+  const an = document.getElementById('nav-konto-an');
+  const ausMobil = document.getElementById('nav-konto-aus-mobil');
+  const anMobil = document.getElementById('nav-konto-an-mobil');
+
+  if (aktuellerKunde) {
+    aus.style.display = 'none';
+    an.style.display = '';
+    ausMobil.style.display = 'none';
+    anMobil.style.display = '';
+    document.getElementById('nav-konto-vorname').textContent = aktuellerKunde.vorname;
+    document.getElementById('nav-konto-vorname-mobil').textContent = aktuellerKunde.vorname;
+    document.getElementById('kontoPanelName').textContent = `${aktuellerKunde.vorname} ${aktuellerKunde.nachname}`;
+    document.getElementById('kontoPanelEmail').textContent = aktuellerKunde.email;
+
+    // Bestellformular komfortabel vorbefüllen, sofern noch leer. Das ist reiner
+    // Komfort - der Server überschreibt Name/E-Mail bei jeder Bestellung ohnehin
+    // ausschließlich mit den echten Kontodaten (siehe main.py /bestellen,
+    // /checkout-session), unabhängig davon, was hier im Formular steht.
+    const nameFeld = document.getElementById('name');
+    const emailFeld = document.getElementById('email');
+    if (nameFeld && !nameFeld.value.trim()) nameFeld.value = `${aktuellerKunde.vorname} ${aktuellerKunde.nachname}`;
+    if (emailFeld && !emailFeld.value.trim()) emailFeld.value = aktuellerKunde.email;
+  } else {
+    aus.style.display = '';
+    an.style.display = 'none';
+    ausMobil.style.display = '';
+    anMobil.style.display = 'none';
+  }
+}
+
+// Beim Laden der Seite prüfen, ob bereits eine gültige Session-Cookie besteht
+// (z.B. nach einem Reload), damit der Kunde automatisch als eingeloggt erkannt wird.
+async function ladeKontoStatus() {
+  try {
+    const res = await fetch(`${BACKEND_URL}/auth/me`, { credentials: 'include' });
+    if (res.ok) {
+      setKontoStatus(await res.json());
+    } else {
+      setKontoStatus(null);
+    }
+  } catch (e) {
+    console.error('Konto-Status konnte nicht geladen werden:', e);
+    setKontoStatus(null);
+  }
+}
+
+async function kontoAbmelden() {
+  try {
+    await fetch(`${BACKEND_URL}/auth/logout`, { method: 'POST', credentials: 'include' });
+  } catch (e) {
+    console.error(e);
+  }
+  setKontoStatus(null);
+  schliesseKontoPanel();
+  zeigeMeldung('Abgemeldet.');
+}
+
+function oeffneKontoPanel() {
+  document.getElementById('kontoPanelModal').classList.add('aktiv');
+}
+
+function schliesseKontoPanel(event) {
+  if (!event || event.target === document.getElementById("kontoPanelModal")) {
+    document.getElementById("kontoPanelModal").classList.remove("aktiv");
+  }
+}
+
+document.addEventListener('DOMContentLoaded', ladeKontoStatus);
+
+// Öffnet automatisch das Anmelden-Formular, wenn die Seite mit ?login=1 aufgerufen
+// wird (z. B. nach Klick auf "Jetzt anmelden" von email-bestaetigt.html aus).
+document.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('login') === '1') {
+    oeffneKontoModal('login');
+  }
+});

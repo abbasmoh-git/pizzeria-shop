@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-Mail-Bestätigung – Pizzeria Pinocchio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #fafafa;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      padding: 48px 40px;
+      max-width: 480px;
+      width: 100%;
+      text-align: center;
+    }
+    .logo {
+      font-family: 'Playfair Display', serif;
+      color: #c0392b;
+      font-size: 18px;
+      margin-bottom: 32px;
+      opacity: 0.7;
+    }
+    .icon {
+      width: 56px;
+      height: 56px;
+      margin: 0 auto 20px;
+      animation: pop 0.4s ease;
+    }
+    .icon svg { width: 100%; height: 100%; }
+    .icon.erfolg svg { color: #27ae60; }
+    .icon.fehler svg { color: #c0392b; }
+    @keyframes pop {
+      0% { transform: scale(0.5); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 26px;
+      color: #1a1a1a;
+      margin-bottom: 12px;
+    }
+    p {
+      color: #666;
+      font-size: 15.5px;
+      line-height: 1.6;
+      margin-bottom: 8px;
+    }
+    .back-btn {
+      display: inline-block;
+      margin-top: 20px;
+      background: #c0392b;
+      color: #fff;
+      text-decoration: none;
+      padding: 14px 32px;
+      border-radius: 50px;
+      font-size: 15px;
+      font-weight: 600;
+      transition: background 0.2s;
+      border: none;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+    }
+    .back-btn:hover { background: #a93226; }
+    .lade-spinner {
+      width: 34px;
+      height: 34px;
+      border: 3px solid #eee;
+      border-top: 3px solid #c0392b;
+      border-radius: 50%;
+      margin: 0 auto 20px;
+      animation: dreh 0.8s linear infinite;
+    }
+    @keyframes dreh { to { transform: rotate(360deg); } }
+    .erneut-box {
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid #f0ece6;
+      text-align: left;
+    }
+    .erneut-box label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #777;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .erneut-box input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid #e8e2da;
+      border-radius: 10px;
+      font-size: 15px;
+      font-family: 'Inter', sans-serif;
+      margin-bottom: 12px;
+    }
+    .erneut-box input:focus { outline: none; border-color: #c0392b; }
+    .erneut-status {
+      font-size: 13.5px;
+      color: #27ae60;
+      margin-top: 10px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">Pizzeria Pinocchio</div>
+
+    <!-- LADEZUSTAND -->
+    <div id="zustand-laden">
+      <div class="lade-spinner"></div>
+      <p>Dein Bestätigungslink wird geprüft...</p>
+    </div>
+
+    <!-- ERFOLG -->
+    <div id="zustand-erfolg" style="display:none">
+      <div class="icon erfolg">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M8 12.5l2.5 2.5L16 9"></path></svg>
+      </div>
+      <h1>E-Mail bestätigt!</h1>
+      <p>Dein Konto ist jetzt aktiv. Du kannst dich ab sofort anmelden.</p>
+      <a href="index.html?login=1" class="back-btn">Jetzt anmelden</a>
+    </div>
+
+    <!-- FEHLER -->
+    <div id="zustand-fehler" style="display:none">
+      <div class="icon fehler">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="13"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+      </div>
+      <h1>Link nicht gültig</h1>
+      <p id="fehler-text">Dieser Bestätigungslink ist ungültig oder abgelaufen.</p>
+
+      <div class="erneut-box">
+        <label for="erneut-email">Neuen Bestätigungslink anfordern</label>
+        <input type="email" id="erneut-email" placeholder="Deine E-Mail-Adresse" autocomplete="email">
+        <button type="button" class="back-btn" style="width:100%" id="erneut-button" onclick="erneutSenden()">Link erneut anfordern</button>
+        <p class="erneut-status" id="erneut-status"></p>
+      </div>
+
+      <p style="margin-top:20px"><a href="index.html" style="font-size:14px; color:#999;">Zurück zur Startseite</a></p>
+    </div>
+  </div>
+
+<script src="config.js"></script>
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get("token");
+
+  function zeigeZustand(name) {
+    document.getElementById("zustand-laden").style.display = name === "laden" ? "block" : "none";
+    document.getElementById("zustand-erfolg").style.display = name === "erfolg" ? "block" : "none";
+    document.getElementById("zustand-fehler").style.display = name === "fehler" ? "block" : "none";
+  }
+
+  async function pruefeToken() {
+    if (!token) {
+      document.getElementById("fehler-text").textContent = "Es wurde kein Bestätigungstoken übergeben. Bitte verwende den vollständigen Link aus der E-Mail.";
+      zeigeZustand("fehler");
+      return;
+    }
+    try {
+      // Ruft ausschließlich den unveränderten, bestehenden Backend-Endpunkt auf -
+      // die eigentliche Prüf-/Verifikationslogik (Hash-Abgleich, Ablauf,
+      // Einmalverwendung) bleibt vollständig im Backend, siehe main.py /auth/verify.
+      const res = await fetch(`${BACKEND_URL}/auth/verify?token=${encodeURIComponent(token)}`);
+      const daten = await res.json();
+      if (res.ok) {
+        zeigeZustand("erfolg");
+      } else {
+        document.getElementById("fehler-text").textContent = daten.detail || "Dieser Bestätigungslink ist ungültig oder abgelaufen.";
+        zeigeZustand("fehler");
+      }
+    } catch (e) {
+      document.getElementById("fehler-text").textContent = "Backend nicht erreichbar. Bitte versuche es später erneut.";
+      zeigeZustand("fehler");
+      console.error(e);
+    }
+  }
+
+  async function erneutSenden() {
+    const email = document.getElementById("erneut-email").value.trim();
+    const button = document.getElementById("erneut-button");
+    const status = document.getElementById("erneut-status");
+    if (!email) return;
+
+    button.disabled = true;
+    try {
+      await fetch(`${BACKEND_URL}/auth/resend-verification`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+    } catch (e) {
+      console.error(e);
+    }
+    // Bewusst immer dieselbe neutrale Meldung (siehe main.py) - unabhängig davon,
+    // ob wirklich eine neue Mail verschickt wurde.
+    status.textContent = "Falls ein noch nicht bestätigtes Konto mit dieser E-Mail-Adresse existiert, wurde soeben eine neue Bestätigungs-E-Mail verschickt.";
+    status.style.display = "block";
+    setTimeout(() => { button.disabled = false; }, 60000);
+  }
+
+  pruefeToken();
+</script>
+</body>
+</html>

@@ -352,9 +352,67 @@
       }
       #druck-zettel .druck-summe { font-size: 16px; font-weight: 700; margin-top: 8px; }
     }
+
+    /* ===== TEMPORÄRE DEBUG-ANZEIGE (Bestellalarm) =====
+       Nur zur Fehlersuche im echten Browser - zeigt live den internen Zustand
+       des Alarms an, verändert selbst aber keinerlei Alarm-Logik. Kann später
+       einfach wieder entfernt werden (dieser Block + der #debug-panel-Block im
+       body + die mit "DEBUG" markierten Zeilen im Script). ===== */
+    #debug-panel {
+      background: #1a1a1a;
+      color: #7CFC7C;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      line-height: 1.7;
+      padding: 8px 14px;
+      border-bottom: 2px solid #444;
+    }
+    #debug-panel .debug-label { color: #e8b44a; font-weight: 700; margin-right: 4px; }
+    #debug-panel .debug-trenner { color: #555; margin: 0 10px; }
+
+    /* ===== TEMPORÄR (Zusatz zur Ursachenfindung): Lebenszyklus-Protokoll,
+       zeigt Skript-Starts/Reloads und Browser-Events - rein zur Diagnose,
+       keine Alarmlogik. ===== */
+    #debug-panel .debug-zeile2 { margin-top: 4px; }
+    #debug-log {
+      margin-top: 6px;
+      max-height: 130px;
+      overflow-y: auto;
+      background: #0e0e0e;
+      border: 1px solid #333;
+      padding: 6px 10px;
+      white-space: pre-wrap;
+      font-size: 11px;
+      color: #9adbff;
+    }
   </style>
 </head>
 <body>
+
+  <!-- ===== TEMPORÄRE DEBUG-ANZEIGE (Bestellalarm) - später entfernen ===== -->
+  <div id="debug-panel">
+    <span class="debug-label">DEBUG Bestellalarm</span>
+    <span class="debug-trenner">|</span>
+    AudioContext: <span id="debug-audioctx">–</span>
+    <span class="debug-trenner">|</span>
+    Ton aktiviert: <span id="debug-ton">–</span>
+    <span class="debug-trenner">|</span>
+    Polling: <span id="debug-polling">–</span>
+    <span class="debug-trenner">|</span>
+    Bestellungen „eingegangen": <span id="debug-anzahl">–</span>
+    <span class="debug-trenner">|</span>
+    Alarm soll laufen: <span id="debug-alarm-soll">–</span>
+    <span class="debug-trenner">|</span>
+    spieleBenachrichtigung() zuletzt: <span id="debug-letzter-ton">nie</span>
+    <div class="debug-zeile2">
+      Skript-Starts (diese Tab-Sitzung): <span id="debug-skript-starts">–</span>
+      <span class="debug-trenner">|</span>
+      Navigationstyp beim letzten Start: <span id="debug-nav-typ">–</span>
+      <span class="debug-trenner">|</span>
+      Sichtbarkeit gerade: <span id="debug-sichtbarkeit">–</span>
+    </div>
+    <div id="debug-log">–</div>
+  </div>
 
   <div id="login-bereich">
     <h1>Bestellterminal-Login</h1>
@@ -400,6 +458,74 @@
 
 <script src="config.js"></script>
 <script>
+// ===== DEBUG (temporär, NUR zur Ursachenfindung - verändert keinerlei
+// Alarm-/Login-Logik): protokolliert Seiten-Lebenszyklus-Ereignisse über
+// sessionStorage hinweg, damit sichtbar wird, OB und WANN dashboard.html
+// zwischen zwei Beobachtungen neu geladen bzw. das komplette Skript erneut
+// ausgeführt wurde (jeder Top-Level-Var wie audioCtx würde dabei automatisch
+// auf ihren Startwert - hier null - zurückgesetzt, OHNE dass irgendeine Stelle
+// im Code "audioCtx = null" ausführt). sessionStorage übersteht einen Reload
+// (auch Strg+F5), wird aber beim Schließen des Tabs geleert - das Protokoll
+// bezieht sich also immer auf die aktuelle Tab-"Sitzung". Muss so früh wie
+// möglich stehen, damit auch der allererste Skript-Start erfasst wird.
+function debugEreignisProtokollieren(typ, extra) {
+  try {
+    const log = JSON.parse(sessionStorage.getItem("debugEreignisLog") || "[]");
+    const jetzt = new Date();
+    log.push(Object.assign({
+      typ: typ,
+      zeit: jetzt.toLocaleTimeString('de-DE', { hour12: false }) + '.' + String(jetzt.getMilliseconds()).padStart(3, '0')
+    }, extra || {}));
+    while (log.length > 25) log.shift();
+    sessionStorage.setItem("debugEreignisLog", JSON.stringify(log));
+  } catch (e) {
+    // sessionStorage evtl. nicht verfügbar (z.B. privater Modus) - für die
+    // reine Diagnoseanzeige unkritisch, einfach nichts protokollieren.
+  }
+}
+
+(function () {
+  // Läuft bei JEDEM Parsen dieses <script>-Blocks, also bei jedem echten
+  // Neuladen/Neuausführen der Seite. navType verrät den Grund: "navigate"
+  // (normaler erster Aufruf/Klick auf einen Link), "reload" (F5/Strg+F5),
+  // "back_forward" (Vor-/Zurück-Navigation) oder "prerender".
+  let navType = "unbekannt";
+  try {
+    const navEntries = performance.getEntriesByType && performance.getEntriesByType("navigation");
+    if (navEntries && navEntries[0]) {
+      navType = navEntries[0].type;
+    } else if (performance.navigation) {
+      navType = ["navigate", "reload", "back_forward", "reserved"][performance.navigation.type] || "unbekannt";
+    }
+  } catch (e) {}
+
+  let anzahlStarts = 1;
+  try {
+    anzahlStarts = parseInt(sessionStorage.getItem("debugSkriptStarts") || "0", 10) + 1;
+    sessionStorage.setItem("debugSkriptStarts", String(anzahlStarts));
+    sessionStorage.setItem("debugLetzterNavType", navType);
+  } catch (e) {}
+
+  debugEreignisProtokollieren("SKRIPT-START #" + anzahlStarts, { navType: navType, sichtbarkeit: document.visibilityState });
+})();
+
+// Browser-Lebenszyklus-Events, die einen Reload/eine Neuausführung begleiten
+// oder erklären könnten - jeweils nur protokollierend, keine Seiteneffekte.
+window.addEventListener("beforeunload", function () {
+  debugEreignisProtokollieren("beforeunload (Seite wird verlassen/neu geladen)");
+});
+window.addEventListener("pageshow", function (e) {
+  // e.persisted === true bedeutet: aus dem bfcache wiederhergestellt (KEIN
+  // Skript-Neustart, alte JS-Variablen inkl. audioCtx blieben dabei erhalten).
+  debugEreignisProtokollieren("pageshow", { ausBfcache: e.persisted });
+});
+document.addEventListener("visibilitychange", function () {
+  debugEreignisProtokollieren("visibilitychange", { sichtbarkeit: document.visibilityState });
+});
+document.addEventListener("DOMContentLoaded", function () {
+  debugEreignisProtokollieren("DOMContentLoaded");
+});
+
 let authHeader = null;
 let bekannteIds = null;
 let tonAktiv = true;
@@ -416,18 +542,68 @@ let alarmAktiviert = false;
 // wird sofort gestoppt, sobald keine mehr offen ist.
 let alarmIntervalId = null;
 
+// ===== DEBUG (temporär): reine Beobachtungs-Variablen für das Debug-Panel,
+// verändern selbst keinerlei Alarm-/Polling-Verhalten. =====
+let debugLetzterPollZeitpunkt = null;
+let debugLetzteBenachrichtigungZeitpunkt = null;
+
 const LIEFERKOSTEN_NAMEN = ["Lieferkosten"];
 
 function symbolePlatzieren() {
   if (window.feather) feather.replace({ width: 16, height: 16, "stroke-width": 2.2 });
 }
 
+// Muss synchron innerhalb eines echten Klicks (Nutzeraktion) aufgerufen
+// werden, sonst blockieren Browser die Freischaltung. Erzeugt den Context bei
+// Bedarf, versucht ihn zu resumen UND spielt zusätzlich sofort einen extrem
+// kurzen, praktisch unhörbaren Ton ab. Der zusätzliche Ton ist nötig, weil
+// manche Chrome-/Edge-Versionen den Context zwar sofort als "running" melden,
+// die Audioausgabe des Tabs aber erst wirklich freigeben, nachdem innerhalb
+// derselben Nutzeraktion tatsächlich einmal Ton gestartet wurde - ohne das
+// blieb der spätere, per setInterval ausgelöste Alarm in der Praxis stumm,
+// obwohl der Context-Zustand "running" anzeigte.
+//
+// WICHTIG (Fix): Erzeugung und resume() standen bisher UNGESCHÜTZT vor dem
+// try/catch, das bislang nur den Ton abgedeckt hat. Wirft der Browser dabei
+// aus irgendeinem Grund (Autoplay-/Permissions-Policy, Erweiterung, o.ä.)
+// eine Exception, brach audioFreischalten() bisher komplett ab, BEVOR
+// audioCtx überhaupt zugewiesen wurde - und da einloggen() diese Funktion
+// synchron aufruft, riss das auch einloggen() selbst mit ab. Jeder Schritt
+// ist jetzt einzeln abgesichert, damit audioFreischalten() nie eine
+// Exception nach außen durchlässt und den Login-Ablauf nicht blockieren kann.
 function audioFreischalten() {
-  if (!audioCtx) {
-    const AudioCtor = window.AudioContext || window.webkitAudioContext;
-    if (AudioCtor) audioCtx = new AudioCtor();
-  } else if (audioCtx.state === "suspended") {
-    audioCtx.resume();
+  debugEreignisProtokollieren("audioFreischalten() aufgerufen", { audioCtxVorher: !audioCtx ? "null" : audioCtx.state }); // DEBUG (temporär)
+  const AudioCtor = window.AudioContext || window.webkitAudioContext;
+  if (!AudioCtor) return;
+  try {
+    if (!audioCtx) {
+      audioCtx = new AudioCtor();
+      debugEreignisProtokollieren("audioCtx NEU ERSTELLT", { state: audioCtx.state }); // DEBUG (temporär) - einzige Stelle im Code, die audioCtx zuweist
+    }
+  } catch (e) {
+    debugEreignisProtokollieren("audioCtx Erstellung FEHLGESCHLAGEN", { fehler: String(e) }); // DEBUG (temporär)
+    return;
+  }
+  try {
+    if (audioCtx.state !== "running") {
+      audioCtx.resume();
+    }
+  } catch (e) {
+    // resume() kann fehlschlagen/ablehnen - der unhörbare Ton unten ist ein
+    // zusätzlicher, unabhängiger Freischaltungsversuch.
+  }
+  try {
+    const jetzt = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    gain.gain.setValueAtTime(0.00001, jetzt);
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start(jetzt);
+    osc.stop(jetzt + 0.01);
+  } catch (e) {
+    // Sollte das aus irgendeinem Grund scheitern, darf das den Login/Klick
+    // nicht blockieren - der resume()-Aufruf oben deckt die meisten Fälle
+    // ohnehin schon ab.
   }
 }
 
@@ -435,6 +611,7 @@ function audioFreischalten() {
 // kurzer Ton, damit er im Betrieb (Küchenlärm, andere Tabs) nicht übergangen
 // wird. Wird per Intervall wiederholt, solange Bestellungen unbestätigt sind.
 function spieleBenachrichtigung() {
+  debugLetzteBenachrichtigungZeitpunkt = new Date(); // DEBUG (temporär)
   if (!tonAktiv || !audioCtx) return;
   // Chrome/Edge versetzen einen AudioContext automatisch in "suspended", wenn
   // länger keine tatsächliche Ausgabe stattfand (Energiesparen) - das passiert
@@ -477,7 +654,10 @@ function tonUmschalten() {
 
 // Startet/stoppt den wiederholenden Alarm je nachdem, ob noch unbestätigte
 // ("neue") Bestellungen offen sind. Läuft weiter, bis die letzte davon
-// angenommen (ETA gesetzt) wurde - dann stoppt er sofort.
+// angenommen (ETA gesetzt) wurde - dann stoppt er sofort. Beim Start (Wechsel
+// von "kein Alarm aktiv" zu "mindestens eine eingegangene Bestellung") wird
+// spieleBenachrichtigung() SOFORT einmal ausgeführt, statt auf den ersten
+// setInterval-Tick (4s) zu warten - erst danach übernimmt die Wiederholung.
 function alarmStatusAktualisieren() {
   const anzahlNeu = letzteBestellungen.filter(b => b.status === "eingegangen").length;
 
@@ -490,6 +670,7 @@ function alarmStatusAktualisieren() {
   }
 
   if (!alarmIntervalId) {
+    spieleBenachrichtigung();
     alarmIntervalId = setInterval(spieleBenachrichtigung, 4000);
   }
 }
@@ -500,8 +681,14 @@ function einloggen() {
   // laufende Dashboard-Sitzung aktiviert - kein separater Aktivierungsknopf
   // mehr nötig. Muss synchron im gleichen Klick-Handler passieren, sonst
   // blockieren Browser die Audiofreischaltung.
-  audioFreischalten();
+  //
+  // Reihenfolge bewusst so: alarmAktiviert wird ZUERST gesetzt, erst danach
+  // audioFreischalten() aufgerufen. So bleibt der Alarm auch dann korrekt
+  // "scharf", falls die Audio-Freischaltung selbst aus irgendeinem Grund
+  // nichts bewirkt - spieleBenachrichtigung() versucht bei jedem Alarm-Tick
+  // ohnehin erneut ein resume() (siehe dort).
   alarmAktiviert = true;
+  audioFreischalten();
   const user = document.getElementById("login-user").value;
   const pass = document.getElementById("login-pass").value;
   authHeader = "Basic " + btoa(user + ":" + pass);
@@ -538,6 +725,7 @@ async function ladeBestellungen(istLoginVersuch) {
   if (!authHeader) return;
 
   try {
+    debugLetzterPollZeitpunkt = Date.now(); // DEBUG (temporär)
     const res = await fetch(`${BACKEND_URL}/dashboard/api/bestellungen`, {
       headers: { "Authorization": authHeader }
     });
@@ -559,12 +747,11 @@ async function ladeBestellungen(istLoginVersuch) {
     const bestellungen = await res.json();
     letzteBestellungen = bestellungen;
 
-    const aktuelleIds = new Set(bestellungen.map(b => b.order_id));
-    if (bekannteIds !== null) {
-      const neueIds = bestellungen.filter(b => !bekannteIds.has(b.order_id));
-      if (neueIds.length > 0) spieleBenachrichtigung();
-    }
-    bekannteIds = aktuelleIds;
+    // bekannteIds wird nur noch zur Nachverfolgung geführt; der sofortige
+    // erste Ton beim Auftauchen einer neuen, unbestätigten Bestellung kommt
+    // jetzt zentral aus alarmStatusAktualisieren() (SOFORT + alle 4s), damit
+    // es hier nicht zu einem doppelten Ton kommt.
+    bekannteIds = new Set(bestellungen.map(b => b.order_id));
 
     renderBestellungen(bestellungen);
     alarmStatusAktualisieren();
@@ -793,6 +980,53 @@ async function alsFertigMarkieren(orderId) {
   ladeBestellungen(false);
 }
 
+// ===== DEBUG (temporär): liest nur den bestehenden Zustand aus und schreibt
+// ihn ins Debug-Panel - verändert selbst keinerlei Alarm-/Polling-Logik.
+// "Polling: läuft" bedeutet: in den letzten 15s (Poll-Intervall ist 10s) hat
+// tatsächlich ein authentifizierter Abruf stattgefunden. "Alarm soll laufen"
+// ist exakt die gleiche Bedingung wie in alarmStatusAktualisieren() weiter
+// oben (alarmAktiviert + mind. eine "eingegangene" Bestellung), hier nur zur
+// Anzeige noch einmal separat berechnet. =====
+function debugAnzeigeAktualisieren() {
+  const audioCtxEl = document.getElementById("debug-audioctx");
+  if (!audioCtxEl) return;
+
+  audioCtxEl.textContent = !audioCtx ? "nicht erstellt" : audioCtx.state;
+  document.getElementById("debug-ton").textContent = tonAktiv ? "ja" : "nein";
+
+  const pollingAktiv = debugLetzterPollZeitpunkt !== null &&
+    (Date.now() - debugLetzterPollZeitpunkt) < 15000;
+  document.getElementById("debug-polling").textContent = pollingAktiv ? "läuft" : "läuft nicht";
+
+  const anzahlEingegangen = letzteBestellungen.filter(b => b.status === "eingegangen").length;
+  document.getElementById("debug-anzahl").textContent = String(anzahlEingegangen);
+
+  const alarmSoll = alarmAktiviert && anzahlEingegangen > 0;
+  document.getElementById("debug-alarm-soll").textContent = alarmSoll ? "ja" : "nein";
+
+  document.getElementById("debug-letzter-ton").textContent = debugLetzteBenachrichtigungZeitpunkt
+    ? debugLetzteBenachrichtigungZeitpunkt.toLocaleTimeString('de-DE')
+    : "nie";
+
+  // ===== DEBUG (temporär, Zusatz zur Ursachenfindung): Lebenszyklus-Anzeige.
+  // Liest nur aus sessionStorage/document, verändert nichts. =====
+  try {
+    document.getElementById("debug-skript-starts").textContent = sessionStorage.getItem("debugSkriptStarts") || "–";
+    document.getElementById("debug-nav-typ").textContent = sessionStorage.getItem("debugLetzterNavType") || "–";
+    document.getElementById("debug-sichtbarkeit").textContent = document.visibilityState;
+
+    const log = JSON.parse(sessionStorage.getItem("debugEreignisLog") || "[]");
+    const logEl = document.getElementById("debug-log");
+    if (logEl) {
+      logEl.textContent = log.slice().reverse().map(eintrag => {
+        const rest = Object.keys(eintrag).filter(k => k !== "typ" && k !== "zeit")
+          .map(k => `${k}=${eintrag[k]}`).join(" ");
+        return `${eintrag.zeit}  ${eintrag.typ}${rest ? "  (" + rest + ")" : ""}`;
+      }).join("\n") || "– noch keine Ereignisse –";
+    }
+  } catch (e) {}
+}
+
 // Baut einen Bestellzettel und öffnet sofort/synchron den Druckdialog,
 // damit der Klick auf den Zeit-Button als direkte Nutzeraktion zählt.
 function druckeBestellung(b, etaMinuten) {
@@ -839,6 +1073,10 @@ if (gespeicherteAuth) {
 }
 
 setInterval(() => ladeBestellungen(false), 10000);
+
+// DEBUG (temporär): Anzeige alle 500ms auffrischen, unabhängig vom Polling.
+debugAnzeigeAktualisieren();
+setInterval(debugAnzeigeAktualisieren, 500);
 </script>
 </body>
 </html>

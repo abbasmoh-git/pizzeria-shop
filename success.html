@@ -109,13 +109,16 @@
   }
 
   // Zeigt den Hinweis auf die versendete Bestätigungs-E-Mail, sobald die
-  // Bestellung serverseitig abrufbar ist. Direkt nach der Weiterleitung von
-  // Stripe kann es einen kurzen Moment dauern, bis der Webhook die Bestellung
-  // von "wartet auf Zahlung" auf "eingegangen" setzt (erst dann liefert
-  // /status Daten) - deshalb wird bei Fehlschlag mit wachsendem Abstand ein
-  // paar Mal erneut versucht, statt sofort aufzugeben. Schlägt es dauerhaft
-  // fehl, bleibt die Zeile einfach ausgeblendet; der Rest der Seite
-  // funktioniert unverändert.
+  // Bestellung serverseitig abrufbar ist. /status/{order_id} liefert 404,
+  // solange die Bestellung noch "warte_auf_zahlung" ist - das ist erst dann
+  // vorbei, wenn der Stripe-Webhook sie auf "eingegangen" setzt, und das kann
+  // spürbar verzögert eintreffen (Netzwerk, Warteschlange bei Stripe usw.).
+  // Deshalb hier NICHT nach ein paar Sekunden endgültig aufgeben, sondern mit
+  // wachsendem, nach oben auf 10s begrenztem Abstand immer weiter versuchen,
+  // solange die Seite offen ist - der Hinweis erscheint dann automatisch,
+  // sobald der Webhook durchgelaufen ist. Bleibt der Fetch selbst dauerhaft
+  // aus (kein Netzwerk), bleibt die Zeile einfach ausgeblendet; der Rest der
+  // Seite funktioniert unverändert.
   async function zeigeEmailHinweis(versuch) {
     if (!orderId) return;
     try {
@@ -128,9 +131,8 @@
       hinweis.textContent = `Wir haben deine Bestellung erhalten. Eine Bestätigung wurde an ${daten.email_maskiert} gesendet. Sobald wir deine Bestellung bestätigen, erhältst du per E-Mail auch die voraussichtliche ${istAbholung ? 'Abholzeit' : 'Lieferzeit'}.`;
       hinweis.style.display = "block";
     } catch (e) {
-      if (versuch < 5) {
-        setTimeout(() => zeigeEmailHinweis(versuch + 1), 1500);
-      }
+      const naechsteVerzoegerung = Math.min(1000 * Math.pow(1.5, versuch), 10000);
+      setTimeout(() => zeigeEmailHinweis(versuch + 1), naechsteVerzoegerung);
     }
   }
   zeigeEmailHinweis(0);

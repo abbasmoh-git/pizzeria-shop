@@ -1658,6 +1658,148 @@ body {
   color: #c0392b;
 }
 
+/* ===========================
+   KUNDENKONTO (Schritt 6)
+=========================== */
+.nav-konto-link-an {
+  background: #fff9f9 !important;
+  color: #c0392b !important;
+  border: 1.5px solid #f0d5d2;
+  display: inline-flex;
+  align-items: center;
+}
+.nav-konto-link-an:hover {
+  background: #fde8e8 !important;
+}
+
+.konto-hinweis {
+  background: #fff6ea;
+  border: 1.5px solid #f3ddb0;
+  color: #7a5b16;
+  font-size: 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  margin-bottom: 18px;
+  line-height: 1.5;
+}
+
+.konto-tabs {
+  display: flex;
+  gap: 6px;
+  background: #f5f0eb;
+  padding: 4px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+.konto-tab {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #777;
+  border-radius: 9px;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: background 0.2s, color 0.2s;
+}
+.konto-tab.aktiv {
+  background: white;
+  color: #c0392b;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+.konto-fehler {
+  color: #c0392b;
+  background: #fdecea;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  margin: -6px 0 14px;
+  line-height: 1.4;
+}
+
+.konto-resend-zeile {
+  text-align: center;
+  font-size: 13.5px;
+  color: #777;
+  margin-top: 14px;
+}
+
+.konto-resend-btn {
+  background: none;
+  border: none;
+  color: #c0392b;
+  font-weight: 600;
+  font-size: 13.5px;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 2px 4px;
+  font-family: 'Inter', sans-serif;
+}
+.konto-resend-btn:disabled {
+  color: #bbb;
+  cursor: not-allowed;
+  text-decoration: none;
+}
+
+.konto-resend-status {
+  text-align: center;
+  font-size: 13px;
+  color: #27ae60;
+  margin-top: 8px;
+}
+
+.konto-bestaetigung {
+  text-align: center;
+  padding: 8px 4px 4px;
+}
+.konto-bestaetigung-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #fdecea;
+  color: #c0392b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+.konto-bestaetigung-icon svg { width: 26px; height: 26px; }
+.konto-bestaetigung-text {
+  font-size: 15px;
+  color: #333;
+  line-height: 1.55;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.konto-panel-feld {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0ece6;
+}
+.konto-panel-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: #999;
+  font-weight: 600;
+}
+.konto-panel-wert {
+  font-size: 15.5px;
+  color: #1a1a1a;
+  font-weight: 500;
+}
+.konto-abmelden-btn {
+  margin-top: 20px;
+  background: linear-gradient(135deg, #555, #333) !important;
+  box-shadow: none !important;
+}
+
 /* Sektionen im Modal */
 .extras-sektion {
   display: none;
@@ -1838,12 +1980,12 @@ body {
 /* ===== DIASHOW ===== */
 .diashow-section {
   background: #111;
-  padding: 60px 0 50px;
+  padding: 40px 0 34px;
   text-align: center;
 }
 
 .diashow-header {
-  margin-bottom: 36px;
+  margin-bottom: 24px;
 }
 
 .diashow-header h2 {
@@ -1873,7 +2015,7 @@ body {
 .diashow-slides-container {
   position: relative;
   width: 100%;
-  height: 580px;
+  height: 440px;
   overflow: hidden;
   border-radius: 18px;
   box-shadow: 0 8px 40px rgba(0,0,0,0.6);
@@ -1952,7 +2094,7 @@ body {
   display: flex;
   justify-content: center;
   gap: 8px;
-  margin-top: 20px;
+  margin-top: 14px;
 }
 
 .diashow-dot {

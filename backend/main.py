@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Depends, HTTPException
+from fastapi import FastAPI, Request, Response, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from pydantic import BaseModel
@@ -9,10 +9,12 @@ import re
 import sqlite3
 import secrets
 import uuid
+import hashlib
 import requests
 from datetime import datetime, timezone, timedelta
 from zoneinfo import ZoneInfo
 import stripe
+import bcrypt
 from dotenv import load_dotenv
 
 load_dotenv()  # Liest die .env Datei im gleichen Ordner
@@ -44,6 +46,30 @@ DASHBOARD_PASSWORD = os.getenv("DASHBOARD_PASSWORD", "bitte_in_env_aendern")
 BREVO_API_KEY = os.getenv("BREVO_API_KEY", "")
 MAIL_ABSENDER_ADRESSE = os.getenv("MAIL_ABSENDER_ADRESSE", "")
 MAIL_ABSENDER_NAME = os.getenv("MAIL_ABSENDER_NAME", "Pizzeria Pinocchio")
+
+# ===== KUNDENKONTEN: E-MAIL-VERIFIZIERUNG =====
+# BACKEND_URL: Basis-URL, unter der DIESES Backend selbst erreichbar ist (nicht zu
+# verwechseln mit SITE_URL, das ist die Frontend-Adresse). Der Verifikations-Link in
+# der E-Mail zeigt direkt auf einen Backend-Endpunkt, es gibt noch keine
+# Kundenoberfläche. Für den echten Betrieb in der .env auf die tatsächliche
+# öffentlich erreichbare Backend-Adresse setzen (z.B. https://api.pizzeria-pinocchio.de).
+BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
+VERIFIKATIONS_GUELTIGKEIT = timedelta(hours=24)
+# Einfache serverseitige Sperre gegen unbegrenztes erneutes Anfordern der
+# Verifikations-Mail (siehe /auth/resend-verification).
+RESEND_VERIFIKATION_SPERRE = timedelta(seconds=60)
+
+# ===== KUNDENKONTEN: LOGIN / SESSION =====
+SESSION_COOKIE_NAME = "kunden_session"
+SESSION_GUELTIGKEIT = timedelta(days=30)
+# Muss lokal über HTTP testbar bleiben (Secure-Cookies werden ohne HTTPS vom Browser
+# verworfen); im echten Betrieb in der .env auf "true" setzen, sobald die Seite über
+# HTTPS läuft.
+SESSION_COOKIE_SECURE = os.getenv("SESSION_COOKIE_SECURE", "false").strip().lower() == "true"
+# Konstanter Dummy-Hash für den Fall einer unbekannten E-Mail beim Login: bcrypt wird
+# so IMMER aufgerufen (bekannte wie unbekannte Adresse), damit die Antwortzeit keinen
+# Rückschluss darauf zulässt, ob ein Konto mit der angegebenen E-Mail existiert.
+DUMMY_PASSWORT_HASH = bcrypt.hashpw(b"dummy-passwort-fuer-konstante-antwortzeit", bcrypt.gensalt()).decode("utf-8")
 
 security = HTTPBasic()
 
@@ -99,6 +125,93 @@ def init_db():
     # ALTER TABLE dazu, ohne dass vorhandene Bestellungen verloren gehen.
     if "email" not in vorhandene_spalten:
         conn.execute("ALTER TABLE bestellungen ADD COLUMN email TEXT NOT NULL DEFAULT ''")
+
+    # Migration: Kundenkonten, Neukunden- & Treuerabatt (siehe Implementierungsplan-Dokument).
+    # Schritt 1 legt ausschließlich additiv neue Spalten/Tabellen an. Es wird nichts
+    # umbenannt, entfernt oder neu erstellt; bestehende Bestellungen bleiben unverändert.
+    if "kunde_id" not in vorhandene_spalten:
+        # Verweist auf kunden.id, sobald eine Bestellung während eines Logins aufgegeben
+        # wurde. Bleibt NULL für alle heutigen (Gast-)Bestellungen.
+        conn.execute("ALTER TABLE bestellungen ADD COLUMN kunde_id INTEGER")
+    if "rabatt_typ" not in vorhandene_spalten:
+        # NULL, "neukunde" oder "treue" – wird ausschließlich serverseitig gesetzt.
+        conn.execute("ALTER TABLE bestellungen ADD COLUMN rabatt_typ TEXT")
+    if "rabatt_betrag" not in vorhandene_spalten:
+        conn.execute("ALTER TABLE bestellungen ADD COLUMN rabatt_betrag REAL NOT NULL DEFAULT 0")
+
+    # Kundenkonten.
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS kunden (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            vorname TEXT NOT NULL,
+            nachname TEXT NOT NULL,
+            email TEXT NOT NULL UNIQUE,
+            passwort_hash TEXT NOT NULL,
+            email_verifiziert INTEGER NOT NULL DEFAULT 0,
+            erstellt_um TEXT NOT NULL,
+            neukundenrabatt_verwendet INTEGER NOT NULL DEFAULT 0,
+            treue_zaehler INTEGER NOT NULL DEFAULT 0
+        )
+    """)
+
+    # Tokens zur Bestätigung der E-Mail-Adresse bei der Registrierung.
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS email_verifikationen (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            kunde_id INTEGER NOT NULL,
+            token TEXT NOT NULL UNIQUE,
+            erstellt_um TEXT NOT NULL,
+            ablauf_um TEXT NOT NULL,
+            verwendet INTEGER NOT NULL DEFAULT 0
+        )
+    """)
+
+    # Serverseitig gespeicherte Login-Sessions (opaker Token im Cookie).
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS sessions (
+            token TEXT PRIMARY KEY,
+            kunde_id INTEGER NOT NULL,
+            erstellt_um TEXT NOT NULL,
+            laeuft_ab_um TEXT NOT NULL
+        )
+    """)
+
+    # Ein Eintrag pro Bestellung, die einen Treue-Fortschrittspunkt ausgelöst hat.
+    # order_id ist UNIQUE: das ist die zentrale Absicherung gegen doppelte Vergabe.
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS treue_ereignisse (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            kunde_id INTEGER NOT NULL,
+            order_id TEXT NOT NULL UNIQUE,
+            erstellt_um TEXT NOT NULL,
+            zaehlerstand_danach INTEGER NOT NULL
+        )
+    """)
+
+    # Reservierung/Verbrauch/Freigabe von Neukunden- und Treuerabatten, insbesondere
+    # für Bestellungen, die zunächst auf eine Stripe-Zahlung warten.
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS rabatt_reservierungen (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            order_id TEXT NOT NULL,
+            kunde_id INTEGER NOT NULL,
+            rabatt_typ TEXT NOT NULL,
+            status TEXT NOT NULL DEFAULT 'reserviert',
+            erstellt_um TEXT NOT NULL
+        )
+    """)
+
+    # Rein informative Hinweise für das Dashboard bei möglichem Mehrfachkonto-Missbrauch
+    # des Neukundenrabatts. Blockiert nichts automatisch.
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS risiko_meldungen (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            kunde_id INTEGER NOT NULL,
+            grund TEXT NOT NULL,
+            erstellt_um TEXT NOT NULL
+        )
+    """)
+
     conn.commit()
     conn.close()
 
@@ -114,13 +227,16 @@ def jetzt_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-def bestellung_speichern(bestellung: "Bestellung", status: str) -> str:
+def bestellung_speichern(bestellung: "Bestellung", status: str, kunde_id: int) -> str:
+    # kunde_id ist seit der Konto-Pflicht (Schritt 5) bei jeder neuen Bestellung
+    # verpflichtend und stammt ausschließlich aus der serverseitig geprüften Session
+    # der aufrufenden Endpunkte (/bestellen, /checkout-session) - niemals vom Client.
     order_id = neue_bestellungs_id()
     conn = get_db()
     conn.execute(
         """INSERT INTO bestellungen
-           (id, erstellt_um, name, telefon, adresse, hinweis, artikel_json, gesamt, zahlung, status, bestellart, email)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+           (id, erstellt_um, name, telefon, adresse, hinweis, artikel_json, gesamt, zahlung, status, bestellart, email, kunde_id)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (
             order_id,
             jetzt_iso(),
@@ -134,11 +250,45 @@ def bestellung_speichern(bestellung: "Bestellung", status: str) -> str:
             status,
             bestellung.bestellart or "lieferung",
             bestellung.email or "",
+            kunde_id,
         ),
     )
     conn.commit()
     conn.close()
     return order_id
+
+
+def pruefe_kunden_login(request: Request) -> sqlite3.Row:
+    """Zentrale Dependency: ermittelt den eingeloggten Kunden AUSSCHLIESSLICH aus dem
+    Session-Cookie (nie aus einem vom Client mitgeschickten Feld wie kunde_id). Liest
+    das Cookie, prüft die Session in SQLite inkl. Ablaufzeit und lädt den Kunden. Bei
+    fehlendem, ungültigem oder abgelaufenem Cookie wird sauber mit 401 abgelehnt.
+
+    Steht bewusst hier, weit oben in der Datei (statt bei den übrigen /auth/*-
+    Endpunkten weiter unten): sie wird bereits von /bestellen und /checkout-session
+    als Depends(...)-Default verwendet, und Python löst Default-Argumente beim
+    Einlesen der Datei aus - der Name muss zu diesem Zeitpunkt also schon existieren."""
+    token = request.cookies.get(SESSION_COOKIE_NAME)
+    if not token:
+        raise HTTPException(status_code=401, detail="Nicht eingeloggt.")
+
+    conn = get_db()
+    session_zeile = conn.execute("SELECT * FROM sessions WHERE token = ?", (token,)).fetchone()
+    if session_zeile is None:
+        conn.close()
+        raise HTTPException(status_code=401, detail="Ungültige oder abgelaufene Session.")
+
+    ablauf = datetime.fromisoformat(session_zeile["laeuft_ab_um"])
+    if datetime.now(timezone.utc) > ablauf:
+        conn.close()
+        raise HTTPException(status_code=401, detail="Ungültige oder abgelaufene Session.")
+
+    kunde = conn.execute("SELECT * FROM kunden WHERE id = ?", (session_zeile["kunde_id"],)).fetchone()
+    conn.close()
+    if kunde is None:
+        raise HTTPException(status_code=401, detail="Ungültige oder abgelaufene Session.")
+
+    return kunde
 
 
 class Artikel(BaseModel):
@@ -163,6 +313,13 @@ class EtaEingabe(BaseModel):
     eta_minuten: int
 
 
+class KontoRegistrierung(BaseModel):
+    vorname: str
+    nachname: str
+    email: str
+    passwort: str
+
+
 EMAIL_REGEX = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 
@@ -176,6 +333,27 @@ def bestellart_fehler(bestellung: "Bestellung") -> Optional[str]:
     if not EMAIL_REGEX.match((bestellung.email or "").strip()):
         return "Bitte gib eine gültige E-Mail-Adresse an."
     return None
+
+
+# ===== TEST-MODUS (NUR FÜR DIE LOKALE ENTWICKLUNG/TESTS - NIEMALS FÜR DEN
+# ECHTEN BETRIEB!) =====
+# Wenn True: die Öffnungszeiten-Prüfung unten wird komplett übersprungen,
+# Bestellungen sind dann rund um die Uhr möglich, unabhängig von den echten
+# OEFFNUNGSZEITEN. Alle anderen Prüfungen (Preise, Adresse/Liefergebiet,
+# E-Mail usw.) und der gesamte übrige Bestellablauf sind davon NICHT
+# betroffen und bleiben exakt wie gehabt.
+#
+# ==> Zum Zurückstellen nach dem Testen einfach die Zeile unten wieder auf
+#     TEST_MODUS = False setzen und main.py neu starten. <==
+TEST_MODUS = True
+
+if TEST_MODUS:
+    print("=" * 70)
+    print("⚠️  TEST_MODUS ist AKTIV - Öffnungszeiten-Prüfung ist AUSGESCHALTET!")
+    print("    Bestellungen sind gerade rund um die Uhr möglich.")
+    print("    NIEMALS so im echten Betrieb laufen lassen.")
+    print("    Abschalten: TEST_MODUS = False in backend/main.py.")
+    print("=" * 70)
 
 
 # ===== ÖFFNUNGSZEITEN (einzige Quelle der Wahrheit für die ganze Anwendung) =====
@@ -200,6 +378,13 @@ def oeffnungszeiten_text() -> str:
 
 
 def ist_geoeffnet(zeitpunkt: Optional[datetime] = None) -> bool:
+    if TEST_MODUS:
+        # Einzige Stelle, an der TEST_MODUS wirkt: sowohl die serverseitige
+        # Prüfung (pruefe_oeffnungszeiten -> berechne_bestellung) als auch die
+        # Anzeige im Frontend (/oeffnungszeiten, sperrt sonst den Bestellen-
+        # Button) laufen über diese eine Funktion - deshalb reicht der Bypass
+        # genau hier aus, alles andere bleibt unverändert.
+        return True
     zeitpunkt = zeitpunkt or datetime.now(BERLIN_TZ)
     zeiten = OEFFNUNGSZEITEN.get(zeitpunkt.weekday())
     if zeiten is None:
@@ -364,7 +549,7 @@ def sende_email(empfaenger: str, betreff: str, text: str) -> None:
         print("E-Mail nicht gesendet (BREVO_API_KEY/MAIL_ABSENDER_ADRESSE fehlt in .env):", betreff)
         return
     try:
-        requests.post(
+        antwort = requests.post(
             "https://api.brevo.com/v3/smtp/email",
             headers={
                 "api-key": BREVO_API_KEY,
@@ -379,6 +564,11 @@ def sende_email(empfaenger: str, betreff: str, text: str) -> None:
             },
             timeout=8,
         )
+        # requests wirft bei einem HTTP-Fehlerstatus (4xx/5xx, z.B. ungültiger
+        # API-Key, nicht verifizierter Absender, Rate-Limit) von sich aus KEINE
+        # Exception - ohne diesen Check wurde eine von Brevo abgelehnte E-Mail
+        # bisher wie ein erfolgreicher Versand behandelt.
+        antwort.raise_for_status()
     except Exception as e:
         print("E-Mail-Versand fehlgeschlagen:", e)
 
@@ -975,8 +1165,19 @@ PREISE = {
     "Extra: Extra Dressing Balsamico-Essig": 0.5,
 }
 
+# Seit Schritt 5 ist eine gültige Kundensession für /bestellen verpflichtend
+# (pruefe_kunden_login() als Dependency). Ohne gültige Session lehnt FastAPI den
+# Request bereits VOR dem Funktionskörper mit 401 ab - es entsteht in diesem Fall
+# keine Zeile in bestellungen. Gastbestellungen sind damit nicht mehr möglich; alte
+# Bestellungen mit kunde_id=NULL aus der Zeit davor bleiben unverändert erhalten.
 @app.post("/bestellen")
-def bestellen(bestellung: Bestellung):
+def bestellen(bestellung: Bestellung, kunde: sqlite3.Row = Depends(pruefe_kunden_login)):
+    # Name und E-Mail kommen AUSSCHLIESSLICH aus dem serverseitig geprüften Kundenkonto,
+    # nicht aus dem Request-Body - ein Client kann sich damit nicht als jemand anderes
+    # ausgeben. Telefon und Lieferadresse bleiben vorerst Teil des normalen Formulars.
+    bestellung.name = f"{kunde['vorname']} {kunde['nachname']}".strip()
+    bestellung.email = kunde["email"]
+
     finale_artikel, endsumme, fehler = berechne_bestellung(bestellung)
     if fehler:
         print("❌ Bestellung abgelehnt:", fehler)
@@ -985,7 +1186,10 @@ def bestellen(bestellung: Bestellung):
     #  NUR HIER ist es wirklich eine gültige Bestellung
     bestellung.artikel = finale_artikel
     bestellung.gesamt = endsumme
-    order_id = bestellung_speichern(bestellung, status="eingegangen")
+    # kunde_id stammt ausschließlich aus der geprüften Session (kunde["id"]) - niemals
+    # aus einem vom Client mitgeschickten Feld, ein solches existiert im Bestellung-
+    # Modell auch gar nicht.
+    order_id = bestellung_speichern(bestellung, status="eingegangen", kunde_id=kunde["id"])
 
     print("✅ Neue Bestellung akzeptiert:", order_id)
     print("Name:", bestellung.name)
@@ -1006,8 +1210,17 @@ def bestellen(bestellung: Bestellung):
 
 
 # ===== STRIPE: CHECKOUT SESSION ERSTELLEN =====
+# Seit Schritt 5 ebenfalls verpflichtend über pruefe_kunden_login() abgesichert - siehe
+# Kommentar bei /bestellen. Der bestehende Stripe-Ablauf und der Webhook bleiben
+# ansonsten unverändert; kunde_id wird bereits beim Anlegen der Bestellzeile
+# (Status "warte_auf_zahlung") gespeichert, nicht erst im Webhook.
 @app.post("/checkout-session")
-def checkout_session(bestellung: Bestellung):
+def checkout_session(bestellung: Bestellung, kunde: sqlite3.Row = Depends(pruefe_kunden_login)):
+    # Name und E-Mail kommen AUSSCHLIESSLICH aus dem serverseitig geprüften Kundenkonto,
+    # analog zu /bestellen.
+    bestellung.name = f"{kunde['vorname']} {kunde['nachname']}".strip()
+    bestellung.email = kunde["email"]
+
     # Preise, Öffnungszeiten, Adresse/Liefergebiet zuerst validieren (genau wie bei /bestellen)
     finale_artikel, endsumme, fehler = berechne_bestellung(bestellung)
     if fehler:
@@ -1031,8 +1244,9 @@ def checkout_session(bestellung: Bestellung):
         payment_methods = ["card", "paypal"]
 
     # Bestellung schon jetzt speichern (Status: wartet auf Zahlung), damit wir
-    # eine order_id haben, die wir Stripe mitgeben und in die Erfolgsseite packen können
-    order_id = bestellung_speichern(bestellung, status="warte_auf_zahlung")
+    # eine order_id haben, die wir Stripe mitgeben und in die Erfolgsseite packen können.
+    # kunde_id wird hier bereits verbindlich gesetzt, nicht erst im Webhook.
+    order_id = bestellung_speichern(bestellung, status="warte_auf_zahlung", kunde_id=kunde["id"])
 
     try:
         session = stripe.checkout.Session.create(
@@ -1098,8 +1312,13 @@ async def stripe_webhook(request: Request):
 
     if event["type"] == "checkout.session.completed":
         session = event["data"]["object"]
-        meta = session.get("metadata", {})
-        order_id = meta.get("order_id")
+        # Seit neueren stripe-python-Versionen ist das Event-Objekt (StripeObject)
+        # kein echtes Dict mehr - .get(...) darauf wirft einen AttributeError
+        # ("'get' is a dict method, but a StripeObject is not a dict."). getattr(...)
+        # mit demselben Default-Wert verhält sich hier identisch zum ursprünglich
+        # gemeinten .get(key, default), funktioniert aber auch mit StripeObject.
+        meta = getattr(session, "metadata", {})
+        order_id = getattr(meta, "order_id", None)
 
         if order_id:
             conn = get_db()
@@ -1119,13 +1338,13 @@ async def stripe_webhook(request: Request):
                 )
 
         print("✅ Zahlung eingegangen!", order_id or "")
-        print("Name:", meta.get("kunde_name"))
-        print("Telefon:", meta.get("telefon"))
-        print("Adresse:", meta.get("adresse"))
-        print("Hinweis:", meta.get("hinweis"))
-        print("Artikel:", meta.get("artikel"))
-        print("Gesamt:", meta.get("gesamt"), "€")
-        print("Zahlungs-ID:", session.get("id"))
+        print("Name:", getattr(meta, "kunde_name", None))
+        print("Telefon:", getattr(meta, "telefon", None))
+        print("Adresse:", getattr(meta, "adresse", None))
+        print("Hinweis:", getattr(meta, "hinweis", None))
+        print("Artikel:", getattr(meta, "artikel", None))
+        print("Gesamt:", getattr(meta, "gesamt", None), "€")
+        print("Zahlungs-ID:", getattr(session, "id", None))
 
     return {"status": "ok"}
 
@@ -1233,4 +1452,329 @@ def dashboard_fertig(order_id: str, user: str = Depends(pruefe_dashboard_login))
     conn.execute("UPDATE bestellungen SET status = 'fertig' WHERE id = ?", (order_id,))
     conn.commit()
     conn.close()
+    return {"status": "ok"}
+
+
+# ===== KUNDENKONTEN: REGISTRIERUNG + E-MAIL-VERIFIZIERUNG =====
+# Implementierungsschritte 2+3 (siehe Plan-Dokument): Registrierung mit
+# Passwort-Hashing sowie E-Mail-Verifizierung über die bestehende Brevo-Integration.
+# Noch KEIN Login/Logout, KEINE Session, KEINE Kundenoberfläche. /bestellen,
+# /checkout-session, Dashboard, Treue- und Rabattlogik sind unverändert.
+
+
+def erzeuge_verifikationstoken(kunde_id: int) -> str:
+    """Erzeugt einen neuen, kryptographisch sicheren Verifikationstoken für den
+    angegebenen Kunden. In der Datenbank (email_verifikationen.token) wird
+    AUSSCHLIESSLICH der SHA-256-Hash des Tokens gespeichert, niemals der Token
+    selbst - ein Lesezugriff auf die Datenbank allein reicht damit nicht aus, um
+    eine E-Mail-Adresse zu verifizieren. Der Klartext-Token wird nur zurückgegeben,
+    um ihn in den Verifikations-Link der E-Mail einzusetzen; er wird an keiner
+    Stelle geloggt."""
+    token = secrets.token_urlsafe(32)
+    token_hash = hashlib.sha256(token.encode("utf-8")).hexdigest()
+    jetzt = datetime.now(timezone.utc)
+    ablauf = jetzt + VERIFIKATIONS_GUELTIGKEIT
+    conn = get_db()
+    conn.execute(
+        """INSERT INTO email_verifikationen (kunde_id, token, erstellt_um, ablauf_um, verwendet)
+           VALUES (?, ?, ?, ?, 0)""",
+        (kunde_id, token_hash, jetzt.isoformat(), ablauf.isoformat()),
+    )
+    conn.commit()
+    conn.close()
+    return token
+
+
+def sende_verifikations_email(empfaenger_email: str, vorname: str, token: str) -> None:
+    """Verschickt die Verifikations-E-Mail über die bestehende sende_email()-Funktion
+    (Brevo). Bewusst schlicht gehalten, keine Treue-/Rabatt-Werbung. Der Klartext-Token
+    steckt nur im Link im Mailtext, nicht im Betreff - und wird von sende_email() im
+    Fehlerfall nicht mitgeloggt (dort wird nur der Betreff bzw. die HTTP-Exception
+    geloggt, niemals der Mailtext)."""
+    # Schritt 6 (Kundenoberfläche): der Link zeigt jetzt auf eine kleine statische
+    # Frontend-Seite (email-bestaetigt.html), die den Klick entgegennimmt und eine
+    # vernünftige, zum Design passende Erfolgs-/Fehleranzeige zeigt. Diese Seite ruft
+    # ihrerseits per fetch() GENAU denselben, unveränderten Backend-Endpunkt
+    # GET /auth/verify?token=... auf - die eigentliche Verifikationslogik (Hash-Prüfung,
+    # Ablauf, Einmalverwendung) bleibt vollständig unverändert und ausschließlich hier
+    # im Backend.
+    verifikations_link = f"{SITE_URL}/email-bestaetigt.html?token={token}"
+    text = (
+        f"Willkommen bei Pizzeria Pinocchio, {vorname}!\n\n"
+        "Bitte bestätige deine E-Mail-Adresse, um dein Kundenkonto zu aktivieren:\n\n"
+        f"E-Mail-Adresse bestätigen: {verifikations_link}\n\n"
+        "Dieser Link ist 24 Stunden gültig.\n\n"
+        "Falls du dich nicht bei Pizzeria Pinocchio registriert hast, kannst du diese "
+        "E-Mail einfach ignorieren."
+    )
+    sende_email(empfaenger_email, "Bitte bestätige deine E-Mail-Adresse", text)
+
+
+@app.post("/auth/register")
+def auth_register(eingabe: KontoRegistrierung):
+    vorname = (eingabe.vorname or "").strip()
+    nachname = (eingabe.nachname or "").strip()
+    # E-Mail serverseitig normalisieren (trimmen + lowercase), damit dieselbe Adresse
+    # nicht durch abweichende Schreibweise (Groß-/Kleinschreibung, Leerzeichen) mehrfach
+    # registriert werden kann.
+    email = (eingabe.email or "").strip().lower()
+    passwort = eingabe.passwort or ""
+
+    if not vorname:
+        raise HTTPException(status_code=400, detail="Bitte gib einen Vornamen an.")
+    if not nachname:
+        raise HTTPException(status_code=400, detail="Bitte gib einen Nachnamen an.")
+    if not EMAIL_REGEX.match(email):
+        raise HTTPException(status_code=400, detail="Bitte gib eine gültige E-Mail-Adresse an.")
+    if len(passwort) < 8:
+        raise HTTPException(status_code=400, detail="Das Passwort muss mindestens 8 Zeichen lang sein.")
+
+    conn = get_db()
+    vorhanden = conn.execute("SELECT id FROM kunden WHERE email = ?", (email,)).fetchone()
+    if vorhanden is not None:
+        conn.close()
+        raise HTTPException(status_code=400, detail="Diese E-Mail-Adresse ist bereits registriert.")
+
+    # Passwort wird ausschließlich als bcrypt-Hash gespeichert, niemals im Klartext -
+    # weder in der Datenbank noch in Logs oder der Antwort.
+    passwort_hash = bcrypt.hashpw(passwort.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+
+    try:
+        cur = conn.execute(
+            """INSERT INTO kunden (vorname, nachname, email, passwort_hash, email_verifiziert, erstellt_um)
+               VALUES (?, ?, ?, ?, 0, ?)""",
+            (vorname, nachname, email, passwort_hash, jetzt_iso()),
+        )
+        conn.commit()
+    except sqlite3.IntegrityError:
+        # Absicherung gegen einen seltenen Wettlauf zwischen der obigen Prüfung und
+        # diesem INSERT: die UNIQUE-Constraint auf kunden.email verhindert doppelte
+        # Registrierungen auch dann zuverlässig.
+        conn.close()
+        raise HTTPException(status_code=400, detail="Diese E-Mail-Adresse ist bereits registriert.")
+
+    neue_kunde_id = cur.lastrowid
+    conn.close()
+
+    # Verifikations-Token erzeugen (Hash in der DB, Klartext nur für den Mailversand)
+    # und die Verifikations-Mail über die bestehende Brevo-Integration verschicken.
+    token = erzeuge_verifikationstoken(neue_kunde_id)
+    sende_verifikations_email(email, vorname, token)
+
+    # Antwort enthält bewusst weder passwort_hash noch das Klartextpasswort noch
+    # den Verifikationstoken.
+    return {
+        "status": "ok",
+        "kunde_id": neue_kunde_id,
+        "vorname": vorname,
+        "nachname": nachname,
+        "email": email,
+        "email_verifiziert": False,
+    }
+
+
+class ErneutVerifizieren(BaseModel):
+    email: str
+
+
+@app.get("/auth/verify")
+def auth_verify(token: str = ""):
+    token = (token or "").strip()
+    if not token:
+        raise HTTPException(status_code=400, detail="Kein Verifikationstoken angegeben.")
+
+    token_hash = hashlib.sha256(token.encode("utf-8")).hexdigest()
+
+    conn = get_db()
+    zeile = conn.execute(
+        "SELECT * FROM email_verifikationen WHERE token = ?", (token_hash,)
+    ).fetchone()
+
+    if zeile is None:
+        conn.close()
+        raise HTTPException(status_code=400, detail="Ungültiger Verifikationslink.")
+
+    if zeile["verwendet"]:
+        conn.close()
+        raise HTTPException(
+            status_code=400,
+            detail="Dieser Verifikationslink wurde bereits verwendet. Falls dein Konto "
+            "noch nicht bestätigt ist, fordere über /auth/resend-verification einen "
+            "neuen Link an.",
+        )
+
+    ablauf = datetime.fromisoformat(zeile["ablauf_um"])
+    if datetime.now(timezone.utc) > ablauf:
+        conn.close()
+        raise HTTPException(
+            status_code=400,
+            detail="Dieser Verifikationslink ist abgelaufen. Bitte fordere über "
+            "/auth/resend-verification einen neuen an.",
+        )
+
+    # Gültiger, noch nicht verwendeter, nicht abgelaufener Token: Kunde verifizieren
+    # und den Token sofort als verbraucht markieren, damit er kein zweites Mal
+    # funktioniert. Ist der Kunde (z.B. durch einen parallelen Request) bereits
+    # verifiziert, ändert dieses UPDATE nichts an seinem Zustand - kein Schaden.
+    conn.execute("UPDATE kunden SET email_verifiziert = 1 WHERE id = ?", (zeile["kunde_id"],))
+    conn.execute("UPDATE email_verifikationen SET verwendet = 1 WHERE id = ?", (zeile["id"],))
+    conn.commit()
+    conn.close()
+
+    return {"status": "ok", "message": "E-Mail-Adresse erfolgreich bestätigt."}
+
+
+# Bewusst immer dieselbe neutrale Antwort - unabhängig davon, ob die E-Mail-Adresse
+# überhaupt registriert, bereits verifiziert oder gerade zeitlich gesperrt ist. Das
+# verhindert, dass über diesen Endpunkt E-Mail-Adressen oder Kontostatus erraten
+# werden können (bewusste Erweiterung über die reinen Vorgaben hinaus, konsistent
+# mit dem gleichen Prinzip bei /auth/register).
+RESEND_NEUTRALE_ANTWORT = {
+    "status": "ok",
+    "message": "Falls ein noch nicht bestätigtes Konto mit dieser E-Mail-Adresse "
+    "existiert, wurde soeben eine neue Bestätigungs-E-Mail verschickt.",
+}
+
+
+@app.post("/auth/resend-verification")
+def auth_resend_verification(eingabe: ErneutVerifizieren):
+    email = (eingabe.email or "").strip().lower()
+    if not EMAIL_REGEX.match(email):
+        raise HTTPException(status_code=400, detail="Bitte gib eine gültige E-Mail-Adresse an.")
+
+    conn = get_db()
+    kunde = conn.execute("SELECT * FROM kunden WHERE email = ?", (email,)).fetchone()
+
+    # Kein Konto mit dieser E-Mail, oder Konto bereits verifiziert: nichts tun, aber
+    # trotzdem die neutrale Erfolgsmeldung zurückgeben (siehe Kommentar oben).
+    if kunde is None or kunde["email_verifiziert"]:
+        conn.close()
+        return RESEND_NEUTRALE_ANTWORT
+
+    # Einfache zeitliche Sperre gegen unbegrenztes erneutes Anfordern: wurde erst vor
+    # kurzem ein Token für dieses Konto erzeugt, wird still nichts weiter getan.
+    letzter_versuch = conn.execute(
+        "SELECT erstellt_um FROM email_verifikationen WHERE kunde_id = ? "
+        "ORDER BY erstellt_um DESC LIMIT 1",
+        (kunde["id"],),
+    ).fetchone()
+    if letzter_versuch is not None:
+        letzter_zeitpunkt = datetime.fromisoformat(letzter_versuch["erstellt_um"])
+        if datetime.now(timezone.utc) - letzter_zeitpunkt < RESEND_VERIFIKATION_SPERRE:
+            conn.close()
+            return RESEND_NEUTRALE_ANTWORT
+
+    # Alle bisherigen, noch gültigen Tokens dieses Kunden unbrauchbar machen, bevor
+    # ein neuer erzeugt wird - ein alter Link darf danach nicht mehr funktionieren.
+    conn.execute(
+        "UPDATE email_verifikationen SET verwendet = 1 WHERE kunde_id = ? AND verwendet = 0",
+        (kunde["id"],),
+    )
+    conn.commit()
+    conn.close()
+
+    token = erzeuge_verifikationstoken(kunde["id"])
+    sende_verifikations_email(kunde["email"], kunde["vorname"], token)
+
+    return RESEND_NEUTRALE_ANTWORT
+
+
+class KontoLogin(BaseModel):
+    email: str
+    passwort: str
+
+
+@app.post("/auth/login")
+def auth_login(eingabe: KontoLogin, response: Response):
+    email = (eingabe.email or "").strip().lower()
+    passwort = eingabe.passwort or ""
+
+    conn = get_db()
+    kunde = conn.execute("SELECT * FROM kunden WHERE email = ?", (email,)).fetchone()
+
+    # bcrypt wird in JEDEM Fall aufgerufen (auch bei unbekannter E-Mail, dann gegen
+    # einen konstanten Dummy-Hash), damit die Antwortzeit nicht verrät, ob die
+    # E-Mail-Adresse überhaupt registriert ist.
+    zu_pruefender_hash = kunde["passwort_hash"] if kunde is not None else DUMMY_PASSWORT_HASH
+    passwort_korrekt = bcrypt.checkpw(passwort.encode("utf-8"), zu_pruefender_hash.encode("utf-8"))
+
+    if kunde is None or not passwort_korrekt:
+        conn.close()
+        # Bewusst dieselbe Fehlermeldung für "E-Mail unbekannt" und "Passwort falsch" -
+        # unterscheidbare Meldungen würden verraten, welche E-Mail-Adressen registriert sind.
+        raise HTTPException(status_code=401, detail="E-Mail oder Passwort ist falsch.")
+
+    if not kunde["email_verifiziert"]:
+        conn.close()
+        # An dieser Stelle wurde das Passwort bereits erfolgreich geprüft - diese
+        # spezifischere Meldung verrät also nichts zusätzlich über fremde Konten.
+        raise HTTPException(
+            status_code=403,
+            detail="Bitte bestätige zuerst deine E-Mail-Adresse, bevor du dich anmeldest.",
+        )
+
+    token = secrets.token_urlsafe(32)
+    jetzt = datetime.now(timezone.utc)
+    laeuft_ab = jetzt + SESSION_GUELTIGKEIT
+    try:
+        conn.execute(
+            "INSERT INTO sessions (token, kunde_id, erstellt_um, laeuft_ab_um) VALUES (?, ?, ?, ?)",
+            (token, kunde["id"], jetzt.isoformat(), laeuft_ab.isoformat()),
+        )
+        conn.commit()
+    except sqlite3.IntegrityError:
+        # Absicherung gegen einen (astronomisch unwahrscheinlichen) Token-Konflikt.
+        conn.close()
+        raise HTTPException(status_code=500, detail="Anmeldung fehlgeschlagen, bitte erneut versuchen.")
+    conn.close()
+
+    # HttpOnly + SameSite=Lax immer aktiv; Secure ist per .env steuerbar, damit lokale
+    # Tests über HTTP weiterhin funktionieren (Browser verwerfen Secure-Cookies ohne HTTPS).
+    response.set_cookie(
+        key=SESSION_COOKIE_NAME,
+        value=token,
+        max_age=int(SESSION_GUELTIGKEIT.total_seconds()),
+        httponly=True,
+        samesite="lax",
+        secure=SESSION_COOKIE_SECURE,
+        path="/",
+    )
+
+    # Antwort enthält bewusst weder passwort_hash noch den Session-Token (der steckt
+    # ausschließlich im HttpOnly-Cookie, nicht im Body).
+    return {
+        "status": "ok",
+        "kunde_id": kunde["id"],
+        "vorname": kunde["vorname"],
+        "nachname": kunde["nachname"],
+        "email": kunde["email"],
+        "email_verifiziert": bool(kunde["email_verifiziert"]),
+    }
+
+
+@app.get("/auth/me")
+def auth_me(kunde: sqlite3.Row = Depends(pruefe_kunden_login)):
+    return {
+        "kunde_id": kunde["id"],
+        "vorname": kunde["vorname"],
+        "nachname": kunde["nachname"],
+        "email": kunde["email"],
+        "email_verifiziert": bool(kunde["email_verifiziert"]),
+    }
+
+
+@app.post("/auth/logout")
+def auth_logout(request: Request, response: Response):
+    # Bewusst OHNE pruefe_kunden_login-Dependency: Logout soll auch dann sauber mit
+    # {"status":"ok"} durchlaufen, wenn gar keine (oder schon keine gültige) Session
+    # mehr vorhanden ist - kein Fehler nötig, das Ziel (nicht eingeloggt sein) ist so
+    # oder so erreicht.
+    token = request.cookies.get(SESSION_COOKIE_NAME)
+    if token:
+        conn = get_db()
+        conn.execute("DELETE FROM sessions WHERE token = ?", (token,))
+        conn.commit()
+        conn.close()
+
+    response.delete_cookie(SESSION_COOKIE_NAME, path="/")
     return {"status": "ok"}

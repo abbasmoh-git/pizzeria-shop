@@ -18,6 +18,8 @@
         <li><a href="#speisekarte">Speisekarte</a></li>
         <li><a href="#lieferung">Lieferung</a></li>
         <li><a href="#kontakt">Kontakt</a></li>
+        <li id="nav-konto-aus"><a href="#" class="nav-btn nav-konto-link" onclick="oeffneKontoModal('login'); return false;">Anmelden</a></li>
+        <li id="nav-konto-an" style="display:none"><a href="#" class="nav-btn nav-konto-link nav-konto-link-an" onclick="oeffneKontoPanel(); return false;"><i data-feather="user" style="width:15px;height:15px;vertical-align:-2px;margin-right:4px"></i><span id="nav-konto-vorname">Mein Konto</span></a></li>
         <li><a href="#bestellen-section" class="nav-btn">Jetzt bestellen</a></li>
       </ul>
       <button class="burger" onclick="toggleMenu()">&#9776;</button>
@@ -26,6 +28,8 @@
       <li><a href="#speisekarte" onclick="toggleMenu()">Speisekarte</a></li>
       <li><a href="#lieferung" onclick="toggleMenu()">Lieferung</a></li>
       <li><a href="#kontakt" onclick="toggleMenu()">Kontakt</a></li>
+      <li id="nav-konto-aus-mobil"><a href="#" onclick="toggleMenu(); oeffneKontoModal('login'); return false;">Anmelden</a></li>
+      <li id="nav-konto-an-mobil" style="display:none"><a href="#" onclick="toggleMenu(); oeffneKontoPanel(); return false;">Mein Konto (<span id="nav-konto-vorname-mobil"></span>)</a></li>
       <li><a href="#bestellen-section" onclick="toggleMenu()">Jetzt bestellen</a></li>
     </ul>
   </nav>
@@ -39,7 +43,6 @@
         <p class="hero-ort">Olfen</p>
         <p class="hero-tagline">Frisch gebacken. Mit Liebe gemacht. Direkt zu dir.</p>
         <div class="hero-badges">
-          <span class="badge">Täglich 12 – 21 Uhr</span>
           <span class="badge">Lieferung & Abholung</span>
         </div>
         <a href="#speisekarte" class="hero-btn">Zur Speisekarte</a>
@@ -110,7 +113,7 @@
       <span class="info-icon"><i data-feather="clock"></i></span>
       <div>
         <strong>Öffnungszeiten</strong>
-        <p>Täglich 12:00 – 21:00 Uhr</p>
+        <p>Di–So 12:00–21:00 Uhr · Mo geschlossen</p>
       </div>
     </div>
     <div class="info-divider"></div>
@@ -3842,8 +3845,7 @@
               <span class="zahlung-label">
                 <span class="zahlung-check"></span>
                 <span class="zahlung-info">
-                  <span class="zahlung-name">Bar bei Lieferung</span>
-                  <span class="zahlung-desc">Bezahle beim Fahrer</span>
+                  <span class="zahlung-name">Bar</span>
                 </span>
               </span>
             </label>
@@ -3890,17 +3892,16 @@
           <h3>Innerorts</h3>
           <p class="lieferkosten">1,00 €</p>
           <p class="liefertext">Lieferkosten</p>
-          <div class="mindest">Mindestbestellwert: <strong>15,00 €</strong></div>
+          <div class="mindest">Mindestbestellwert: <strong>20,00 €</strong></div>
         </div>
         <div class="lieferung-card ausserorts">
           <div class="lieferung-icon"><i data-feather="truck"></i></div>
           <h3>Außerorts</h3>
-          <p class="lieferkosten">2,90 €</p>
+          <p class="lieferkosten">2,50 €</p>
           <p class="liefertext">Lieferkosten</p>
-          <div class="mindest">Mindestbestellwert: <strong>25,00 – 30,00 €</strong></div>
+          <div class="mindest">Mindestbestellwert: <strong>35,00 €</strong></div>
         </div>
       </div>
-      <p class="lieferung-hinweis">* Der genaue Mindestbestellwert außerorts kann je nach Liefergebiet variieren. Ruf uns gerne an: <strong>02595 7688</strong></p>
     </section>
 
     <!-- KONTAKT -->
@@ -3926,7 +3927,7 @@
             <span class="kontakt-icon"><i data-feather="clock"></i></span>
             <div>
               <strong>Öffnungszeiten</strong>
-              <p>Täglich 12:00 – 21:00 Uhr</p>
+              <p>Di–So 12:00–21:00 Uhr · Mo geschlossen</p>
             </div>
           </div>
         </div>
@@ -3945,14 +3946,121 @@
   <footer class="footer">
     <div class="footer-inner">
       <p class="footer-logo">Pizzeria Pinocchio</p>
-      <p>Olfen &nbsp;|&nbsp; Tel: 02595 7688 &nbsp;|&nbsp; Täglich 12 – 21 Uhr</p>
+      <p>Olfen &nbsp;|&nbsp; Tel: 02595 7688</p>
       <p class="footer-links"><a href="impressum.html">Impressum</a> &nbsp;|&nbsp; <a href="datenschutz.html">Datenschutz</a></p>
       <p class="footer-copy">© 2026 Pizzeria Pinocchio. Alle Rechte vorbehalten.</p>
     </div>
   </footer>
 
   <div id="meldung" class="meldung"></div>
-  
+
+  <!-- KONTO MODAL: Anmelden / Registrieren -->
+  <div id="kontoModal" class="modal-overlay" onclick="schliesseKontoModal(event)">
+    <div class="modal-box">
+      <div class="modal-kopf">
+        <div>
+          <p class="modal-sub">Kundenkonto</p>
+          <h3 id="kontoModalTitel">Anmelden</h3>
+        </div>
+        <button class="modal-schliessen" onclick="schliesseKontoModal()">✕</button>
+      </div>
+
+      <p id="kontoModalHinweis" class="konto-hinweis" style="display:none">
+        Bitte melde dich an oder erstelle ein kostenloses Kundenkonto, um deine Bestellung abzuschließen.
+      </p>
+
+      <div class="konto-tabs" id="kontoTabs">
+        <button type="button" class="konto-tab aktiv" id="kontoTabLogin" onclick="wechsleKontoTab('login')">Anmelden</button>
+        <button type="button" class="konto-tab" id="kontoTabRegister" onclick="wechsleKontoTab('register')">Registrieren</button>
+      </div>
+
+      <!-- LOGIN-FORMULAR -->
+      <form id="kontoLoginForm" onsubmit="kontoLoginSenden(event)">
+        <div class="form-group">
+          <label for="kontoLoginEmail">E-Mail</label>
+          <input type="email" id="kontoLoginEmail" autocomplete="email" placeholder="z. B. name@beispiel.de" required>
+        </div>
+        <div class="form-group">
+          <label for="kontoLoginPasswort">Passwort</label>
+          <input type="password" id="kontoLoginPasswort" autocomplete="current-password" placeholder="Dein Passwort" required>
+        </div>
+        <p id="kontoLoginFehler" class="konto-fehler" style="display:none"></p>
+        <button type="submit" class="submit-btn" id="kontoLoginButton">
+          <span id="kontoLoginButtonText">Anmelden</span>
+          <span class="spinner" id="kontoLoginSpinner"></span>
+        </button>
+        <p id="kontoLoginResendZeile" class="konto-resend-zeile" style="display:none">
+          <button type="button" class="konto-resend-btn" id="kontoLoginResendBtn" onclick="kontoResendSenden(document.getElementById('kontoLoginEmail').value)">Bestätigungs-E-Mail erneut senden</button>
+        </p>
+      </form>
+
+      <!-- REGISTRIERUNGS-FORMULAR -->
+      <form id="kontoRegisterForm" style="display:none" onsubmit="kontoRegistrierenSenden(event)">
+        <div class="form-group">
+          <label for="kontoRegVorname">Vorname</label>
+          <input type="text" id="kontoRegVorname" autocomplete="given-name" placeholder="Vorname" required>
+        </div>
+        <div class="form-group">
+          <label for="kontoRegNachname">Nachname</label>
+          <input type="text" id="kontoRegNachname" autocomplete="family-name" placeholder="Nachname" required>
+        </div>
+        <div class="form-group">
+          <label for="kontoRegEmail">E-Mail</label>
+          <input type="email" id="kontoRegEmail" autocomplete="email" placeholder="z. B. name@beispiel.de" required>
+        </div>
+        <div class="form-group">
+          <label for="kontoRegPasswort">Passwort</label>
+          <input type="password" id="kontoRegPasswort" autocomplete="new-password" placeholder="Mind. 8 Zeichen" required>
+        </div>
+        <div class="form-group">
+          <label for="kontoRegPasswortWiederholen">Passwort wiederholen</label>
+          <input type="password" id="kontoRegPasswortWiederholen" autocomplete="new-password" placeholder="Passwort wiederholen" required>
+        </div>
+        <p id="kontoRegFehler" class="konto-fehler" style="display:none"></p>
+        <button type="submit" class="submit-btn" id="kontoRegButton">
+          <span id="kontoRegButtonText">Registrieren</span>
+          <span class="spinner" id="kontoRegSpinner"></span>
+        </button>
+      </form>
+
+      <!-- BESTÄTIGUNG NACH REGISTRIERUNG -->
+      <div id="kontoRegBestaetigung" class="konto-bestaetigung" style="display:none">
+        <div class="konto-bestaetigung-icon"><i data-feather="mail"></i></div>
+        <p class="konto-bestaetigung-text">
+          Fast geschafft! Wir haben dir eine E-Mail geschickt. Bitte bestätige deine
+          E-Mail-Adresse, bevor du dich anmeldest.
+        </p>
+        <p class="konto-resend-zeile">
+          Keine E-Mail erhalten?
+          <button type="button" class="konto-resend-btn" id="kontoRegResendBtn" onclick="kontoResendSenden(letzteRegistrierteEmail)">Bestätigungs-E-Mail erneut senden</button>
+        </p>
+        <p id="kontoRegResendStatus" class="konto-resend-status" style="display:none"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- KONTO-PANEL: Kontodaten für eingeloggten Kunden -->
+  <div id="kontoPanelModal" class="modal-overlay" onclick="schliesseKontoPanel(event)">
+    <div class="modal-box" style="max-width:400px">
+      <div class="modal-kopf">
+        <div>
+          <p class="modal-sub">Kundenkonto</p>
+          <h3>Mein Konto</h3>
+        </div>
+        <button class="modal-schliessen" onclick="schliesseKontoPanel()">✕</button>
+      </div>
+      <div class="konto-panel-feld">
+        <span class="konto-panel-label">Name</span>
+        <span id="kontoPanelName" class="konto-panel-wert"></span>
+      </div>
+      <div class="konto-panel-feld">
+        <span class="konto-panel-label">E-Mail</span>
+        <span id="kontoPanelEmail" class="konto-panel-wert"></span>
+      </div>
+      <button type="button" class="submit-btn konto-abmelden-btn" onclick="kontoAbmelden()">Abmelden</button>
+    </div>
+  </div>
+
   <!-- EXTRAS MODAL -->
   <div id="extrasModal" class="modal-overlay" onclick="schliesseExtras(event)">
     <div class="modal-box">
